@@ -1,7 +1,8 @@
 // BusinessCard.tsx
 import React from 'react';
-import {businesses} from "../gameLogic/businesses.ts";
+import {businesses} from "../gameLogic/data/businesses.ts";
 import {formatBigIntWithSuffix} from "../utils/formatNumber.ts";
+import {SPEED_THRESHOLD} from "../gameLogic/idleGame.ts";
 
 interface BusinessCardProps {
     business: typeof businesses[number];
@@ -18,7 +19,7 @@ interface BusinessCardProps {
 const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency, purchaseAmount, onStartProduction, onBuyBusiness,
                                                        onClickManager, formatTime, nextUnlockMilestone,}) => {
 
-    const calculateTotalPrice = (): bigint => {
+    const calculateTotalPrice = (): { totalCost: bigint, quantityToBuy: number } => {
         let quantityToBuy = 1; // Default to 1
         switch (purchaseAmount) {
             case "x5":
@@ -70,11 +71,11 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
             );
         }
 
-        return totalCost;
+        return { totalCost, quantityToBuy };
     };
 
-    const totalPrice = calculateTotalPrice();
-    const isButtonDisabled = totalPrice > currency;
+    const { totalCost, quantityToBuy } = calculateTotalPrice();
+    const isButtonDisabled = totalCost > currency;
 
     return (
         <div className="flex items-center">
@@ -88,7 +89,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                         : "opacity-50 cursor-not-allowed"
                 }`}
                 style={{
-                    backgroundImage: `url(/images/icons/${business.name.toLowerCase()}.webp)`,
+                    backgroundImage: `url(/japan-capitalist/images/icons/${business.name.toLowerCase()}.webp)`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
                 }}
@@ -106,14 +107,15 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                 <div className="w-full bg-gray-300 h-10 rounded-b-sm overflow-hidden mb-1">
                     <div
                         key={business.isProducing ? "producing" : "reset"}
-                        className="h-full bg-green-500 flex items-center"
+                        className={`h-full ${business.productionTime <= SPEED_THRESHOLD && business.manager?.hired ? "bg-yellow-400" : "bg-green-500"} flex items-center`}
                         style={{
-                            width: business.isProducing ? `${progress}%` : "0%",
+                            width: !business.isProducing ? "0%" : business.productionTime <= SPEED_THRESHOLD && business.manager?.hired ? "100%" : `${progress}%`,
                             transition: business.isProducing ? "width 0.1s linear" : "none",
                         }}
                     >
                         <span className="text-nowrap text-xl ml-6 text-black font-fredoka">
-                            ¥{formatBigIntWithSuffix(business.revenue * BigInt(business.quantity))}
+                            {business.productionTime <= SPEED_THRESHOLD && business.manager?.hired && business.revenuePerSecond ? `¥${formatBigIntWithSuffix(business.revenuePerSecond)}/sec` : `¥${formatBigIntWithSuffix(business.revenue * BigInt(business.quantity))}`}
+
                         </span>
                     </div>
                 </div>
@@ -129,7 +131,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                                 isButtonDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 text-white"
                             }`}
                         >
-                            {purchaseAmount} ¥{formatBigIntWithSuffix(totalPrice)}
+                            {purchaseAmount === "max" || purchaseAmount === "next" ? `${quantityToBuy} x` : purchaseAmount} ¥{formatBigIntWithSuffix(totalCost)}
                         </button>
                     </div>
 
@@ -138,7 +140,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                         {business.manager && (
                             <button
                                 onClick={onClickManager}
-                                className="flex justify-center items-center bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600"
+                                className="relative flex justify-center items-center bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -153,6 +155,12 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                                     <circle cx="32" cy="20" r="12" />
                                     <path d="M16,48 a16,16 0 0,1 32,0" />
                                 </svg>
+                                { !business.manager.hired && currency >= business.manager.cost && (
+                                    <span className="absolute -top-1 -right-1 bg-yellow-500 text-black font-bold text-md w-3 h-3 flex items-center justify-center rounded-full">
+                                    !
+                                    </span>
+                                )}
+
                             </button>
                         )}
 

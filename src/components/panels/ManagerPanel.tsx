@@ -1,5 +1,6 @@
 import { Business } from "../../gameLogic/types/business.types";
 import {formatBigIntWithSuffix} from "../../utils/formatNumber.ts";
+import React from "react";
 
 type ManagerPanelProps = {
     businesses: Business[]; // List of businesses
@@ -16,7 +17,7 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
     const handleBack = () => setSelectedBusiness(null); // Back to the selection screen
 
     return (
-        <div className="h-[80vh] overflow-y-auto overflow-x-hidden px-3 pb-8">
+        <div className="h-[75vh] overflow-y-auto overflow-x-hidden px-3 pb-8">
             {/* Business Selection Panel */}
             {!selectedBusiness && (
                 <div className="grid grid-cols-2 gap-3 w-full">
@@ -29,7 +30,7 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                                 key={business.name}
                                 className="relative flex flex-col items-center mx-auto w-40 h-40 bg-gray-100 px-4 py-1 shadow-sm rounded-full cursor-pointer hover:shadow-2xl bg-no-repeat bg-center opacity-75 hover:opacity-100  bg-cover transition"
                                 onClick={() => setSelectedBusiness(business)}
-                                style={{ backgroundImage: `url('/images/businesses/${business.name.toLowerCase().replace(" ","")}/employee_face.webp')` }}
+                                style={{ backgroundImage: `url('/japan-capitalist/images/businesses/${business.name.toLowerCase().replace(" ","")}/employee_face.webp')` }}
                             >
                                 <div
                                     className="w-24 h-24 object-contain rounded-full z-20"
@@ -45,7 +46,7 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
 
             {/* Manager Details Panel */}
             {selectedBusiness && (
-                <div className="relative flex flex-col h-[80vh] max-w-md mx-auto bg-white px-3 rounded-lg">
+                <div className="relative flex flex-col h-[75vh] max-w-md mx-auto bg-white px-3 rounded-lg">
                     <button
                         className="sticky top-0 w-16 -ml-6 text-blue-500 hover:underline flex items-center"
                         onClick={handleBack}
@@ -68,7 +69,7 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                     </button>
                     <div className="text-center">
                         <img
-                            src={`/images/businesses/${selectedBusiness.name.toLowerCase().replace(" ","")}/employee.webp`}
+                            src={`/japan-capitalist/images/businesses/${selectedBusiness.name.toLowerCase().replace(" ","")}/employee.webp`}
                             alt={selectedBusiness.name}
                             className=" object-contain rounded -mt-6"
                         />
@@ -117,7 +118,7 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                             </div>
                             ) : (
                             <button
-                                className="bg-green-500 text-white px-4 py-2 mb-6 rounded hover:bg-green-600 focus:outline-none"
+                                className="relative bg-green-500 text-white px-4 py-2 mb-6 rounded hover:bg-green-600 focus:outline-none"
                                 onClick={() => {
                                     const index = businesses.findIndex(
                                         (business) => business.name === selectedBusiness.name
@@ -128,6 +129,11 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                                 }}
                             >
                                 Hire for ¥{formatBigIntWithSuffix(selectedBusiness.manager?.cost || BigInt(0))}
+                                { !selectedBusiness.manager?.hired && selectedBusiness.manager?.cost && currency >= selectedBusiness.manager?.cost && (
+                                    <span className="absolute -top-2 -right-2 bg-yellow-500 text-black font-bold text-xl w-6 h-6 flex items-center justify-center rounded-full">
+                                    !
+                                    </span>
+                                )}
                             </button>
                         )}
                     </div>

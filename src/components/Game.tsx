@@ -7,20 +7,21 @@ import ModalPanel from "./ModelPanel.tsx";
 import BusinessCard from "./BusinessCard.tsx";
 import ManagerPanel from "./panels/ManagerPanel.tsx";
 import {Business} from "../gameLogic/types/business.types.ts";
+import {formatPlaytime} from "../utils/formatTime.ts";
 
 const game = new IdleGame();
 
 const Game = () => {
-    const [currency, setCurrency] = useState(game.currency);
-    const [businesses, setBusinesses] = useState(game.businesses);
-    const [progress, setProgress] = useState<number[]>(new Array(game.businesses.length).fill(0));
+    const [currency, setCurrency] = useState(game.businessManager.currency);
+    const [businesses, setBusinesses] = useState(game.businessManager.businesses);
+    const [progress, setProgress] = useState<number[]>(new Array(game.businessManager.businesses.length).fill(0));
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const [notification, setNotification] = useState<string | null>(null);
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
     const [stableReadyBusinessesCount, setStableReadyBusinessesCount] = useState(0);
     const [purchaseAmount, setPurchaseAmount] = useState("x1"); // New state for selected purchase amount
     const [appliedUnlocks, setAppliedUnlocks] = useState(() =>
-        game.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied))
+        game.businessManager.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied))
     );
 
     const readyBusinessesCount = businesses.filter(
@@ -30,7 +31,7 @@ const Game = () => {
     useEffect(() => {
         const timeout = setTimeout(() => {
             setStableReadyBusinessesCount(readyBusinessesCount); // Update the stable count after 11ms
-        }, 11);
+        }, 50);
 
         return () => clearTimeout(timeout); // Clean up to prevent memory leaks
     }, [readyBusinessesCount]);
@@ -38,18 +39,18 @@ const Game = () => {
     // Update currency and progress bars using requestAnimationFrame for smooth updates
     useEffect(() => {
         const update = () => {
-            setCurrency(game.currency);
-            setBusinesses([...game.businesses]);
-            const updatedProgress = game.businesses.map((_, index) => {
-                if (!game.businesses[index].isProducing) return 0;
+            setCurrency(game.businessManager.currency);
+            setBusinesses([...game.businessManager.businesses]);
+            const updatedProgress = game.businessManager.businesses.map((_, index) => {
+                if (!game.businessManager.businesses[index].isProducing) return 0;
                 const now = Date.now();
-                const elapsed = now - game.businesses[index].startTime;
-                const pct = (elapsed / game.businesses[index].productionTime) * 100;
+                const elapsed = now - game.businessManager.businesses[index].startTime;
+                const pct = (elapsed / game.businessManager.businesses[index].productionTime) * 100;
                 return Math.min(pct, 100);
             });
             setProgress(updatedProgress);
 
-            game.businesses.forEach((biz, bizIdx) => {
+            game.businessManager.businesses.forEach((biz, bizIdx) => {
                 biz.unlocks.forEach((unlock, unlockIdx) => {
                     if (!appliedUnlocks[bizIdx][unlockIdx] && unlock.applied && !unlock.notified) {
                         // Trigger a notification for the new unlock
@@ -60,7 +61,7 @@ const Game = () => {
             });
 
             setAppliedUnlocks(
-                game.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied))
+                game.businessManager.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied))
             );
 
             requestAnimationFrame(update);
@@ -94,9 +95,9 @@ const Game = () => {
     }, []);
 
     const handleManagerUpgrade = (businessIndex: number, upgradeIndex: number) => {
-        game.buyManagerUpgrade(businessIndex, upgradeIndex);
-        setBusinesses([...game.businesses]); // Update UI state
-        setCurrency(game.currency); // Reflect new currency after the purchase
+        game.businessManager.buyManagerUpgrade(businessIndex, upgradeIndex);
+        setBusinesses([...game.businessManager.businesses]); // Update UI state
+        setCurrency(game.businessManager.currency); // Reflect new currency after the purchase
     };
 
     const getNextUnlockMilestone = (business: typeof businesses[number]): number => {
@@ -132,20 +133,20 @@ const Game = () => {
     };
 
     const handleBuyBusiness = (index: number) => {
-        game.buyBusiness(index, purchaseAmount);
-        setCurrency(game.currency);
-        setBusinesses([...game.businesses]);
+        game.businessManager.buyBusiness(index, purchaseAmount);
+        setCurrency(game.businessManager.currency);
+        setBusinesses([...game.businessManager.businesses]);
     };
 
     const handleStartProduction = (index: number) => {
-        game.startProduction(index);
-        setBusinesses([...game.businesses]);
+        game.businessManager.startProduction(index);
+        setBusinesses([...game.businessManager.businesses]);
     };
 
     const handleBuyManager = (index: number) => {
-        game.buyManager(index);
-        setCurrency(game.currency);
-        setBusinesses([...game.businesses]);
+        game.businessManager.buyManager(index);
+        setCurrency(game.businessManager.currency);
+        setBusinesses([...game.businessManager.businesses]);
     };
 
     const handleClickManager = (index: number) => {
@@ -160,8 +161,8 @@ const Game = () => {
 
         if (nonProducingBusinesses.length > 0) {
             const index = businesses.indexOf(nonProducingBusinesses[0]);
-            game.startProduction(index);
-            setBusinesses([...game.businesses]);
+            game.businessManager.startProduction(index);
+            setBusinesses([...game.businessManager.businesses]);
         } else {
             showNotification("All businesses are producing!");
         }
@@ -194,27 +195,36 @@ const Game = () => {
                     )}
 
                     {activePanel === "Settings" && (
-                        <div className="h-[80vh] flex flex-col items-center mt-16">
-                            <button
-                                onClick={() => game.resetGame()} // Ensures the method is executed on the correct instance
-                                className="bg-red-500 text-white px-4 py-2 rounded mb-6 hover:bg-red-600"
-                            >
-                                Reset Game
-                            </button>
-
+                        <div className="h-[75vh] overflow-y-auto overflow-x-hidden px-3 pb-8">
+                            <div className="text-center mt-4">
+                                <p className="text-black text-2xl font-bold">Total Playtime:</p>
+                                <p className="text-black text-xl">{formatPlaytime(game.getTotalPlaytime())}</p>
+                            </div>
                             {/* Credits Section */}
                             <div className="text-center mt-4">
-                                <p className="text-black text-6xl">Credits:</p>
-                                <p className="text-black text-xl">Development: Chandler</p>
-                                <p className="text-black text-xl">Playtesting: Victor</p>
+                                <p className="text-black text-5xl">Credits:</p>
+                                <p className="text-black text-2xl font-bold">Development:</p>
+                                <p className="text-black text-xl">Chandler</p>
+                                <p className="text-black text-2xl font-bold">Playtesting:</p>
+                                <p className="text-black text-xl mb-3">Victor, Despot, Danielle</p>
                             </div>
+                            {/* Button Section */}
+                            <div className="flex justify-center mt-6">
+                                <button
+                                    onClick={() => game.resetGame()}
+                                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                                >
+                                    Reset Game
+                                </button>
+                            </div>
+
                         </div>
 
                     )}
                 </ModalPanel>
             )}
 
-            <div className="w-full max-w-lg space-y-4 px-2 pt-6 pb-16 mx-auto">
+            <div className="w-full max-w-lg space-y-8 px-2 pt-6 pb-16 mx-auto">
                 {businesses.map((biz, index) => (
                     <BusinessCard
                         key={index}

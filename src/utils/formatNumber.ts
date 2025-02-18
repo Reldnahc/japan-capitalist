@@ -3,20 +3,6 @@
 export function formatBigIntWithSuffix(value: bigint): string {
     // List of suffixes for large number ranges
     const suffixes = [
-        { value: 10n ** 303n, suffix: "Centillion" },
-        { value: 10n ** 300n, suffix: "Novemnonagintillion" },
-        { value: 10n ** 297n, suffix: "Octononagintillion" },
-        { value: 10n ** 288n, suffix: "Nonagintillion" },
-        { value: 10n ** 273n, suffix: "Novemoctogintillion" },
-        { value: 10n ** 252n, suffix: "Quinvigintillion" },
-        { value: 10n ** 231n, suffix: "Quattuorvigintillion" },
-        { value: 10n ** 210n, suffix: "Vigintillion" },
-        { value: 10n ** 189n, suffix: "Duovigintillion" },
-        { value: 10n ** 168n, suffix: "Unvigintillion" },
-        { value: 10n ** 153n, suffix: "Sexdecillion" },
-        { value: 10n ** 132n, suffix: "Quindecillion" },
-        { value: 10n ** 111n, suffix: "Duodecillion" },
-        { value: 10n ** 90n,  suffix: "Decillion" },
         { value: 10n ** 63n,  suffix: "Vigintillion" },
         { value: 10n ** 60n,  suffix: "Novemdecillion" },
         { value: 10n ** 57n,  suffix: "Octodecillion" },

@@ -1,14 +1,21 @@
-interface Upgrade {
+export interface Upgrade {
     name: string;
     cost: bigint;
     effect: string;
     applied: boolean;
 }
 
-export interface Manager {
+export class Manager {
     name: string; // The manager's name
     cost: bigint; // Cost to hire the manager
-    hired: boolean; // Whether the manager is currently hired
-    bio: string;  //Lore
+    hired= false // Whether the manager is currently hired
     upgrades: Upgrade[]
+    bio: string;  //Lore
+
+    constructor(name: string, cost: bigint, upgrades: Upgrade[], bio: string) {
+        this.name = name;
+        this.cost = cost;
+        this.upgrades = upgrades;
+        this.bio = bio;
+    }
 }
