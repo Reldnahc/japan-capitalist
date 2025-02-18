@@ -77,7 +77,7 @@ export const businesses: Business[] = [
             bio: `A creative mind in the gaming industry, she’s passionate about bringing virtual worlds to life. Whether she’s coding, designing characters, or brainstorming storylines, her innovative ideas and teamwork skills shine. She’s driven by a love for gaming and a desire to create experiences that players will never forget.`
         }
     ),
-    new Business("TV", BigInt(1620000000), BigInt(15876000), 1.15, 3600000, tvUnlocks, 0,
+    new Business("TV", BigInt(1620000000), BigInt(15876000), 1.13, 3600000, tvUnlocks, 0,
         {
             name: "Haruka Fujimoto",
             cost: BigInt(25000000000),

@@ -53,8 +53,29 @@ const Game = () => {
             game.businessManager.businesses.forEach((biz, bizIdx) => {
                 biz.unlocks.forEach((unlock, unlockIdx) => {
                     if (!appliedUnlocks[bizIdx][unlockIdx] && unlock.applied && !unlock.notified) {
-                        // Trigger a notification for the new unlock
-                        showNotification(`Unlocked: ${unlock.effect} for ${biz.name}!`);
+                        // Parse the effect to determine the target and effect description
+                        const effectParts = unlock.effect.split(";");
+                        const effectDescription = effectParts[0].trim(); // E.g., "Revenue ×2" or "Speed +300%"
+                        const target = effectParts[1]?.trim(); // E.g., "takoyaki", "ALL", or undefined
+
+                        let message;
+
+                        if (!target) {
+                            // If no target is specified, default to the current business
+                            message = `Unlocked: ${effectDescription} for ${biz.name}!`;
+                        } else if (target === "ALL") {
+                            // If the target is ALL businesses
+                            message = `Unlocked: ${effectDescription} for ALL businesses!`;
+                        } else {
+                            // If specific businesses are targeted
+                            const specificBusinesses = target.split(",").map((b) => b.trim()).join(", ");
+                            message = `Unlocked: ${effectDescription} for ${specificBusinesses}!`;
+                        }
+
+                        // Trigger a single notification
+                        showNotification(message);
+
+                        // Set the notification flag for this unlock
                         unlock.notified = true;
                     }
                 });

@@ -31,7 +31,7 @@ const UnlocksPanel: React.FC<UnlocksPanelProps> = ({ businesses }) => {
                             {business.unlocks.map((unlock, unlockIdx) => (
                                 <div
                                     key={unlockIdx}
-                                    title={unlock.effect} // Tooltip showing unlock effect
+                                    title={unlock.effect.replace(";"," for")} // Tooltip showing unlock effect
                                     className={`relative w-10 h-10 flex flex-col items-center justify-center rounded shadow-sm focus:outline-none p-2 ${
                                         unlock.applied ? "bg-green-500" : "bg-gray-300 opacity-50"
                                     }`}
