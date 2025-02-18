@@ -89,7 +89,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                         : "opacity-50 cursor-not-allowed"
                 }`}
                 style={{
-                    backgroundImage: `url(/japan-capitalist/images/icons/${business.name.toLowerCase()}.webp)`,
+                    backgroundImage: `url(/japan-capitalist/images/businesses/${business.name.toLowerCase()}/icon.webp)`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
                 }}

@@ -1,4 +1,4 @@
-import {Manager, Upgrade} from "./manager.types.ts";
+import {Manager} from "./manager.types.ts";
 
 export interface Unlock {
     milestone: number;          // The amount at which the milestone unlocks
@@ -33,12 +33,7 @@ export class Business {
         productionTime: number,
         unlocks: Unlock[],
         quantity: number, // Added as a required parameter
-        manager: {
-            name: string;
-            cost: bigint;
-            upgrades: Upgrade[];
-            bio: string;
-        }
+        manager: Manager
     ) {
         this.name = name;
         this.cost = cost;
@@ -53,6 +48,7 @@ export class Business {
 
         this.manager = new Manager(
             manager.name,
+            manager.kanji,
             manager.cost,
             manager.upgrades,
             manager.bio

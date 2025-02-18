@@ -19,7 +19,6 @@ export class IdleGame {
             this.businessManager = new BusinessManager(savedState.businesses, savedState.currency, savedState.unlocks);
             // Process offline progression
             this.businessManager.businesses.forEach((business, index) => {
-                console.log(business);
                 if (business.quantity > 0 && business.isProducing) {
                     const remainingTime = business.endTime - now;
                     if (remainingTime > 0) {

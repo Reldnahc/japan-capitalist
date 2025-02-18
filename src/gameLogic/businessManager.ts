@@ -139,7 +139,6 @@ export class BusinessManager {
     // Start production for a business
     startProduction(index: number) {
         const business = this.businesses[index];
-        console.log(business);
         if (business.quantity > 0 && !business.isProducing) {
             if (business.productionTime <= SPEED_THRESHOLD && business.manager?.hired) {
                 this.pollRevenue(index);
@@ -234,6 +233,12 @@ export class BusinessManager {
                 business.revenue *= BigInt(Math.floor(multiplier));
                 console.log(`[Effect Applied] ${business.name}: Revenue ×${multiplier}`);
             }
+
+            if (business.manager?.hired && business.productionTime <= SPEED_THRESHOLD) {
+                const index = this.businesses.findIndex(b => b === business);
+                this.stopRevenuePolling(index); // Stop old polling
+                this.pollRevenue(index); // Start new polling with updated values
+            }
         }
 
 
@@ -242,7 +247,6 @@ export class BusinessManager {
             const oldProductionTime = business.productionTime; // Store the old production time
             const newProductionTime = Math.floor(oldProductionTime / (1 + percentage / 100));
 
-            console.log(newProductionTime);
             // If the business is currently producing, recalculate the current progress
             if (business.isProducing) {
                 const now = Date.now();

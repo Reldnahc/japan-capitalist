@@ -21,8 +21,8 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
             {/* Business Selection Panel */}
             {!selectedBusiness && (
                 <div className="grid grid-cols-2 gap-3 w-full">
-                    {businesses.map((business) => (
-                        <div className="shadow">
+                    {businesses.map((business, index) => (
+                        <div key={index} className="shadow">
                             <h3 className="text-lg font-bold text-center z-20 ">
                                 {business.name}
                             </h3>

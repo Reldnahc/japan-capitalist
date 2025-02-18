@@ -44,14 +44,13 @@ export const takoyakiUnlocks: Unlock[] = [
     { milestone: 1900, effect: "Revenue ×2", applied: false },
     { milestone: 1950, effect: "Revenue ×2", applied: false },
     { milestone: 2000, effect: "Revenue ×2", applied: false },
-
 ];
 
 export const ramenUnlocks: Unlock[] = [
     { milestone: 5, effect: "Revenue ×2; takoyaki", applied: false },
     { milestone: 10, effect: "Revenue ×2", applied: false },
     { milestone: 25, effect: "Speed +200%", applied: false },
-    { milestone: 75, effect: "Revenue ×16", applied: false },
+    { milestone: 75, effect: "Revenue ×14", applied: false },
     { milestone: 150, effect: "Speed +100%", applied: false },
     { milestone: 300, effect: "Revenue ×15", applied: false },
     { milestone: 450, effect: "Revenue ×15", applied: false },
@@ -65,9 +64,9 @@ export const ramenUnlocks: Unlock[] = [
 
 export const burgerUnlocks: Unlock[] = [
     { milestone: 10, effect: "Revenue ×2", applied: false },
-    { milestone: 25, effect: "Speed +50%", applied: false },
+    { milestone: 25, effect: "Speed +100%", applied: false },
     { milestone: 50, effect: "Revenue ×3", applied: false },
-    { milestone: 75, effect: "Speed +100%", applied: false },
+    { milestone: 75, effect: "Revenue x6", applied: false },
     { milestone: 100, effect: "Revenue ×2", applied: false },
     { milestone: 150, effect: "Revenue ×2", applied: false },
     { milestone: 200, effect: "Speed +100%", applied: false },
@@ -113,7 +112,7 @@ export const sushiUnlocks: Unlock[] = [
     { milestone: 10, effect: "Revenue ×2", applied: false },
     { milestone: 25, effect: "Speed +100%", applied: false },
     { milestone: 50, effect: "Revenue ×3", applied: false },
-    { milestone: 75, effect: "Revenue ×3", applied: false },
+    { milestone: 75, effect: "Revenue ×4", applied: false },
     { milestone: 100, effect: "Revenue ×2", applied: false },
     { milestone: 125, effect: "Revenue ×2", applied: false },
     { milestone: 150, effect: "Revenue ×2", applied: false },
@@ -159,13 +158,13 @@ export const sushiUnlocks: Unlock[] = [
 export const convenienceUnlocks: Unlock[] = [
     { milestone: 7, effect: "Revenue ×2", applied: false },
     { milestone: 11, effect: "Revenue ×2", applied: false },
-    { milestone: 22, effect: "Speed +25%", applied: false },
+    { milestone: 22, effect: "Speed +50%", applied: false },
     { milestone: 33, effect: "Revenue ×2", applied: false },
-    { milestone: 44, effect: "Speed +25%", applied: false },
+    { milestone: 44, effect: "Speed +50%", applied: false },
     { milestone: 55, effect: "Revenue ×2", applied: false },
-    { milestone: 66, effect: "Speed +25%", applied: false },
+    { milestone: 66, effect: "Speed +50%", applied: false },
     { milestone: 77, effect: "Revenue ×2", applied: false },
-    { milestone: 88, effect: "Speed +25%", applied: false },
+    { milestone: 88, effect: "Speed +50%", applied: false },
     { milestone: 99, effect: "Revenue ×2", applied: false },
     { milestone: 111, effect: "Revenue ×11", applied: false },
     { milestone: 222, effect: "Revenue ×2", applied: false },
@@ -181,8 +180,8 @@ export const convenienceUnlocks: Unlock[] = [
 ];
 
 export const pachinkoUnlocks: Unlock[] = [
-    { milestone: 10, effect: "Revenue ×2", applied: false },
-    { milestone: 25, effect: "Speed +50%", applied: false },
+    { milestone: 10, effect: "Revenue ×3", applied: false },
+    { milestone: 25, effect: "Speed +100%", applied: false },
     { milestone: 50, effect: "Revenue ×3", applied: false },
     { milestone: 100, effect: "Speed +300%", applied: false },
     { milestone: 200, effect: "Revenue ×2", applied: false },
@@ -209,8 +208,8 @@ export const pachinkoUnlocks: Unlock[] = [
 export const videoGamesUnlocks: Unlock[] = [
     { milestone: 25, effect: "Speed +100%", applied: false },
     { milestone: 50, effect: "Revenue ×3", applied: false },
-    { milestone: 100, effect: "Revenue ×11", applied: false },
-    { milestone: 250, effect: "Revenue ×11", applied: false },
+    { milestone: 100, effect: "Revenue ×7", applied: false },
+    { milestone: 250, effect: "Revenue ×5", applied: false },
     { milestone: 500, effect: "Revenue ×11", applied: false },
     { milestone: 750, effect: "Revenue ×11", applied: false },
     { milestone: 1000, effect: "Revenue ×11", applied: false },
@@ -315,10 +314,10 @@ export const tvUnlocks: Unlock[] = [
 ];
 
 export const carsUnlocks: Unlock[] = [
-    { milestone: 5, effect: "Speed +200%", applied: false },
-    { milestone: 25, effect: "Speed +200%", applied: false },
-    { milestone: 50, effect: "Revenue ×3", applied: false },
-    { milestone: 100, effect: "Revenue ×2", applied: false },
+    { milestone: 5, effect: "Speed +100%", applied: false },
+    { milestone: 25, effect: "Speed +100%", applied: false },
+    { milestone: 50, effect: "Revenue ×2", applied: false },
+    { milestone: 100, effect: "Revenue ×4", applied: false },
     { milestone: 200, effect: "Revenue ×2", applied: false },
     { milestone: 300, effect: "Revenue ×2", applied: false },
     { milestone: 400, effect: "Revenue ×2", applied: false },
@@ -338,4 +337,18 @@ export const carsUnlocks: Unlock[] = [
     { milestone: 1800, effect: "Revenue ×2", applied: false },
     { milestone: 1900, effect: "Revenue ×2", applied: false },
     { milestone: 2000, effect: "Revenue ×2", applied: false },
+];
+
+export const idolsUnlocks: Unlock[] = [
+    { milestone: 3, effect: "Speed +200%", applied: false },
+    { milestone: 7, effect: "Speed +100%", applied: false },
+    { milestone: 10, effect: "Revenue ×3; ALL", applied: false },
+    { milestone: 20, effect: "Revenue ×3; ALL", applied: false },
+    { milestone: 30, effect: "Revenue ×3; ALL", applied: false },
+    { milestone: 50, effect: "Revenue ×3; ALL", applied: false },
+    { milestone: 60, effect: "Revenue ×3; ALL", applied: false },
+    { milestone: 70, effect: "Revenue ×3; ALL", applied: false },
+    { milestone: 80, effect: "Revenue ×3; ALL", applied: false },
+    { milestone: 90, effect: "Revenue ×3; ALL", applied: false },
+    { milestone: 100, effect: "Revenue ×10; ALL", applied: false },
 ];
