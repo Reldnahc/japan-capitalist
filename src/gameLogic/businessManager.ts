@@ -1,7 +1,6 @@
 import { Business } from './types/business.types';
 import {GlobalUnlock} from "./types/unlocks.types.ts";
-
-export const SPEED_THRESHOLD = 100;
+import {SPEED_THRESHOLD} from "./config.ts";
 
 export class BusinessManager {
     businesses: Business[];
@@ -140,6 +139,7 @@ export class BusinessManager {
     // Start production for a business
     startProduction(index: number) {
         const business = this.businesses[index];
+        console.log(business);
         if (business.quantity > 0 && !business.isProducing) {
             if (business.productionTime <= SPEED_THRESHOLD && business.manager?.hired) {
                 this.pollRevenue(index);
@@ -205,8 +205,6 @@ export class BusinessManager {
             // Apply the upgrade effect
             this.applyEffect(business, upgrade.effect);
 
-            // Save the game state
-            //this.saveGameState();
         } else {
             console.warn("Not enough currency or upgrade already applied.");
         }
@@ -214,9 +212,30 @@ export class BusinessManager {
 
     applyEffect(business: Business, effect: string) {
         if (effect.includes("Revenue ×")) {
-            const multiplier = parseFloat(effect.replace("Revenue ×", ""));
-            business.revenue *= BigInt(Math.floor(multiplier));
+            const [revenueEffect, target] = effect.split(";");
+            const multiplier = parseFloat(revenueEffect.replace("Revenue ×", "").trim());
+
+            if (target && target.trim() === "ALL") {
+                // Apply to all businesses
+                this.businesses.forEach(b => {
+                    b.revenue *= BigInt(Math.floor(multiplier));
+                    console.log(`[Effect Applied] ${b.name}: Revenue ×${multiplier}`);
+                });
+            } else if (target){
+                // Apply to specific businesses (comma-separated identifiers)
+                const targets = target.split(",").map(t => t.trim());
+                this.businesses.forEach(b => {
+                    if (targets.includes(b.name.toLowerCase())) {
+                        b.revenue *= BigInt(Math.floor(multiplier));
+                        console.log(`[Effect Applied] ${b.name}: Revenue ×${multiplier}`);
+                    }
+                });
+            } else {
+                business.revenue *= BigInt(Math.floor(multiplier));
+                console.log(`[Effect Applied] ${business.name}: Revenue ×${multiplier}`);
+            }
         }
+
 
         if (effect.includes("Speed +")) {
             const percentage = parseFloat(effect.replace("Speed +", "").replace("%", ""));

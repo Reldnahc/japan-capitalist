@@ -2,7 +2,7 @@
 import React from 'react';
 import {businesses} from "../gameLogic/data/businesses.ts";
 import {formatBigIntWithSuffix} from "../utils/formatNumber.ts";
-import {SPEED_THRESHOLD} from "../gameLogic/idleGame.ts";
+import {SPEED_THRESHOLD} from "../gameLogic/config.ts";
 
 interface BusinessCardProps {
     business: typeof businesses[number];

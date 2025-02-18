@@ -2,8 +2,7 @@ import { Business } from './types/business.types';
 import { businesses as defaultBusinesses } from './data/businesses.ts';
 import JSONbig from 'json-bigint';
 import {BusinessManager} from "./businessManager.ts";
-
-export const SPEED_THRESHOLD = 100; // in milliseconds
+import {SPEED_THRESHOLD} from "./config.ts";
 
 export class IdleGame {
 
@@ -15,11 +14,50 @@ export class IdleGame {
     constructor() {
         const savedState = this.loadGameState();
         if (savedState) {
+            const now = Date.now();
             this.totalPlaytime = savedState.totalPlaytime || 0;
             this.businessManager = new BusinessManager(savedState.businesses, savedState.currency, savedState.unlocks);
-
+            // Process offline progression
+            this.businessManager.businesses.forEach((business, index) => {
+                console.log(business);
+                if (business.quantity > 0 && business.isProducing) {
+                    const remainingTime = business.endTime - now;
+                    if (remainingTime > 0) {
+                        // Resume production using the saved remaining time
+                        this.businessManager.resumeProduction(index, remainingTime);
+                    } else {
+                        // Production should have finished while offline
+                        // If a manager is active, calculate how many full cycles were missed
+                        if (business.manager?.hired) {
+                            if (business.productionTime <= SPEED_THRESHOLD) {
+                                const elapsedTime = now - business.startTime;
+                                const revenuePerSecond = Number(business.revenue * BigInt(business.quantity)) / (business.productionTime / 1000); // Revenue per second
+                                const totalOfflineRevenue = BigInt(Math.floor(revenuePerSecond * (elapsedTime / 1000)));
+                                this.businessManager.currency += totalOfflineRevenue; // Add offline revenue
+                            } else {
+                                // Regular businesses with longer production times
+                                const cyclesCompleted = Math.floor((now - business.startTime) / business.productionTime);
+                                if (cyclesCompleted > 0) {
+                                    this.businessManager.currency += BigInt(cyclesCompleted) * business.revenue * BigInt(business.quantity);
+                                }
+                            }
+                            // Start a new production cycle immediately
+                            business.isProducing = false;
+                            business.startTime = 0;
+                            business.endTime = 0;
+                            this.businessManager.startProduction(index);
+                        } else {
+                            // For manual production, simply mark production as finished
+                            this.businessManager.currency += business.revenue * BigInt(business.quantity);
+                            business.isProducing = false;
+                            business.startTime = 0;
+                            business.endTime = 0;
+                        }
+                    }
+                }
+            });
         } else {
-            this.businessManager = new BusinessManager(defaultBusinesses, BigInt(100000), []);
+            this.businessManager = new BusinessManager(defaultBusinesses, BigInt(0), []);
         }
         this.sessionStartTime = Date.now(); // Set session start time
         this.startSaveInterval();
@@ -62,7 +100,6 @@ export class IdleGame {
         const savedState = localStorage.getItem('idleGameState');
         if (savedState) {
             const state = JSONbig.parse(savedState);
-            const now = Date.now();
 
             state.currency = BigInt(state.currency);
 
@@ -83,53 +120,6 @@ export class IdleGame {
                     }
                     : null, // Handle the case where no manager is assigned
             }));
-
-            this.businessManager = new BusinessManager(state.businesses, state.currency, state.unlocks);
-
-            this.totalPlaytime = state.totalPlaytime || 0;
-
-            // Process offline progression
-            this.businessManager.businesses.forEach((business, index) => {
-                console.log(business);
-                if (business.quantity > 0 && business.isProducing) {
-                    const remainingTime = business.endTime - now;
-                    if (remainingTime > 0) {
-                        // Resume production using the saved remaining time
-                        this.businessManager.resumeProduction(index, remainingTime);
-                    } else {
-                        // Production should have finished while offline
-                        // If a manager is active, calculate how many full cycles were missed
-                        if (business.manager?.hired) {
-                            if (business.productionTime <= SPEED_THRESHOLD) {
-                                const elapsedTime = now - business.startTime;
-                                const revenuePerSecond = Number(business.revenue * BigInt(business.quantity)) / (business.productionTime / 1000); // Revenue per second
-                                const totalOfflineRevenue = BigInt(Math.floor(revenuePerSecond * (elapsedTime / 1000)));
-                                state.currency += totalOfflineRevenue; // Add offline revenue
-                            } else {
-                                // Regular businesses with longer production times
-                                const cyclesCompleted = Math.floor((now - business.startTime) / business.productionTime);
-                                if (cyclesCompleted > 0) {
-                                    state.currency +=
-                                        BigInt(cyclesCompleted) * business.revenue * BigInt(business.quantity);
-                                }
-                            }
-                            // Start a new production cycle immediately
-                            business.isProducing = false;
-                            business.startTime = 0;
-                            business.endTime = 0;
-                            this.businessManager.startProduction(index);
-                        } else {
-                            // For manual production, simply mark production as finished
-                            state.currency += business.revenue * BigInt(business.quantity);
-                            business.isProducing = false;
-                            business.startTime = 0;
-                            business.endTime = 0;
-                        }
-                    }
-                } else if (business.manager) {
-                    this.businessManager.startProduction(index);
-                }
-            });
 
             return state;
         }
