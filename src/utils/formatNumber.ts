@@ -29,15 +29,21 @@ export function formatBigIntWithSuffix(value: bigint, decimals: number = 3): str
     // Loop through the suffixes to find the largest threshold
     for (const { value: threshold, suffix } of suffixes) {
         if (value >= threshold) {
-            // Format differently depending on whether the value is >= 1 million
-            const scaledValue = Number(value) / Number(threshold);
-            const formatted = scaledValue.toLocaleString(undefined, {
-                minimumFractionDigits: 0, // 3 decimals for 1 million+, 0 decimals otherwise
-                maximumFractionDigits: value >= 1_000_000n ? decimals : 0
-            });
-            return `${formatted} ${suffix}`.trim();
+            // Divide the bigint values using integer division
+            const wholePart = value / threshold;
+            const remainderPart = value % threshold;
+
+            // Format the decimal part manually (if required)
+            let decimalPart = "";
+            if (decimals > 0 && remainderPart > 0n) {
+                const scaledRemainder = (remainderPart * 10n ** BigInt(decimals)) / threshold;
+                decimalPart = `.${scaledRemainder.toString().padStart(decimals, "0")}`;
+            }
+
+            return `${wholePart}${decimalPart} ${suffix}`.trim();
         }
     }
+
 
     return value.toString(); // Fallback for small or negative values
 }

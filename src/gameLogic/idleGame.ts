@@ -34,8 +34,14 @@ export class IdleGame {
                         if (business.manager?.hired) {
                             if (business.productionTime <= SPEED_THRESHOLD) {
                                 const elapsedTime = now - business.startTime;
-                                const revenuePerSecond = Number(business.revenue * BigInt(business.quantity)) / (business.productionTime / 1000); // Revenue per second
-                                const totalOfflineRevenue = BigInt(Math.floor(revenuePerSecond * (elapsedTime / 1000)));
+
+                                const SCALE = 1000n; // Scale factor to handle fractions as integers
+
+                                const totalRevenue = business.revenue * BigInt(business.quantity); // Total revenue as BigInt
+                                const productionTimeMillis = BigInt(business.productionTime); // Production time in milliseconds
+                                const elapsedTimeMillis = BigInt(elapsedTime); // Elapsed time in milliseconds
+                                const revenuePerSecond = (totalRevenue * SCALE) / productionTimeMillis; // Scaled revenue per second
+                                const totalOfflineRevenue = (revenuePerSecond * elapsedTimeMillis) / SCALE; // Scaled calculation for offline revenue
                                 this.businessManager.currency += totalOfflineRevenue; // Add offline revenue
                             } else {
                                 // Regular businesses with longer production times
