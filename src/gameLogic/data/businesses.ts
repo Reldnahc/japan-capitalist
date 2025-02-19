@@ -28,8 +28,8 @@ export const businesses: Business[] = [
     new Business("Sushi", BigInt(18000), BigInt(1470), 1.15, 11000, sushiUnlocks, 0, sushiManager),
     new Business("Convenience", BigInt(270000), BigInt(7600), 1.15, 18000, convenienceUnlocks, 0, convenienceManager),
     new Business("Pachinko", BigInt(4050000), BigInt(105840), 1.15, 30000, pachinkoUnlocks, 0, pachinkoManager),
-    new Business("Video Games", BigInt(81000000), BigInt(1058000), 1.15, 60000, videoGamesUnlocks, 0, videoGamesManager),
-    new Business("TV", BigInt(1620000000), BigInt(15876000), 1.13, 3600000, tvUnlocks, 0, tvManager),
-    new Business("Cars", BigInt(24300000000), BigInt(238140000), 1.15, 43200000, carsUnlocks, 0, carsManager),
-    new Business("Idols", BigInt(607500000000), BigInt(5239080000), 1.2, 86400000, idolsUnlocks, 0, idolsManager),
+    new Business("Video Games", BigInt(81000000), BigInt(2058000), 1.15, 60000, videoGamesUnlocks, 0, videoGamesManager),
+    new Business("TV", BigInt(1620000000), BigInt(258760000), 1.13, 3600000, tvUnlocks, 0, tvManager),
+    new Business("Cars", BigInt(24300000000), BigInt(1381400000), 1.15, 43200000, carsUnlocks, 0, carsManager),
+    new Business("Idols", BigInt(607500000000), BigInt(173900000000), 1.2, 86400000, idolsUnlocks, 0, idolsManager),
 ];

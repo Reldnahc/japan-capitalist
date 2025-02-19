@@ -130,12 +130,22 @@ export class IdleGame {
                     (b: Business) => b.name === defaultBusiness.name
                 );
 
+                const quantity = matchingSavedBusiness?.quantity || 0;
+
+                // Recalculate cost based on `baseCost`, `rate`, and `quantity`
+                const recalculatedCost = BigInt(
+                    Math.floor(
+                        Number(defaultBusiness.baseCost) * Math.pow(defaultBusiness.rate, quantity)
+                    )
+                );
+
                 // Merge default business state with saved state
                 return {
                     ...defaultBusiness,
                     endTime: matchingSavedBusiness?.endTime,
                     startTime: matchingSavedBusiness?.startTime,
                     isProducing: matchingSavedBusiness?.isProducing,
+                    cost: recalculatedCost,
                     quantity: matchingSavedBusiness?.quantity || 0,
                     manager: matchingSavedBusiness?.manager
                         ? new Manager(

@@ -63,10 +63,10 @@ export const ramenUnlocks: Unlock[] = [
 ];
 
 export const burgerUnlocks: Unlock[] = [
-    { milestone: 10, effect: "Revenue ×2", applied: false },
+    { milestone: 10, effect: "Revenue ×4", applied: false },
     { milestone: 25, effect: "Speed +100%", applied: false },
-    { milestone: 50, effect: "Revenue ×3", applied: false },
-    { milestone: 75, effect: "Revenue x6", applied: false },
+    { milestone: 50, effect: "Revenue ×6", applied: false },
+    { milestone: 75, effect: "Revenue x4", applied: false },
     { milestone: 100, effect: "Revenue ×2", applied: false },
     { milestone: 150, effect: "Revenue ×2", applied: false },
     { milestone: 200, effect: "Speed +100%", applied: false },
@@ -157,7 +157,7 @@ export const sushiUnlocks: Unlock[] = [
 
 export const convenienceUnlocks: Unlock[] = [
     { milestone: 7, effect: "Revenue ×2", applied: false },
-    { milestone: 11, effect: "Revenue ×2", applied: false },
+    { milestone: 11, effect: "Revenue ×5", applied: false },
     { milestone: 22, effect: "Speed +50%", applied: false },
     { milestone: 33, effect: "Revenue ×2", applied: false },
     { milestone: 44, effect: "Speed +50%", applied: false },
@@ -180,7 +180,7 @@ export const convenienceUnlocks: Unlock[] = [
 ];
 
 export const pachinkoUnlocks: Unlock[] = [
-    { milestone: 10, effect: "Revenue ×3", applied: false },
+    { milestone: 10, effect: "Revenue ×6", applied: false },
     { milestone: 25, effect: "Speed +100%", applied: false },
     { milestone: 50, effect: "Revenue ×3", applied: false },
     { milestone: 100, effect: "Speed +300%", applied: false },
@@ -345,6 +345,7 @@ export const idolsUnlocks: Unlock[] = [
     { milestone: 10, effect: "Revenue ×3; ALL", applied: false },
     { milestone: 20, effect: "Revenue ×3; ALL", applied: false },
     { milestone: 30, effect: "Revenue ×3; ALL", applied: false },
+    { milestone: 40, effect: "Revenue ×3; ALL", applied: false },
     { milestone: 50, effect: "Revenue ×3; ALL", applied: false },
     { milestone: 60, effect: "Revenue ×3; ALL", applied: false },
     { milestone: 70, effect: "Revenue ×3; ALL", applied: false },

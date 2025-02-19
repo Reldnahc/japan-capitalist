@@ -1,5 +1,5 @@
 export class AudioManager {
-    private static audioElements: Record<string, HTMLAudioElement> = {};
+    static audioElements: Record<string, HTMLAudioElement> = {};
     private static volume: number = 1; // Default volume (1 is 100%)
     private static isMuted: boolean = true;
 
@@ -7,7 +7,7 @@ export class AudioManager {
     static loadSounds(sounds: Record<string, string>): void {
         Object.keys(sounds).forEach((key) => {
             const audio = new Audio(sounds[key]);
-            audio.volume = this.volume;
+            audio.volume = this.isMuted ? 0 : this.volume;
             this.audioElements[key] = audio;
         });
     }
@@ -15,10 +15,21 @@ export class AudioManager {
     // Play a sound by key
     static play(soundKey: string): void {
         const sound = this.audioElements[soundKey];
-        if (sound && !this.isMuted) {
-            // Reset time and play
-            sound.currentTime = 0;
+        if (!sound) return;
+
+        if (!this.isMuted) {
+            //if (sound.paused) {
+                sound.currentTime = 0; // Only reset if the sound is paused
+           // }
             sound.play();
+        }
+    }
+
+    // Pause a sound by key
+    static pause(soundKey: string): void {
+        const sound = this.audioElements[soundKey];
+        if (sound) {
+            sound.pause();
         }
     }
 
@@ -26,13 +37,23 @@ export class AudioManager {
     static setVolume(newVolume: number): void {
         this.volume = newVolume;
         Object.values(this.audioElements).forEach((audio) => {
-            audio.volume = this.volume;
+            audio.volume = this.isMuted ? 0 : this.volume; // Update all audio elements with new volume
         });
     }
 
-    // Mute/Unmute all sounds
-    static toggleMute(): void {
-        this.isMuted = !this.isMuted;
+    // Mute or unmute explicitly
+    static mute(): void {
+        this.isMuted = true;
+        Object.values(this.audioElements).forEach((audio) => {
+            audio.volume = 0;
+        });
+    }
+
+    static unmute(): void {
+        this.isMuted = false;
+        Object.values(this.audioElements).forEach((audio) => {
+            audio.volume = this.volume;
+        });
     }
 
     // Check if muted

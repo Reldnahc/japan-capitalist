@@ -10,6 +10,10 @@ import {Business} from "../gameLogic/types/business.types.ts";
 import {formatPlaytime} from "../utils/formatTime.ts";
 import {AudioManager} from "../utils/audioManager.ts";
 import backgroundMusic from '../assets/sounds/background.mp3';
+import cashRegisterSound from '../assets/sounds/cash-register.mp3';
+import SettingsPanel from "./panels/SettingsPanel.tsx";
+import { motion, AnimatePresence } from "framer-motion";
+
 
 const game = new IdleGame();
 
@@ -34,7 +38,7 @@ const Game = () => {
 
     useEffect(() => {
         const timeout = setTimeout(() => {
-            setStableReadyBusinessesCount(readyBusinessesCount); // Update the stable count after 11ms
+            setStableReadyBusinessesCount(readyBusinessesCount); // Update the stable count after 50ms
         }, 50);
 
         return () => clearTimeout(timeout); // Clean up to prevent memory leaks
@@ -109,37 +113,67 @@ const Game = () => {
 
     // Load sounds on mount
     useEffect(() => {
+        // Centralize all sounds in AudioManager
         AudioManager.loadSounds({
             background: backgroundMusic,
+            cashRegister: cashRegisterSound,
         });
 
         // Play background music on loop
-        const background = new Audio(backgroundMusic);
-        background.loop = true;
-        background.volume = volume;
-        if (!isMuted) background.play();
+        AudioManager.audioElements['background'].loop = true;
+        if (!isMuted) {
+            AudioManager.play('background');
+        }
 
         return () => {
-            background.pause(); // Cleanup audio when the component unmounts
+            AudioManager.pause('background'); // Pause the background music when the component unmounts
         };
     }, [isMuted]);
+
 
     // Handle volume changes
     const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newVolume = parseFloat(event.target.value);
-        setVolume(newVolume);
-        AudioManager.setVolume(newVolume); // Update AudioManager's volume
+        setVolume(newVolume); // Update the React state
+        AudioManager.setVolume(newVolume); // Sync AudioManager's volume
     };
 
-    // Toggle mute sounds
+// Toggle mute sounds
     const toggleMute = () => {
-        setIsMuted(!isMuted);
-        AudioManager.toggleMute();
+        setIsMuted((prev) => !prev); // Update the React state
+        if (isMuted) {
+            AudioManager.unmute();
+        } else {
+            AudioManager.mute();
+        }
     };
+
 
     const closePanel = () => {
         setActivePanel(null);
     };
+
+    const panelVariants = {
+        hidden: {
+            opacity: 0,
+            y: 50, // Panel starts slightly below
+        },
+        visible: {
+            opacity: 1,
+            y: 0, // Animate to its original position
+            transition: {
+                duration: 0.3,
+            },
+        },
+        exit: {
+            opacity: 0,
+            y: 50, // Exit by fading and moving down
+            transition: {
+                duration: 0.2,
+            },
+        },
+    };
+
 
     const showNotification = (message: string) => {
         setNotification(message);
@@ -189,6 +223,7 @@ const Game = () => {
 
     const handleBuyBusiness = (index: number, amount: string = purchaseAmount) => {
         game.businessManager.buyBusiness(index, amount);
+        AudioManager.play('cashRegister');
         setCurrency(game.businessManager.currency);
         setBusinesses([...game.businessManager.businesses]);
     };
@@ -236,81 +271,60 @@ const Game = () => {
                 <Notification message={notification} onClose={closeNotification}/>
             )}
             {/* Conditional Panel UI */}
-            {activePanel && (
-                <ModalPanel title={activePanel === "Managers" && selectedBusiness
-                    ? `Managers - ${selectedBusiness.name}`
-                    : activePanel}
-                            onClose={closePanel}
-                            background={selectedBusiness?.manager?.color}
-                >
-                    {activePanel === "Unlocks" && (
-                        <UnlocksPanel businesses={businesses}/>
-                    )}
+            <AnimatePresence>
+                {activePanel && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                        {/* Static Background (No animation applied here) */}
+                        <motion.div
+                            key="modal-panel"
+                            initial="hidden" // Panel starts in the hidden state
+                            animate="visible" // On mount, animate to the visible state
+                            exit="exit" // On unmount, animate to the exit state
+                            variants={panelVariants} // Apply panel-specific animation variants
+                            className=" p-6 rounded-lg shadow-lg w-full max-w-xl"
+                        >
+                            <ModalPanel
+                                title={
+                                    activePanel === "Managers" && selectedBusiness
+                                        ? `Managers - ${selectedBusiness.name}`
+                                        : activePanel
+                                }
+                                onClose={closePanel}
+                            >
+                                {activePanel === "Unlocks" && (
+                                    <UnlocksPanel businesses={businesses} />
+                                )}
 
-                    {activePanel === "Managers" && (
-                        <ManagerPanel businesses={businesses}
-                                      selectedBusiness={selectedBusiness}
-                                      setSelectedBusiness={setSelectedBusiness}
-                                      onHireManager={handleBuyManager}
-                                      currency={currency}
-                                      onManagerUpgrade={handleManagerUpgrade}
-                        />
-                    )}
+                                {activePanel === "Managers" && (
+                                    <ManagerPanel
+                                        businesses={businesses}
+                                        selectedBusiness={selectedBusiness}
+                                        setSelectedBusiness={setSelectedBusiness}
+                                        onHireManager={handleBuyManager}
+                                        currency={currency}
+                                        onManagerUpgrade={handleManagerUpgrade}
+                                    />
+                                )}
 
-                    {activePanel === "Settings" && (
-                        <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8">
-                            <div className="text-center mt-4">
-                                <p className="text-black text-2xl font-bold">Total Playtime:</p>
-                                <p className="text-black text-xl">{formatPlaytime(game.getTotalPlaytime())}</p>
-                            </div>
-                            {/* Mute Toggle */}
-                            <div className="flex items-center mt-4">
-                                <label className="mr-3 text-sm">Mute:</label>
-                                <button
-                                    onClick={toggleMute}
-                                    className={`px-4 py-2 rounded bg-${isMuted ? 'red' : 'green'}-500 text-white`}
-                                >
-                                    {isMuted ? 'Unmute' : 'Mute'}
-                                </button>
-                            </div>
-                            {/* Volume Slider */}
-                            <div className="mt-4">
-                                <label className="block text-sm">Volume:</label>
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="1"
-                                    step="0.1"
-                                    value={volume}
-                                    onChange={handleVolumeChange}
-                                    className="w-full mt-2"
-                                />
-                            </div>
-                    {/* Credits Section */}
-                            <div className="text-center mt-4">
-                                <p className="text-black text-5xl">Credits:</p>
-                                <p className="text-black text-2xl font-bold">Development:</p>
-                                <p className="text-black text-xl">Chandler</p>
-                                <p className="text-black text-2xl font-bold">Playtesting:</p>
-                                <p className="text-black text-xl mb-3">Victor, Despot, Danielle, Logan</p>
-                            </div>
-                            {/* Button Section */}
-                            <div className="flex justify-center mt-6">
-                                <button
-                                    onClick={() => game.resetGame()}
-                                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                                >
-                                    Reset Game
-                                </button>
-                            </div>
+                                {activePanel === "Settings" && (
+                                    <SettingsPanel
+                                        isMuted={isMuted}
+                                        volume={volume}
+                                        formatPlaytime={formatPlaytime}
+                                        totalPlaytime={game.getTotalPlaytime()}
+                                        onToggleMute={toggleMute}
+                                        onVolumeChange={handleVolumeChange}
+                                        onResetGame={() => game.resetGame()}
+                                    />
+                                )}
+                            </ModalPanel>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
-                        </div>
 
-                    )}
-                </ModalPanel>
-            )}
-
-            <div className="w-full max-w-lg space-y-6 px-2 pt-6 pb-32 mx-auto">
+            <div className="w-full max-w-lg space-y-4 px-2 pt-6 pb-32 mx-auto">
                 {businesses.map((biz, index) => (
                     <BusinessCard
                         key={index}

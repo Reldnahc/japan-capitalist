@@ -146,7 +146,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                             <button
                                 onClick={onBuyBusiness}
                                 disabled={isButtonDisabled}
-                                className={`px-2 py-1 rounded md:text-sm ${
+                                className={`px-2 py-1 rounded md:text-base ${
                                     isButtonDisabled
                                         ? "bg-gray-400 cursor-not-allowed"
                                         : "bg-green-500 hover:bg-green-600 text-white"
