@@ -51,7 +51,8 @@ export class Business {
             manager.kanji,
             manager.cost,
             manager.upgrades,
-            manager.bio
+            manager.bio,
+            manager.color
         );
     }
 }

@@ -4,9 +4,10 @@ interface ModalPanelProps {
     title: string; // Title of the panel
     onClose: () => void; // Function to close the panel
     children: React.ReactNode; // Content to render inside the panel
+    background: string | undefined;
 }
 
-const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => {
+const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children, background }) => {
     return (
         <>
             {/* Dimmed Background */}
@@ -17,7 +18,11 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
 
             {/* Panel Content */}
             <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-                <div className="bg-gray-300 rounded-lg w-full max-w-lg py-6 shadow-xl pointer-events-auto relative">
+                <div className="bg-gray-300 rounded-lg w-full max-w-lg py-6 shadow-xl pointer-events-auto relative"
+                     style={{
+                         backgroundColor: background ? background : "#d1d5db"
+                     }}
+                >
                     {/* Close Button */}
                     <button
                         onClick={onClose}

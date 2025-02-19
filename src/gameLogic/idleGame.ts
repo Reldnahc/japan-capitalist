@@ -3,6 +3,7 @@ import { businesses as defaultBusinesses } from './data/businesses.ts';
 import JSONbig from 'json-bigint';
 import {BusinessManager} from "./businessManager.ts";
 import {SPEED_THRESHOLD} from "./config.ts";
+import {Manager, Upgrade} from "./types/manager.types.ts";
 
 export class IdleGame {
 
@@ -14,9 +15,11 @@ export class IdleGame {
     constructor() {
         const savedState = this.loadGameState();
         if (savedState) {
+            console.log(savedState);
             const now = Date.now();
             this.totalPlaytime = savedState.totalPlaytime || 0;
             this.businessManager = new BusinessManager(savedState.businesses, savedState.currency, savedState.unlocks);
+            this.businessManager.checkAllUnlocksAndUpgrades();
             // Process offline progression
             this.businessManager.businesses.forEach((business, index) => {
                 if (business.quantity > 0 && business.isProducing) {
@@ -66,7 +69,7 @@ export class IdleGame {
         if (this.saveInterval === null) {
             this.saveInterval = setInterval(() => {
                 this.saveGameState();
-            }, 3000) as unknown as number; // Save every 3 seconds
+            }, 5000) as unknown as number; // Save every 3 seconds
         }
     }
 
@@ -78,18 +81,34 @@ export class IdleGame {
         }
     }
 
-    // Save game state to localStorage
     saveGameState() {
         const currentSessionPlaytime = Date.now() - this.sessionStartTime;
         this.totalPlaytime += currentSessionPlaytime;
 
+        // Reduce businesses to only the needed data for saving
+        const simplifiedBusinesses = this.businessManager.businesses.map((business) => ({
+            name: business.name,
+            quantity: business.quantity,
+            endTime: business.endTime,
+            startTime: business.startTime,
+            isProducing: business.isProducing,
+            manager: business.manager
+                ? {
+                    hired: business.manager.hired,
+                    upgrades: business.manager.upgrades.map((upgrade) => ({
+                        unlocked: upgrade.unlocked,
+                    })),
+                }
+                : null, // Handle cases where there is no manager
+        }));
+
         const state = {
             currency: this.businessManager.currency,
-            businesses: this.businessManager.businesses,
-            unlocks: this.businessManager.unlocks,
+            businesses: simplifiedBusinesses, // Save only the simplified form of businesses
             totalPlaytime: this.totalPlaytime, // Add session playtime to total
             lastSaved: Date.now(), // Save the exact time when the game state is saved
         };
+
         localStorage.setItem('idleGameState', JSONbig.stringify(state));
         this.sessionStartTime = Date.now();
     }
@@ -100,27 +119,60 @@ export class IdleGame {
         if (savedState) {
             const state = JSONbig.parse(savedState);
 
-            state.currency = BigInt(state.currency);
+            const savedCurrency = BigInt(state.currency || 0);
+            const savedTotalPlayTime = state.totalPlaytime || 0;
 
-            state.businesses = state.businesses.map((business: Business) => ({
-                ...business,
-                cost: BigInt(business.cost),
-                baseCost: BigInt(business.baseCost),
-                revenue: BigInt(business.revenue),
-                baseRevenue: BigInt(business.baseRevenue),
-                manager: business.manager
-                    ? {
-                        ...business.manager,
-                        cost: BigInt(business.manager.cost), // Convert manager cost to BigInt
-                        upgrades: business.manager.upgrades.map((upgrade) => ({
-                            ...upgrade,
-                            cost: BigInt(upgrade.cost), // Convert upgrades' cost to BigInt
-                        })),
-                    }
-                    : null, // Handle the case where no manager is assigned
-            }));
+            const savedBusinesses = state.businesses || [];
 
-            return state;
+            const recalculatedBusinesses: Business[] = defaultBusinesses.map((defaultBusiness) => {
+                // Find corresponding business in the saved state (if it exists)
+                const matchingSavedBusiness = savedBusinesses.find(
+                    (b: Business) => b.name === defaultBusiness.name
+                );
+
+                // Merge default business state with saved state
+                return {
+                    ...defaultBusiness,
+                    endTime: matchingSavedBusiness?.endTime,
+                    startTime: matchingSavedBusiness?.startTime,
+                    isProducing: matchingSavedBusiness?.isProducing,
+                    quantity: matchingSavedBusiness?.quantity || 0,
+                    manager: matchingSavedBusiness?.manager
+                        ? new Manager(
+                            matchingSavedBusiness.manager.name || defaultBusiness.manager?.name || "",
+                            matchingSavedBusiness.manager.kanji || defaultBusiness.manager?.kanji || "",
+                            BigInt(matchingSavedBusiness.manager.cost || defaultBusiness.manager?.cost || 0),
+                            matchingSavedBusiness.manager.upgrades
+                                ? matchingSavedBusiness.manager.upgrades.map((savedUpgrade: Upgrade, index: number) => ({
+                                    ...defaultBusiness.manager?.upgrades?.[index],
+                                    unlocked: savedUpgrade.unlocked || false,
+                                }))
+                                : defaultBusiness.manager?.upgrades || [],
+                            matchingSavedBusiness.manager.bio || defaultBusiness.manager?.bio || "",
+                            matchingSavedBusiness.manager.color || defaultBusiness.manager?.color || "#333"
+                        )
+                        : defaultBusiness.manager,
+                };
+
+            });
+
+            recalculatedBusinesses.forEach((business) => {
+                const matchingSavedBusiness = savedBusinesses.find(
+                    (b: Business) => b.name === business.name
+                );
+
+                // If the manager is hired in the saved data, ensure it's marked as hired
+                if (matchingSavedBusiness?.manager?.hired && business.manager) {
+                    business.manager.hired = true;
+                }
+            });
+
+            return {
+                currency: savedCurrency,
+                businesses: recalculatedBusinesses,
+                unlocks: [], // Assuming unlocks should always start fresh or be recalculated
+                totalPlaytime: savedTotalPlayTime,
+            };
         }
         return null;
     }

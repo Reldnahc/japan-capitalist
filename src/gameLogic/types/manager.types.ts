@@ -2,7 +2,7 @@ export interface Upgrade {
     name: string;
     cost: bigint;
     effect: string;
-    applied: boolean;
+    unlocked: boolean;
 }
 
 export class Manager {
@@ -11,13 +11,15 @@ export class Manager {
     cost: bigint; // Cost to hire the manager
     hired= false // Whether the manager is currently hired
     upgrades: Upgrade[]
+    color: string;
     bio: string;  //Lore
 
-    constructor(name: string, kanji: string, cost: bigint, upgrades: Upgrade[], bio: string) {
+    constructor(name: string, kanji: string, cost: bigint, upgrades: Upgrade[], bio: string, color: string = "#333") {
         this.name = name;
         this.kanji = kanji;
         this.cost = cost;
         this.upgrades = upgrades;
+        this.color = color;
         this.bio = bio;
     }
 }

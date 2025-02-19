@@ -17,7 +17,7 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
     const handleBack = () => setSelectedBusiness(null); // Back to the selection screen
 
     return (
-        <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8">
+        <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8" >
             {/* Business Selection Panel */}
             {!selectedBusiness && (
                 <div className="grid grid-cols-2 gap-3 w-full">
@@ -89,13 +89,13 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                                         <div
                                             key={idx}
                                             className={`flex justify-between items-center px-4 py-2 rounded-md ${
-                                                upgrade.applied ? "bg-green-100" : "bg-gray-200"
+                                                upgrade.unlocked ? "bg-green-100" : "bg-gray-200"
                                             }`}
                                         >
                                             <span className="font-medium">{upgrade.name}</span>
                                             <span className="text-sm text-gray-600">{upgrade.effect}</span>
                                             <button
-                                                disabled={upgrade.applied || currency < upgrade.cost}
+                                                disabled={upgrade.unlocked || currency < upgrade.cost}
                                                 onClick={() => {
                                                     const businessIndex = businesses.findIndex(
                                                         (b) => b.name === selectedBusiness.name
@@ -105,12 +105,12 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                                                     }
                                                 }}
                                                 className={`px-3 py-1 text-sm rounded ${
-                                                    upgrade.applied
+                                                    upgrade.unlocked
                                                         ? "bg-gray-300 text-white cursor-not-allowed"
                                                         : "bg-blue-500 text-white hover:bg-blue-600"
                                                 }`}
                                             >
-                                                {upgrade.applied ? "Purchased" : `¥${formatBigIntWithSuffix(upgrade.cost)}`}
+                                                {upgrade.unlocked ? "Purchased" : `¥${formatBigIntWithSuffix(upgrade.cost)}`}
                                             </button>
                                         </div>
                                     ))}

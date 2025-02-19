@@ -240,7 +240,9 @@ const Game = () => {
                 <ModalPanel title={activePanel === "Managers" && selectedBusiness
                     ? `Managers - ${selectedBusiness.name}`
                     : activePanel}
-                            onClose={closePanel}>
+                            onClose={closePanel}
+                            background={selectedBusiness?.manager?.color}
+                >
                     {activePanel === "Unlocks" && (
                         <UnlocksPanel businesses={businesses}/>
                     )}

@@ -141,6 +141,7 @@ export class BusinessManager {
         const business = this.businesses[index];
         if (business.quantity > 0 && !business.isProducing) {
             if (business.productionTime <= SPEED_THRESHOLD && business.manager?.hired) {
+                this.stopRevenuePolling(index); // Stop old polling
                 this.pollRevenue(index);
             } else {
                 business.isProducing = true;
@@ -197,9 +198,9 @@ export class BusinessManager {
         }
 
         // Check if player has enough currency and upgrade isn't already applied
-        if (this.currency >= upgrade.cost && !upgrade.applied) {
+        if (this.currency >= upgrade.cost && !upgrade.unlocked) {
             this.currency -= upgrade.cost; // Deduct the cost
-            upgrade.applied = true; // Mark the upgrade as purchased
+            upgrade.unlocked = true; // Mark the upgrade as purchased
 
             // Apply the upgrade effect
             this.applyEffect(business, upgrade.effect);
@@ -302,6 +303,17 @@ export class BusinessManager {
         this.businessTimeouts.set(index, timeoutId);
     }
 
+    checkAllUnlocksAndUpgrades(){
+        this.checkAllUnlocks();
+        this.checkAllUpgrades();
+    }
+
+    checkAllUnlocks() {
+        this.businesses.forEach((_, index) => {
+            this.checkUnlocks(index);
+        });
+    }
+
     // Check and apply unlocks when milestones are reached
     checkUnlocks(index: number) {
         const business = this.businesses[index];
@@ -312,6 +324,25 @@ export class BusinessManager {
                 unlock.applied = true;
                 unlock.notified = false;
                 this.unlocks.push({ description: `${business.name}: ${unlock.effect}`, applied: true });
+            }
+        });
+    }
+
+    checkAllUpgrades() {
+        this.businesses.forEach((_, index) => {
+            this.checkUpgrades(index);
+        });
+    }
+
+    // Check and apply unlocks when milestones are reached
+    checkUpgrades(index: number) {
+        const business = this.businesses[index];
+
+        business.manager?.upgrades.forEach((upgrade) => {
+            if (upgrade.unlocked) {
+                this.applyEffect(business, upgrade.effect);
+                upgrade.unlocked = true;
+               // this.unlocks.push({ description: `${business.name}: ${upgrade.effect}`, applied: true });
             }
         });
     }
