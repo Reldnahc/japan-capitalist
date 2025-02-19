@@ -8,6 +8,8 @@ import BusinessCard from "./BusinessCard.tsx";
 import ManagerPanel from "./panels/ManagerPanel.tsx";
 import {Business} from "../gameLogic/types/business.types.ts";
 import {formatPlaytime} from "../utils/formatTime.ts";
+import {AudioManager} from "../utils/audioManager.ts";
+import backgroundMusic from '../assets/sounds/background.mp3';
 
 const game = new IdleGame();
 
@@ -20,6 +22,8 @@ const Game = () => {
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
     const [stableReadyBusinessesCount, setStableReadyBusinessesCount] = useState(0);
     const [purchaseAmount, setPurchaseAmount] = useState("x1"); // New state for selected purchase amount
+    const [isMuted, setIsMuted] = useState(AudioManager.getMuted());
+    const [volume, setVolume] = useState(0.5); // Default half volume
     const [appliedUnlocks, setAppliedUnlocks] = useState(() =>
         game.businessManager.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied))
     );
@@ -103,6 +107,36 @@ const Game = () => {
         };
     }, [activePanel]);
 
+    // Load sounds on mount
+    useEffect(() => {
+        AudioManager.loadSounds({
+            background: backgroundMusic,
+        });
+
+        // Play background music on loop
+        const background = new Audio(backgroundMusic);
+        background.loop = true;
+        background.volume = volume;
+        if (!isMuted) background.play();
+
+        return () => {
+            background.pause(); // Cleanup audio when the component unmounts
+        };
+    }, [isMuted]);
+
+    // Handle volume changes
+    const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newVolume = parseFloat(event.target.value);
+        setVolume(newVolume);
+        AudioManager.setVolume(newVolume); // Update AudioManager's volume
+    };
+
+    // Toggle mute sounds
+    const toggleMute = () => {
+        setIsMuted(!isMuted);
+        AudioManager.toggleMute();
+    };
+
     const closePanel = () => {
         setActivePanel(null);
     };
@@ -153,10 +187,14 @@ const Game = () => {
         setActivePanel(panelName); // Open the requested panel
     };
 
-    const handleBuyBusiness = (index: number) => {
-        game.businessManager.buyBusiness(index, purchaseAmount);
+    const handleBuyBusiness = (index: number, amount: string = purchaseAmount) => {
+        game.businessManager.buyBusiness(index, amount);
         setCurrency(game.businessManager.currency);
         setBusinesses([...game.businessManager.businesses]);
+    };
+
+    const handleBuyOneBusiness = (index: number) => {
+        handleBuyBusiness(index, "x1")
     };
 
     const handleStartProduction = (index: number) => {
@@ -191,7 +229,9 @@ const Game = () => {
 
     return (
         <div
-            className="font-baloo w-full max-w-xl flex flex-col bg-gradient-to-r from-green-100 to-blue-200 min-h-screen shadow-lg rounded-lg">
+            className="font-baloo w-full max-w-xl flex flex-col bg-cover bg-no-repeat min-h-screen shadow-lg rounded-lg"
+            style={{ backgroundImage: `url('/japan-capitalist/images/background.webp')` }}
+        >
             {notification && (
                 <Notification message={notification} onClose={closeNotification}/>
             )}
@@ -221,13 +261,36 @@ const Game = () => {
                                 <p className="text-black text-2xl font-bold">Total Playtime:</p>
                                 <p className="text-black text-xl">{formatPlaytime(game.getTotalPlaytime())}</p>
                             </div>
-                            {/* Credits Section */}
+                            {/* Mute Toggle */}
+                            <div className="flex items-center mt-4">
+                                <label className="mr-3 text-sm">Mute:</label>
+                                <button
+                                    onClick={toggleMute}
+                                    className={`px-4 py-2 rounded bg-${isMuted ? 'red' : 'green'}-500 text-white`}
+                                >
+                                    {isMuted ? 'Unmute' : 'Mute'}
+                                </button>
+                            </div>
+                            {/* Volume Slider */}
+                            <div className="mt-4">
+                                <label className="block text-sm">Volume:</label>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.1"
+                                    value={volume}
+                                    onChange={handleVolumeChange}
+                                    className="w-full mt-2"
+                                />
+                            </div>
+                    {/* Credits Section */}
                             <div className="text-center mt-4">
                                 <p className="text-black text-5xl">Credits:</p>
                                 <p className="text-black text-2xl font-bold">Development:</p>
                                 <p className="text-black text-xl">Chandler</p>
                                 <p className="text-black text-2xl font-bold">Playtesting:</p>
-                                <p className="text-black text-xl mb-3">Victor, Despot, Danielle</p>
+                                <p className="text-black text-xl mb-3">Victor, Despot, Danielle, Logan</p>
                             </div>
                             {/* Button Section */}
                             <div className="flex justify-center mt-6">
@@ -245,7 +308,7 @@ const Game = () => {
                 </ModalPanel>
             )}
 
-            <div className="w-full max-w-lg space-y-8 px-2 pt-6 pb-16 mx-auto">
+            <div className="w-full max-w-lg space-y-6 px-2 pt-6 pb-16 mx-auto">
                 {businesses.map((biz, index) => (
                     <BusinessCard
                         key={index}
@@ -255,6 +318,7 @@ const Game = () => {
                         progress={progress[index]}
                         onStartProduction={() => handleStartProduction(index)}
                         onBuyBusiness={() => handleBuyBusiness(index)}
+                        onBuyOneBusiness={() => handleBuyOneBusiness(index)}
                         onClickManager={() => handleClickManager(index)}
                         formatTime={formatTime}
                         nextUnlockMilestone={getNextUnlockMilestone(biz)}

@@ -17,7 +17,7 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
 
             {/* Panel Content */}
             <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-                <div className="bg-white rounded-lg w-full max-w-lg py-6 shadow-xl pointer-events-auto relative">
+                <div className="bg-gray-300 rounded-lg w-full max-w-lg py-6 shadow-xl pointer-events-auto relative">
                     {/* Close Button */}
                     <button
                         onClick={onClose}

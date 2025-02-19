@@ -46,7 +46,7 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
 
             {/* Manager Details Panel */}
             {selectedBusiness && (
-                <div className="relative flex flex-col h-[75vh] max-w-md mx-auto bg-white px-3 rounded-lg">
+                <div className="relative flex flex-col h-[75vh] max-w-md mx-auto  px-3 rounded-lg">
                     <button
                         className="sticky top-0 w-16 -ml-6 text-blue-500 hover:underline flex items-center"
                         onClick={handleBack}
@@ -73,8 +73,8 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                             alt={selectedBusiness.name}
                             className=" object-contain rounded -mt-6"
                         />
-                        <p className="text-2xl text-black mt-3 mb-1">
-                            {selectedBusiness.manager?.name}
+                        <p className="text-2xl text-black mt-3 mb-1 font-fredoka">
+                            {selectedBusiness.manager?.name} - <span className="font-yuji">{selectedBusiness.manager?.kanji}</span>
                         </p>
                         {selectedBusiness.manager?.bio && (
                             <p className="text-md text-gray-600 italic mb-6 text-left">

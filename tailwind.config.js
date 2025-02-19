@@ -6,6 +6,11 @@ export default {
       fontFamily: {
         fredoka: ['"Fredoka One"', 'cursive'], // Add the Fredoka One font
         baloo: ['"Baloo 2"', 'cursive'], // Add Baloo 2 to the font family list
+        yuji: ['"Yuji Mai"', 'serif'],
+      },
+      textShadow: {
+        'white-outline': '-1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white',
+        // Creates white shimmer/outline
       },
       keyframes: {
         glow: {
@@ -18,6 +23,9 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwindcss-textshadow'),
+
+  ],
 }
 
