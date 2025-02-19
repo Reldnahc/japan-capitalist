@@ -1,6 +1,7 @@
 import { Business } from './types/business.types';
 import {GlobalUnlock} from "./types/unlocks.types.ts";
 import {SPEED_THRESHOLD} from "./config.ts";
+import {calculateCost} from "../utils/calculateCost.ts";
 
 export class BusinessManager {
     businesses: Business[];
@@ -45,7 +46,7 @@ export class BusinessManager {
             if (this.currency >= business.cost) {
                 this.currency -= business.cost;
                 business.quantity += 1;
-                business.cost = BigInt(Math.floor(Number(business.baseCost) * Math.pow(business.rate, business.quantity)));
+                business.cost = calculateCost(business.baseCost, business.rate, business.quantity);
                 this.checkUnlocks(index);
             } else {
                 break; // Stop if we can't afford more
@@ -82,7 +83,7 @@ export class BusinessManager {
         while (tempCurrency >= currentCost) {
             tempCurrency -= currentCost;
             quantity += 1;
-            currentCost = BigInt(Math.floor(Number(business.baseCost) * Math.pow(business.rate, business.quantity + quantity)));
+            currentCost = calculateCost(business.baseCost, business.rate, business.quantity + quantity);
         }
 
         return quantity;

@@ -4,6 +4,7 @@ import JSONbig from 'json-bigint';
 import {BusinessManager} from "./businessManager.ts";
 import {SPEED_THRESHOLD} from "./config.ts";
 import {Manager, Upgrade} from "./types/manager.types.ts";
+import {calculateCost} from "../utils/calculateCost.ts";
 
 export class IdleGame {
 
@@ -133,11 +134,7 @@ export class IdleGame {
                 const quantity = matchingSavedBusiness?.quantity || 0;
 
                 // Recalculate cost based on `baseCost`, `rate`, and `quantity`
-                const recalculatedCost = BigInt(
-                    Math.floor(
-                        Number(defaultBusiness.baseCost) * Math.pow(defaultBusiness.rate, quantity)
-                    )
-                );
+                const recalculatedCost = calculateCost(defaultBusiness.baseCost, defaultBusiness.rate, quantity);
 
                 // Merge default business state with saved state
                 return {

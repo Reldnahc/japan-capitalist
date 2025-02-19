@@ -3,6 +3,7 @@ import React from 'react';
 import {businesses} from "../gameLogic/data/businesses.ts";
 import {formatBigIntWithSuffix} from "../utils/formatNumber.ts";
 import {SPEED_THRESHOLD} from "../gameLogic/config.ts";
+import {calculateCost} from "../utils/calculateCost.ts";
 
 interface BusinessCardProps {
     business: typeof businesses[number];
@@ -42,11 +43,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                 while (tempCurrency >= cost) {
                     tempCurrency -= cost;
                     affordable++;
-                    cost = BigInt(
-                        Math.floor(
-                            Number(business.baseCost) * Math.pow(business.rate, business.quantity + affordable)
-                        )
-                    );
+                    cost = calculateCost(business.baseCost, business.rate, business.quantity + affordable);
                 }
                 quantityToBuy = affordable;
                 if (quantityToBuy === 0) {
@@ -65,11 +62,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
 
         for (let i = 0; i < quantityToBuy; i++) {
             totalCost += currentCost;
-            currentCost = BigInt(
-                Math.floor(
-                    Number(business.baseCost) * Math.pow(business.rate, business.quantity + i + 1)
-                )
-            );
+            currentCost = calculateCost(business.baseCost, business.rate, business.quantity + i + 1);
         }
 
         return { totalCost, quantityToBuy };
