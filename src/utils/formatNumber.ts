@@ -39,11 +39,28 @@ export function formatBigIntWithSuffix(value: bigint, decimals: number = 3): str
                 const scaledRemainder = (remainderPart * 10n ** BigInt(decimals)) / threshold;
                 decimalPart = `.${scaledRemainder.toString().padStart(decimals, "0")}`;
             }
-
+            if (value >= 1_000n && value < 1_000_000n) {
+                return addCommasToBigInt(value);
+            }
             return `${wholePart}${decimalPart} ${suffix}`.trim();
         }
     }
 
 
+    if (value >= 1_000n && value < 1_000_000n) {
+        return addCommasToBigInt(value);
+    }
+
+
     return value.toString(); // Fallback for small or negative values
+}
+
+
+// Helper function to add commas to a BigInt value
+function addCommasToBigInt(value: bigint): string {
+    // Convert bigint to string for manipulation
+    const valueStr = value.toString();
+
+    // Insert commas as thousands separators
+    return valueStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
