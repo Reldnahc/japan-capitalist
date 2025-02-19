@@ -256,7 +256,7 @@ const Game = () => {
                     )}
 
                     {activePanel === "Settings" && (
-                        <div className="h-[75vh] overflow-y-auto overflow-x-hidden px-3 pb-8">
+                        <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8">
                             <div className="text-center mt-4">
                                 <p className="text-black text-2xl font-bold">Total Playtime:</p>
                                 <p className="text-black text-xl">{formatPlaytime(game.getTotalPlaytime())}</p>
@@ -308,7 +308,7 @@ const Game = () => {
                 </ModalPanel>
             )}
 
-            <div className="w-full max-w-lg space-y-6 px-2 pt-6 pb-16 mx-auto">
+            <div className="w-full max-w-lg space-y-6 px-2 pt-6 pb-32 mx-auto">
                 {businesses.map((biz, index) => (
                     <BusinessCard
                         key={index}

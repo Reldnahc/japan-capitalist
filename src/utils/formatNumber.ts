@@ -1,6 +1,6 @@
 // utils/formatNumber.ts
 
-export function formatBigIntWithSuffix(value: bigint): string {
+export function formatBigIntWithSuffix(value: bigint, decimals: number = 3): string {
     // List of suffixes for large number ranges
     const suffixes = [
         { value: 10n ** 63n,  suffix: "Vigintillion" },
@@ -33,7 +33,7 @@ export function formatBigIntWithSuffix(value: bigint): string {
             const scaledValue = Number(value) / Number(threshold);
             const formatted = scaledValue.toLocaleString(undefined, {
                 minimumFractionDigits: 0, // 3 decimals for 1 million+, 0 decimals otherwise
-                maximumFractionDigits: value >= 1_000_000n ? 3 : 0
+                maximumFractionDigits: value >= 1_000_000n ? decimals : 0
             });
             return `${formatted} ${suffix}`.trim();
         }

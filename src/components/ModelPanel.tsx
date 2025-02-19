@@ -27,7 +27,7 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
                     </button>
 
                     {/* Panel Title */}
-                    <h2 className="text-2xl font-bold mb-4 ml-3 font-fredoka">{title}</h2>
+                    <h2 className="text-xl md:text-2xl font-bold mb-4 ml-3 font-fredoka">{title}</h2>
 
                     {/* Panel Content */}
                     {children}

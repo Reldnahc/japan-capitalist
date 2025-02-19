@@ -155,7 +155,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                                 {purchaseAmount === "max" || purchaseAmount === "next"
                                     ? `${quantityToBuy} x`
                                     : purchaseAmount}{" "}
-                                ¥{formatBigIntWithSuffix(totalCost)}
+                                ¥{formatBigIntWithSuffix(totalCost, 1)}
                             </button>
                         </div>
 

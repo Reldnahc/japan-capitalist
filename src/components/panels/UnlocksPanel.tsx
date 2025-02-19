@@ -17,7 +17,7 @@ type UnlocksPanelProps = {
 
 const UnlocksPanel: React.FC<UnlocksPanelProps> = ({ businesses }) => {
     return (
-        <div className="h-[75vh] overflow-y-auto overflow-x-hidden px-4">
+        <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-4">
             <div className="space-y-6"> {/* Consistent spacing between groups */}
                 {/* Iterate over businesses to group unlocks */}
                 {businesses.map((business, bizIdx) => (
