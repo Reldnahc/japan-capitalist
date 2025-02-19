@@ -160,7 +160,7 @@ export class BusinessManager {
                         }, 1);
                     }
                     this.businessTimeouts.delete(index);
-                }, business.productionTime + 100) as unknown as number;
+                }, business.productionTime) as unknown as number;
 
                 this.businessTimeouts.set(index, timeoutId);
             }

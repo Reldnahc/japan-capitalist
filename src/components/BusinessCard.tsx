@@ -106,24 +106,11 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
             {business.quantity > 0 ? (
                 <div className="flex-1 rounded-lg h-24 px-1 py-2 flex flex-col justify-between relative">
                     {/* Progress Bar */}
-                    <div className="w-full bg-gray-300 h-12 rounded-b-sm overflow-hidden mb-1">
-                        <div
-                            key={business.isProducing ? "producing" : "reset"}
-                            className={`h-full ${
-                                business.productionTime <= SPEED_THRESHOLD && business.manager?.hired
-                                    ? "bg-yellow-400"
-                                    : "bg-green-500"
-                            } flex items-center`}
-                            style={{
-                                width: !business.isProducing
-                                    ? "0%"
-                                    : business.productionTime <= SPEED_THRESHOLD && business.manager?.hired
-                                        ? "100%"
-                                        : `${progress}%`,
-                                transition: business.isProducing ? "width 0.1s linear" : "none",
-                            }}
+                    <div className="w-full bg-gray-300 h-12 rounded-b-sm overflow-hidden mb-1 relative">
+                        {/* Text Outside the Bar */}
+                        <span
+                            className="text-nowrap text-xl ml-6 text-black font-fredoka absolute top-1/2 transform -translate-y-1/2 z-20"
                         >
-                        <span className="text-nowrap text-xl ml-6 text-black font-fredoka">
                             {business.productionTime <= SPEED_THRESHOLD &&
                             business.manager?.hired &&
                             business.revenuePerSecond
@@ -132,7 +119,24 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                                     business.revenue * BigInt(business.quantity)
                                 )}`}
                         </span>
-                        </div>
+
+                        {/* Progress Bar */}
+                        <div
+                            key={business.isProducing ? "producing" : "reset"}
+                            className={`h-full ${
+                                business.productionTime <= SPEED_THRESHOLD && business.manager?.hired
+                                    ? "bg-yellow-400"
+                                    : "bg-green-500"
+                            } flex items-center transition-transform duration-0`}
+                            style={{
+                                transform: !business.isProducing
+                                    ? "translateX(-100%)"
+                                    : business.productionTime <= SPEED_THRESHOLD && business.manager?.hired
+                                        ? "translateX(0)"
+                                        : `translateX(${progress - 100}%)`,
+                                width: "100%", // Keep width static since we use transform
+                            }}
+                        ></div>
                     </div>
 
                     {/* Buttons Section */}
