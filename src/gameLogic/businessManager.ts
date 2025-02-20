@@ -6,12 +6,19 @@ import {calculateCost} from "../utils/calculateCost.ts";
 export class BusinessManager {
     businesses: Business[];
     currency: bigint;
+    totalEarned: bigint;
+    fans: bigint;
+    currentFans: bigint = 0n;
+    nextFanThreshold: bigint = 1_000_000_000_000n;//_000_000n;
+    fanRate: bigint = 110n;
     businessTimeouts: Map<number, number> = new Map();
     unlocks: GlobalUnlock[] = [];
 
-    constructor(businesses: Business[], currency: bigint, unlocks: GlobalUnlock[]) {
+    constructor(businesses: Business[], currency: bigint, totalEarned: bigint, fans: bigint, unlocks: GlobalUnlock[]) {
         this.businesses = businesses;
         this.currency = currency;
+        this.totalEarned = totalEarned;
+        this.fans = fans;
         this.unlocks = unlocks;
     }
 
@@ -121,7 +128,7 @@ export class BusinessManager {
         if (!this.businessTimeouts.has(index)) {
             const intervalId = setInterval(() => {
                 if (business.revenuePerSecond) {
-                    this.currency += business.revenuePerSecond; // Add raw revenue to total currency
+                    this.earnMoney(business.revenuePerSecond); // Add raw revenue to total currency
                     business.startTime = Date.now();
                 }
             }, 1000) as unknown as number; // Run every 1 second
@@ -137,6 +144,22 @@ export class BusinessManager {
         }
     }
 
+    earnMoney(amount: bigint){
+        this.currency += amount;
+        this.totalEarned += amount;
+        this.checkAndAwardFans();
+    }
+    checkAndAwardFans(): void {
+        while (this.totalEarned >= this.nextFanThreshold) {
+            // Award a fan and calculate the next threshold
+            this.currentFans += 1n;
+
+            // Apply exponential scaling: growth factor is 1.5x (or 150%)
+            this.nextFanThreshold = this.nextFanThreshold * this.fanRate / 100n;
+        }
+    }
+
+
     // Start production for a business
     startProduction(index: number) {
         const business = this.businesses[index];
@@ -150,7 +173,7 @@ export class BusinessManager {
                 business.endTime = Date.now() + business.productionTime;
 
                 const timeoutId = setTimeout(() => {
-                    this.currency += business.revenue * BigInt(business.quantity);
+                    this.earnMoney(business.revenue * BigInt(business.quantity));
                     business.isProducing = false;
                     business.startTime = 0;
                     business.endTime = 0;
@@ -211,7 +234,7 @@ export class BusinessManager {
         }
     }
 
-    applyEffect(business: Business, effect: string) {
+    applyEffect(business: Business, effect: string, updateSpeed = true) {
         if (effect.includes("Revenue ×")) {
             const [revenueEffect, target] = effect.split(";");
             const multiplier = parseFloat(revenueEffect.replace("Revenue ×", "").trim());
@@ -220,7 +243,6 @@ export class BusinessManager {
                 // Apply to all businesses
                 this.businesses.forEach(b => {
                     b.revenue *= BigInt(Math.floor(multiplier));
-                    console.log(`[Effect Applied] ${b.name}: Revenue ×${multiplier}`);
                 });
             } else if (target){
                 // Apply to specific businesses (comma-separated identifiers)
@@ -228,12 +250,10 @@ export class BusinessManager {
                 this.businesses.forEach(b => {
                     if (targets.includes(b.name.toLowerCase())) {
                         b.revenue *= BigInt(Math.floor(multiplier));
-                        console.log(`[Effect Applied] ${b.name}: Revenue ×${multiplier}`);
                     }
                 });
             } else {
                 business.revenue *= BigInt(Math.floor(multiplier));
-                console.log(`[Effect Applied] ${business.name}: Revenue ×${multiplier}`);
             }
 
             if (business.manager?.hired && business.productionTime <= SPEED_THRESHOLD) {
@@ -250,14 +270,15 @@ export class BusinessManager {
             const newProductionTime = Math.floor(oldProductionTime / (1 + percentage / 100));
 
             // If the business is currently producing, recalculate the current progress
-            if (business.isProducing) {
+            if (business.isProducing && updateSpeed) {
+                console.log(business);
                 const now = Date.now();
                 const elapsedTime = now - business.startTime; // Time already passed
-                const progressFraction = Math.floor(elapsedTime / oldProductionTime); // Progress made so far
+                const progressFraction = Math.min(elapsedTime / oldProductionTime, 1); // Clamp to [0, 1]
 
                 // Calculate new start and end times based on the recalculated progress and new production time
-                business.productionTime = newProductionTime; // Update the production time
                 const remainingTime = newProductionTime * (1 - progressFraction); // Remaining time adjusted to new speed
+                business.productionTime = newProductionTime; // Update the production time
                 business.startTime = now - Math.floor(newProductionTime * progressFraction); // Adjust start time
                 business.endTime = now + Math.floor(remainingTime); // Adjust end time
 
@@ -270,7 +291,7 @@ export class BusinessManager {
                 }
 
                 // Restart production with corrected timings
-                this.resumeProduction(this.businesses.indexOf(business), remainingTime);
+                this.resumeProduction(this.businesses.indexOf(business), Math.floor(remainingTime));
             } else {
                 // Update production time normally if production is not active
                 business.productionTime = newProductionTime;
@@ -280,14 +301,16 @@ export class BusinessManager {
 
     resumeProduction(index: number, remainingTime: number) {
         const business = this.businesses[index];
+        const now = Date.now();
         // Ensure production state is correctly tracked
         business.isProducing = true;
-        business.startTime = Date.now() - (business.productionTime - remainingTime); // Simulate start
-        business.endTime = Date.now() + remainingTime; // Set the remaining time properly
+        business.startTime = now - (business.productionTime - remainingTime); // Simulate start
+        business.endTime = now + remainingTime; // Set the remaining time properly
+
 
         // Timeout for remainingTime
         const timeoutId = setTimeout(() => {
-            this.currency += business.revenue * BigInt(business.quantity);
+            this.earnMoney(business.revenue * BigInt(business.quantity));
             business.isProducing = false;
             business.startTime = 0;
             business.endTime = 0;
@@ -304,24 +327,24 @@ export class BusinessManager {
         this.businessTimeouts.set(index, timeoutId);
     }
 
-    checkAllUnlocksAndUpgrades(){
-        this.checkAllUnlocks();
-        this.checkAllUpgrades();
+    checkAllUnlocksAndUpgrades(updateSpeed = true){
+        this.checkAllUnlocks(updateSpeed);
+        this.checkAllUpgrades(updateSpeed);
     }
 
-    checkAllUnlocks() {
+    checkAllUnlocks(updateSpeed = true) {
         this.businesses.forEach((_, index) => {
-            this.checkUnlocks(index);
+            this.checkUnlocks(index, updateSpeed);
         });
     }
 
     // Check and apply unlocks when milestones are reached
-    checkUnlocks(index: number) {
+    checkUnlocks(index: number, updateSpeed = true) {
         const business = this.businesses[index];
 
         business.unlocks.forEach((unlock) => {
             if (!unlock.applied && business.quantity >= unlock.milestone) {
-                this.applyEffect(business, unlock.effect);
+                this.applyEffect(business, unlock.effect, updateSpeed);
                 unlock.applied = true;
                 unlock.notified = false;
                 this.unlocks.push({ description: `${business.name}: ${unlock.effect}`, applied: true });
@@ -329,22 +352,23 @@ export class BusinessManager {
         });
     }
 
-    checkAllUpgrades() {
+    checkAllUpgrades(updateSpeed = true) {
         this.businesses.forEach((_, index) => {
-            this.checkUpgrades(index);
+            this.checkUpgrades(index, updateSpeed);
         });
     }
 
-    // Check and apply unlocks when milestones are reached
-    checkUpgrades(index: number) {
+    checkUpgrades(index: number, updateSpeed = true) {
         const business = this.businesses[index];
 
         business.manager?.upgrades.forEach((upgrade) => {
             if (upgrade.unlocked) {
-                this.applyEffect(business, upgrade.effect);
+                this.applyEffect(business, upgrade.effect, updateSpeed);
                 upgrade.unlocked = true;
                // this.unlocks.push({ description: `${business.name}: ${upgrade.effect}`, applied: true });
             }
         });
     }
+
+
 }

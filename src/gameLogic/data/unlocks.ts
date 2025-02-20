@@ -206,6 +206,7 @@ export const pachinkoUnlocks: Unlock[] = [
 ];
 
 export const videoGamesUnlocks: Unlock[] = [
+    { milestone: 10, effect: "Revenue ×3", applied: false },
     { milestone: 25, effect: "Speed +100%", applied: false },
     { milestone: 50, effect: "Revenue ×3", applied: false },
     { milestone: 100, effect: "Revenue ×7", applied: false },

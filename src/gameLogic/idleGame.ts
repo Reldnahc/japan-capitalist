@@ -3,7 +3,7 @@ import { businesses as defaultBusinesses } from './data/businesses.ts';
 import JSONbig from 'json-bigint';
 import {BusinessManager} from "./businessManager.ts";
 import {SPEED_THRESHOLD} from "./config.ts";
-import {Manager, Upgrade} from "./types/manager.types.ts";
+import {Manager} from "./types/manager.types.ts";
 import {calculateCost} from "../utils/calculateCost.ts";
 
 export class IdleGame {
@@ -19,8 +19,8 @@ export class IdleGame {
             console.log(savedState);
             const now = Date.now();
             this.totalPlaytime = savedState.totalPlaytime || 0;
-            this.businessManager = new BusinessManager(savedState.businesses, savedState.currency, savedState.unlocks);
-            this.businessManager.checkAllUnlocksAndUpgrades();
+            this.businessManager = new BusinessManager(savedState.businesses, savedState.currency, savedState.totalEarned, savedState.fans, savedState.unlocks);
+            this.businessManager.checkAllUnlocksAndUpgrades(false);
             // Process offline progression
             this.businessManager.businesses.forEach((business, index) => {
                 if (business.quantity > 0 && business.isProducing) {
@@ -42,12 +42,12 @@ export class IdleGame {
                                 const elapsedTimeMillis = BigInt(elapsedTime); // Elapsed time in milliseconds
                                 const revenuePerSecond = (totalRevenue * SCALE) / productionTimeMillis; // Scaled revenue per second
                                 const totalOfflineRevenue = (revenuePerSecond * elapsedTimeMillis) / SCALE; // Scaled calculation for offline revenue
-                                this.businessManager.currency += totalOfflineRevenue; // Add offline revenue
+                                this.businessManager.earnMoney(totalOfflineRevenue); // Add offline revenue
                             } else {
                                 // Regular businesses with longer production times
                                 const cyclesCompleted = Math.floor((now - business.startTime) / business.productionTime);
                                 if (cyclesCompleted > 0) {
-                                    this.businessManager.currency += BigInt(cyclesCompleted) * business.revenue * BigInt(business.quantity);
+                                    this.businessManager.earnMoney(BigInt(cyclesCompleted) * business.revenue * BigInt(business.quantity));
                                 }
                             }
                             // Start a new production cycle immediately
@@ -55,9 +55,10 @@ export class IdleGame {
                             business.startTime = 0;
                             business.endTime = 0;
                             this.businessManager.startProduction(index);
+
                         } else {
                             // For manual production, simply mark production as finished
-                            this.businessManager.currency += business.revenue * BigInt(business.quantity);
+                            this.businessManager.earnMoney(business.revenue * BigInt(business.quantity));
                             business.isProducing = false;
                             business.startTime = 0;
                             business.endTime = 0;
@@ -66,8 +67,9 @@ export class IdleGame {
                 }
             });
         } else {
-            this.businessManager = new BusinessManager(defaultBusinesses, BigInt(0), []);
+            this.businessManager = new BusinessManager(defaultBusinesses, BigInt(0), BigInt(0), BigInt(0), []);
         }
+        this.businessManager.checkAndAwardFans();
         this.sessionStartTime = Date.now(); // Set session start time
         this.startSaveInterval();
     }
@@ -76,7 +78,7 @@ export class IdleGame {
         if (this.saveInterval === null) {
             this.saveInterval = setInterval(() => {
                 this.saveGameState();
-            }, 5000) as unknown as number; // Save every 3 seconds
+            }, 3000) as unknown as number; // Save every 3 seconds
         }
     }
 
@@ -96,8 +98,8 @@ export class IdleGame {
         const simplifiedBusinesses = this.businessManager.businesses.map((business) => ({
             name: business.name,
             quantity: business.quantity,
-            endTime: business.endTime,
-            startTime: business.startTime,
+            endTime: Math.floor(business.endTime),
+            startTime: Math.floor(business.startTime),
             isProducing: business.isProducing,
             manager: business.manager
                 ? {
@@ -111,6 +113,8 @@ export class IdleGame {
 
         const state = {
             currency: this.businessManager.currency,
+            totalEarned: this.businessManager.totalEarned,
+            fans: this.businessManager.fans,
             businesses: simplifiedBusinesses, // Save only the simplified form of businesses
             totalPlaytime: this.totalPlaytime, // Add session playtime to total
             lastSaved: Date.now(), // Save the exact time when the game state is saved
@@ -127,7 +131,9 @@ export class IdleGame {
             const state = JSONbig.parse(savedState);
 
             const savedCurrency = BigInt(state.currency || 0);
+            const savedTotalEarned = BigInt(state.totalEarned || 0);
             const savedTotalPlayTime = state.totalPlaytime || 0;
+            const savedFans = BigInt(state.fans || 0);
 
             const savedBusinesses = state.businesses || [];
 
@@ -155,12 +161,12 @@ export class IdleGame {
                             matchingSavedBusiness.manager.name || defaultBusiness.manager?.name || "",
                             matchingSavedBusiness.manager.kanji || defaultBusiness.manager?.kanji || "",
                             BigInt(matchingSavedBusiness.manager.cost || defaultBusiness.manager?.cost || 0),
-                            matchingSavedBusiness.manager.upgrades
-                                ? matchingSavedBusiness.manager.upgrades.map((savedUpgrade: Upgrade, index: number) => ({
-                                    ...defaultBusiness.manager?.upgrades?.[index],
-                                    unlocked: savedUpgrade.unlocked || false,
-                                }))
-                                : defaultBusiness.manager?.upgrades || [],
+                            defaultBusiness.manager?.upgrades.map((defaultUpgrade, index) => ({
+                                // Start with the default upgrade
+                                ...defaultUpgrade,
+                                // Override with saved upgrade data if it exists
+                                ...(matchingSavedBusiness.manager.upgrades?.[index] || {})
+                            })) || [],
                             matchingSavedBusiness.manager.bio || defaultBusiness.manager?.bio || "",
                             matchingSavedBusiness.manager.color || defaultBusiness.manager?.color || "#333"
                         )
@@ -182,6 +188,8 @@ export class IdleGame {
 
             return {
                 currency: savedCurrency,
+                totalEarned: savedTotalEarned,
+                fans: savedFans,
                 businesses: recalculatedBusinesses,
                 unlocks: [], // Assuming unlocks should always start fresh or be recalculated
                 totalPlaytime: savedTotalPlayTime,

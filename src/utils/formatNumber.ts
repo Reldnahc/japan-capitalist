@@ -37,8 +37,12 @@ export function formatBigIntWithSuffix(value: bigint, decimals: number = 3): str
             let decimalPart = "";
             if (decimals > 0 && remainderPart > 0n) {
                 const scaledRemainder = (remainderPart * 10n ** BigInt(decimals)) / threshold;
-                decimalPart = `.${scaledRemainder.toString().padStart(decimals, "0")}`;
+                decimalPart = scaledRemainder.toString().padStart(decimals, "0").replace(/0+$/, "");
+                if (decimalPart) {
+                    decimalPart = `.${decimalPart}`; // Add the dot back if there are decimals left
+                }
             }
+
             if (value >= 1_000n && value < 1_000_000n) {
                 return addCommasToBigInt(value);
             }

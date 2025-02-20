@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {formatBigIntWithSuffix} from "../utils/formatNumber.ts";
-
+import { FaVolumeUp, FaVolumeMute } from "react-icons/fa"; // Import icons
 
 // Define Footer props
 interface FooterProps {
@@ -10,10 +10,12 @@ interface FooterProps {
     onPurchaseAmountChange: (amount: string) => void;
     onStartProductionForBusiness: () => void;
     readyBusinessesCount: number;
+    onToggleMute: () => void; // Add mute toggle handler
+    isMuted: boolean; // Receive mute state
 }
 
 const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, onPurchaseAmountChange,
-                                           onStartProductionForBusiness, readyBusinessesCount }) => {
+                                           onStartProductionForBusiness, readyBusinessesCount, onToggleMute, isMuted }) => {
     // State to handle menu visibility
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const purchaseOptions = ["x1", "x5", "x10", "x100", "next", "max"];
@@ -67,46 +69,55 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                     )}
 
                     {/* Hamburger menu in the center */}
-                    <div className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2">
-                        {isMenuOpen && (
-                            <div className="absolute bottom-14 md:bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white w-56 md:w-96 text-2xl md:text-5xl rounded-lg shadow-lg z-50">
-                                <ul className="flex flex-col py-2">
-                                    <li>
-                                        <button
-                                            className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
-                                            onClick={() => {
-                                                onOpenPanel("Unlocks");
-                                                setIsMenuOpen(false);
-                                            }}
-                                        >
-                                            Unlocks
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button
-                                            className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
-                                            onClick={() => {
-                                                onOpenPanel("Managers");
-                                                setIsMenuOpen(false);
-                                            }}
-                                        >
-                                            Managers
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button
-                                            className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
-                                            onClick={() => {
-                                                onOpenPanel("Settings");
-                                                setIsMenuOpen(false);
-                                            }}
-                                        >
-                                            Settings
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
-                        )}
+                    <div className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2 items-center space-x-4">
+                        <div className="relative">
+                            {isMenuOpen && (
+                                <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white w-56 md:w-96 text-2xl md:text-5xl rounded-lg shadow-lg z-50">
+                                    <ul className="flex flex-col py-2">
+                                        <li>
+                                            <button
+                                                className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
+                                                onClick={() => {
+                                                    onOpenPanel("Unlocks");
+                                                    setIsMenuOpen(false);
+                                                }}
+                                            >
+                                                Unlocks
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button
+                                                className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
+                                                onClick={() => {
+                                                    onOpenPanel("Managers");
+                                                    setIsMenuOpen(false);
+                                                }}
+                                            >
+                                                Managers
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button
+                                                className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
+                                                onClick={() => {
+                                                    onOpenPanel("Settings");
+                                                    setIsMenuOpen(false);
+                                                }}
+                                            >
+                                                Settings
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            onClick={onToggleMute}
+                            className="absolute -left-12 md:-left-16 top-1/2 transform -translate-y-1/2 text-white text-2xl md:text-4xl hover:text-yellow-400 transition"
+                            aria-label={isMuted ? "Unmute" : "Mute"}
+                        >
+                            {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
+                        </button>
 
                         <button
                             className="flex flex-col items-center justify-center w-10 h-10 md:w-16 md:h-16 bg-gray-600 rounded-md hover:bg-gray-500 transition"

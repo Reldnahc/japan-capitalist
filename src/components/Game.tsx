@@ -348,6 +348,8 @@ const Game = () => {
                 onPurchaseAmountChange={(amount) => setPurchaseAmount(amount)}
                 onStartProductionForBusiness={handleStartProductionForBusiness}
                 readyBusinessesCount={stableReadyBusinessesCount}
+                isMuted={isMuted}
+                onToggleMute={toggleMute}
             />
         </div>
     );

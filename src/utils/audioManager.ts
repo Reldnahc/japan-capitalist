@@ -20,7 +20,7 @@ export class AudioManager {
         if (!this.isMuted) {
             //if (sound.paused) {
                 sound.currentTime = 0; // Only reset if the sound is paused
-           // }
+           //I  }
             sound.play();
         }
     }
