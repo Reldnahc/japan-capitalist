@@ -14,8 +14,8 @@ export const ramenUpgrades: Upgrade[] = [
     { name: "Revenue", cost: 725000n, effect: "Revenue ×5", unlocked: false },
     { name: "Efficiency", cost: 2500000n, effect: "Speed +50%", unlocked: false },
     { name: "Efficiency", cost: 3250000000n, effect: "Speed +100%", unlocked: false },
-    { name: "Revenue", cost: 455000000000n, effect: "Revenue ×2", unlocked: false },
-    { name: "Revenue", cost: 12500000000000n, effect: "Revenue ×4", unlocked: false },
+    { name: "Revenue", cost: 455000000000n, effect: "Revenue ×22", unlocked: false },
+    { name: "Revenue", cost: 12500000000000n, effect: "Revenue ×7", unlocked: false },
 ];
 
 export const burgerUpgrades: Upgrade[] = [

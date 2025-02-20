@@ -63,7 +63,7 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                             </div>
                         </div>
                     ) : (
-                        <div className="text-md">
+                        <div className="text-md md:text-3xl">
                             ¥ {money}
                         </div>
                     )}
@@ -94,6 +94,17 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                                                 }}
                                             >
                                                 Managers
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button
+                                                className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
+                                                onClick={() => {
+                                                    onOpenPanel("Fans");
+                                                    setIsMenuOpen(false);
+                                                }}
+                                            >
+                                                Fans
                                             </button>
                                         </li>
                                         <li>

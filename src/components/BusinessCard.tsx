@@ -16,10 +16,11 @@ interface BusinessCardProps {
     formatTime: (seconds: number) => string;
     nextUnlockMilestone: number;
     onBuyOneBusiness: () => void;
+    fans: bigint;
 }
 
 const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency, purchaseAmount, onStartProduction, onBuyBusiness,
-                                                       onClickManager, formatTime, nextUnlockMilestone, onBuyOneBusiness}) => {
+                                                       onClickManager, formatTime, nextUnlockMilestone, onBuyOneBusiness, fans}) => {
 
     const calculateTotalPrice = (): { totalCost: bigint, quantityToBuy: number } => {
         let quantityToBuy = 1; // Default to 1
@@ -70,9 +71,16 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
 
     const { totalCost, quantityToBuy } = calculateTotalPrice();
     const isButtonDisabled = totalCost > currency;
+    const FAN_MULTIPLIER_SCALE = 100n; // Assume scaling in BigInt
+    const fanMultiplier = FAN_MULTIPLIER_SCALE + fans;
+    let adjustedRevenuePerSecond = 0n;
+    if (business.revenuePerSecond){
+        adjustedRevenuePerSecond = (business.revenuePerSecond * fanMultiplier) / FAN_MULTIPLIER_SCALE;
+    }
+    const adjustedRevenue = (business.revenue * BigInt(business.quantity) * fanMultiplier) / FAN_MULTIPLIER_SCALE;
 
     return (
-        <div className="flex items-center border-2  border-gray-500 p-2 rounded-md bg-gray-800 bg-opacity-40">
+        <div className="flex items-center border-2  border-gray-500 px-2 py-1 rounded-md bg-gray-800 bg-opacity-40">
             {/* Start Production Button */}
             <button
                 onClick={onStartProduction}
@@ -107,10 +115,9 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                             {business.productionTime <= SPEED_THRESHOLD &&
                             business.manager?.hired &&
                             business.revenuePerSecond
-                                ? `¥${formatBigIntWithSuffix(business.revenuePerSecond)}/sec`
-                                : `¥${formatBigIntWithSuffix(
-                                    business.revenue * BigInt(business.quantity)
-                                )}`}
+                                ? `¥${formatBigIntWithSuffix(adjustedRevenuePerSecond)}/sec`
+                                : `¥${formatBigIntWithSuffix(adjustedRevenue)}`
+                            }
                         </span>
 
                         {/* Progress Bar */}

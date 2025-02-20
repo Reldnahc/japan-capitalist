@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {IdleGame} from '../gameLogic/idleGame';
 import Footer from "./Footer.tsx";
 import UnlocksPanel from "./panels/UnlocksPanel.tsx";
@@ -19,6 +19,7 @@ const game = new IdleGame();
 
 const Game = () => {
     const [currency, setCurrency] = useState(game.businessManager.currency);
+    const [fans, setFans] = useState(game.businessManager.fans);
     const [businesses, setBusinesses] = useState(game.businessManager.businesses);
     const [progress, setProgress] = useState<number[]>(new Array(game.businessManager.businesses.length).fill(0));
     const [activePanel, setActivePanel] = useState<string | null>(null);
@@ -48,6 +49,7 @@ const Game = () => {
     useEffect(() => {
         const update = () => {
             setCurrency(game.businessManager.currency);
+            setFans(game.businessManager.fans);
             setBusinesses([...game.businessManager.businesses]);
             const updatedProgress = game.businessManager.businesses.map((_, index) => {
                 if (!game.businessManager.businesses[index].isProducing) return 0;
@@ -262,6 +264,9 @@ const Game = () => {
         }
     };
 
+    const handlePrestige = () => {
+        game.prestige();
+    }
     return (
         <div
             className="font-baloo w-full max-w-xl flex flex-col bg-cover bg-no-repeat min-h-screen shadow-lg rounded-lg"
@@ -305,7 +310,50 @@ const Game = () => {
                                         onManagerUpgrade={handleManagerUpgrade}
                                     />
                                 )}
+                                {activePanel === "Fans" && (
+                                    <div
+                                        className={`h-[70vh] overflow-y-auto px-6 pb-6 flex flex-col gap-6 items-center  rounded-lg`}
+                                    >
+                                        <div className="text-center">
+                                            <h2 className="text-2xl font-bold  ">
+                                                Fans Panel
+                                            </h2>
+                                            <p className=" text-base md:text-xl text-gray-800  mt-2">
+                                                Gather fans to restart your progress and enjoy a <b>1%</b> revenue
+                                                bonus for every fan you claim!
+                                            </p>
+                                        </div>
 
+                                        <div
+                                            className={`flex flex-col items-center justify-center w-full max-w-52 py-4 bg-blue-50 rounded-lg shadow `}
+                                        >
+                                            <p className="text-lg font-medium text-gray-600 ">
+                                                Available Fans to Claim:
+                                            </p>
+                                            <div className="text-4xl font-extrabold text-blue-600 d mt-2">
+                                                {game.businessManager.currentFans}
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            className={`flex flex-col items-center justify-center w-full max-w-52 py-4 bg-green-50 rounded-lg shadow `}
+                                        >
+                                            <p className="text-lg font-medium text-gray-600 ">
+                                                Current Fans:
+                                            </p>
+                                            <div className="text-4xl font-extrabold text-green-600  mt-2">
+                                                {game.businessManager.fans}
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={handlePrestige}
+                                            className="bg-red-500 text-white px-6 py-3 rounded-md hover:bg-red-600 transition-all focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800 font-bold mt-4"
+                                        >
+                                            Claim Fans!
+                                        </button>
+                                    </div>
+                                )}
                                 {activePanel === "Settings" && (
                                     <SettingsPanel
                                         isMuted={isMuted}
@@ -338,6 +386,7 @@ const Game = () => {
                         onClickManager={() => handleClickManager(index)}
                         formatTime={formatTime}
                         nextUnlockMilestone={getNextUnlockMilestone(biz)}
+                        fans={fans}
                     />
                 ))}
             </div>

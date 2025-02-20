@@ -235,4 +235,44 @@ export class IdleGame {
 
         this.businessManager.unlocks = [];
     }
+
+    prestige() {
+        console.log("fan claim triggered");
+        const fansToClaim = this.businessManager.currentFans;
+
+        this.businessManager.businessTimeouts.forEach((timeoutId, index) => {
+            clearTimeout(timeoutId); // Clear each timeout
+            this.businessManager.businessTimeouts.delete(index); // Remove it from the map
+        });
+
+        // Clear all individual business timeouts
+        this.businessManager.businesses.forEach((_, index) => {
+            this.businessManager.stopRevenuePolling(index); // Stop polling for each business
+        });
+
+        // Clear the timeout map
+        this.businessManager.businessTimeouts.clear();
+
+        this.businessManager.currency = BigInt(0);
+        this.businessManager.totalEarned = BigInt(0);
+        this.businessManager.businesses = defaultBusinesses.map((business) => ({
+            ...business,
+            cost: business.baseCost,
+            isProducing: false,
+            startTime: 0,
+            endTime: 0,
+            unlocks: business.unlocks.map((unlock) => ({
+                ...unlock,
+                applied: false, // Reset applied status
+                notified: false, // Reset notification status
+            })),
+        }));
+
+        this.businessManager.unlocks = [];
+        this.businessManager.fans += fansToClaim;
+        this.businessManager.nextFanThreshold = BigInt(1_000_000_000_000n);
+        this.businessManager.currentFans = 0n;
+        this.businessManager.checkAllUnlocksAndUpgrades(false);
+
+    }
 }

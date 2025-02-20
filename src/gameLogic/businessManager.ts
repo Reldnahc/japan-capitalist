@@ -8,7 +8,7 @@ export class BusinessManager {
     currency: bigint;
     totalEarned: bigint;
     fans: bigint;
-    currentFans: bigint = 0n;
+    currentFans: bigint = 0n; //current amount claimable
     nextFanThreshold: bigint = 1_000_000_000_000n;//_000_000n;
     fanRate: bigint = 110n;
     businessTimeouts: Map<number, number> = new Map();
@@ -114,11 +114,14 @@ export class BusinessManager {
         // Mark the business as producing
         business.isProducing = true;
 
-        // Calculate raw revenue per second
-        // Correct the productionTime scaling issue
-        const scaleFactor = BigInt(1000n); // Keep scaling in BigInt
-        const productionTime = BigInt(Math.floor(business.productionTime)); // Convert productionTime to BigInt
-        business.revenuePerSecond = (business.revenue * BigInt(business.quantity) * scaleFactor) / productionTime;
+        // Scaling factor for percentage calculations
+
+        // Correct productionTime scaling and calculate revenue per second
+        const scaleFactor = BigInt(1000n); // To maintain scaling precision
+        const productionTime = BigInt(Math.floor(business.productionTime)); // For BigInt scaling calculations
+
+        // Apply fan multiplier and scale back
+        business.revenuePerSecond = (business.revenue * BigInt(business.quantity) * scaleFactor) / productionTime; // Base revenue
 
         console.log(
             `[Polling] Business ${business.name} (Index ${index}): Polling started - Revenue per second: ${business.revenuePerSecond}`
@@ -144,11 +147,23 @@ export class BusinessManager {
         }
     }
 
-    earnMoney(amount: bigint){
-        this.currency += amount;
-        this.totalEarned += amount;
+    earnMoney(amount: bigint) {
+        const FAN_MULTIPLIER_SCALE = 100n;
+
+        // Calculate the fan multiplier
+        const fanMultiplier = FAN_MULTIPLIER_SCALE + (this.fans * 1n);
+
+        // Adjust the amount using the fan multiplier
+        const boostedAmount = (amount * fanMultiplier) / FAN_MULTIPLIER_SCALE;
+
+        // Add the boosted amount to both currency and totalEarned
+        this.currency += boostedAmount;
+        this.totalEarned += boostedAmount;
+
+        // Check for fan rewards
         this.checkAndAwardFans();
     }
+
     checkAndAwardFans(): void {
         while (this.totalEarned >= this.nextFanThreshold) {
             // Award a fan and calculate the next threshold
