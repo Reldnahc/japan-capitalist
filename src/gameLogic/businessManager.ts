@@ -10,7 +10,7 @@ export class BusinessManager {
     fans: bigint;
     currentFans: bigint = 0n; //current amount claimable
     nextFanThreshold: bigint = 1_000_000_000_000n;//_000_000n;
-    fanRate: bigint = 110n;
+    fanRate: bigint = 103n;
     businessTimeouts: Map<number, number> = new Map();
     unlocks: GlobalUnlock[] = [];
 
@@ -20,6 +20,10 @@ export class BusinessManager {
         this.totalEarned = totalEarned;
         this.fans = fans;
         this.unlocks = unlocks;
+    }
+
+    addFans(amount: bigint){
+        this.fans += amount;
     }
 
     buyBusiness(index: number, amount: string = "x1") {
@@ -147,19 +151,23 @@ export class BusinessManager {
         }
     }
 
-    earnMoney(amount: bigint) {
-        const FAN_MULTIPLIER_SCALE = 100n;
+    earnMoney(amount: bigint, boost = true) {
+        if (boost) {
+            const FAN_MULTIPLIER_SCALE = 100n;
 
-        // Calculate the fan multiplier
-        const fanMultiplier = FAN_MULTIPLIER_SCALE + (this.fans * 1n);
+            // Calculate the fan multiplier
+            const fanMultiplier = FAN_MULTIPLIER_SCALE + (this.fans * 1n);
 
-        // Adjust the amount using the fan multiplier
-        const boostedAmount = (amount * fanMultiplier) / FAN_MULTIPLIER_SCALE;
+            // Adjust the amount using the fan multiplier
+            const boostedAmount = (amount * fanMultiplier) / FAN_MULTIPLIER_SCALE;
 
-        // Add the boosted amount to both currency and totalEarned
-        this.currency += boostedAmount;
-        this.totalEarned += boostedAmount;
-
+            // Add the boosted amount to both currency and totalEarned
+            this.currency += boostedAmount;
+            this.totalEarned += boostedAmount;
+        } else {
+            this.currency += amount;
+            this.totalEarned += amount;
+        }
         // Check for fan rewards
         this.checkAndAwardFans();
     }
@@ -256,15 +264,24 @@ export class BusinessManager {
 
             if (target && target.trim() === "ALL") {
                 // Apply to all businesses
-                this.businesses.forEach(b => {
+                this.businesses.forEach((b,index) => {
                     b.revenue *= BigInt(Math.floor(multiplier));
+                    if (business.manager?.hired && business.productionTime <= SPEED_THRESHOLD) {
+                        this.stopRevenuePolling(index); // Stop old polling
+                        this.pollRevenue(index); // Start new polling with updated values
+                    }
                 });
             } else if (target){
                 // Apply to specific businesses (comma-separated identifiers)
                 const targets = target.split(",").map(t => t.trim());
-                this.businesses.forEach(b => {
+                this.businesses.forEach((b) => {
                     if (targets.includes(b.name.toLowerCase())) {
                         b.revenue *= BigInt(Math.floor(multiplier));
+                    }
+                    const index = this.businesses.findIndex(b => b === business);
+                    if (business.manager?.hired && business.productionTime <= SPEED_THRESHOLD) {
+                        this.stopRevenuePolling(index); // Stop old polling
+                        this.pollRevenue(index); // Start new polling with updated values
                     }
                 });
             } else {

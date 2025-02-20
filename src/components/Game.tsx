@@ -15,6 +15,13 @@ import SettingsPanel from "./panels/SettingsPanel.tsx";
 import { motion, AnimatePresence } from "framer-motion";
 import FansPanel from "./panels/FansPanel.tsx";
 
+// Extend the TypeScript definition for the Window object
+declare global {
+    interface Window {
+        money: (amount: string) => void;
+        fans: (amount: string) => void;
+    }
+}
 
 const game = new IdleGame();
 
@@ -37,6 +44,17 @@ const Game = () => {
     const readyBusinessesCount = businesses.filter(
         (business) => business.quantity > 0 && !business.isProducing
     ).length;
+
+    useEffect(() => {
+        window.money = (amount: string) => {
+            game.businessManager.earnMoney(BigInt(amount), false);
+        };
+        window.fans = (amount: string) => {
+            game.businessManager.addFans(BigInt(amount));
+        };
+
+        console.log("Specific game functions are now available globally in the console!");
+    }, []);
 
     useEffect(() => {
         const timeout = setTimeout(() => {

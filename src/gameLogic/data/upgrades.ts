@@ -1,8 +1,8 @@
 import {Upgrade} from "../types/manager.types.ts";
 
 export const takoyakiUpgrades: Upgrade[] = [
-    { name: "Efficiency", cost: 10000n, effect: "Speed +50%", unlocked: false },
-    { name: "Efficiency", cost: 50000n, effect: "Speed +50%", unlocked: false },
+    { name: "Efficiency", cost: 10000n, effect: "Speed +100%", unlocked: false },
+    { name: "Efficiency", cost: 50000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 1500000n, effect: "Revenue ×3", unlocked: false },
     { name: "Efficiency", cost: 125000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 15000000000n, effect: "Revenue ×3", unlocked: false },
@@ -10,17 +10,17 @@ export const takoyakiUpgrades: Upgrade[] = [
 ];
 
 export const ramenUpgrades: Upgrade[] = [
-    { name: "Efficiency", cost: 50000n, effect: "Speed +50%", unlocked: false },
+    { name: "Efficiency", cost: 50000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 725000n, effect: "Revenue ×5", unlocked: false },
-    { name: "Efficiency", cost: 2500000n, effect: "Speed +50%", unlocked: false },
+    { name: "Efficiency", cost: 2500000n, effect: "Speed +100%", unlocked: false },
     { name: "Efficiency", cost: 3250000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 455000000000n, effect: "Revenue ×22", unlocked: false },
     { name: "Revenue", cost: 12500000000000n, effect: "Revenue ×7", unlocked: false },
 ];
 
 export const burgerUpgrades: Upgrade[] = [
-    { name: "Efficiency", cost: 1000000n, effect: "Speed +50%", unlocked: false },
-    { name: "Efficiency", cost: 50000000n, effect: "Speed +50%", unlocked: false },
+    { name: "Efficiency", cost: 1000000n, effect: "Speed +100%", unlocked: false },
+    { name: "Efficiency", cost: 50000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 112000000n, effect: "Revenue ×2", unlocked: false },
     { name: "Efficiency", cost: 3500000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 80000000000n, effect: "Revenue ×2", unlocked: false },
@@ -28,8 +28,8 @@ export const burgerUpgrades: Upgrade[] = [
 ];
 
 export const sushiUpgrades: Upgrade[] = [
-    { name: "Efficiency", cost: 6500000n, effect: "Speed +50%", unlocked: false },
-    { name: "Efficiency", cost: 320000000n, effect: "Speed +50%", unlocked: false },
+    { name: "Efficiency", cost: 6500000n, effect: "Speed +100%", unlocked: false },
+    { name: "Efficiency", cost: 320000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 450000000n, effect: "Revenue ×2", unlocked: false },
     { name: "Efficiency", cost: 12000000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 250000000000n, effect: "Revenue ×3", unlocked: false },
@@ -37,8 +37,8 @@ export const sushiUpgrades: Upgrade[] = [
 ];
 
 export const convenienceUpgrades: Upgrade[] = [
-    { name: "Efficiency", cost: 22000000n, effect: "Speed +50%", unlocked: false },
-    { name: "Efficiency", cost: 1500000000n, effect: "Speed +50%", unlocked: false },
+    { name: "Efficiency", cost: 22000000n, effect: "Speed +100%", unlocked: false },
+    { name: "Efficiency", cost: 1500000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 3200000000n, effect: "Revenue ×2", unlocked: false },
     { name: "Efficiency", cost: 42000000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 840000000000n, effect: "Revenue ×2", unlocked: false },
@@ -46,8 +46,8 @@ export const convenienceUpgrades: Upgrade[] = [
 ];
 
 export const pachinkoUpgrades: Upgrade[] = [
-    { name: "Efficiency", cost: 445000000n, effect: "Speed +50%", unlocked: false },
-    { name: "Efficiency", cost: 8900000000n, effect: "Speed +50%", unlocked: false },
+    { name: "Efficiency", cost: 445000000n, effect: "Speed +100%", unlocked: false },
+    { name: "Efficiency", cost: 8900000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 24500000000n, effect: "Revenue ×2", unlocked: false },
     { name: "Efficiency", cost: 580000000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 15000000000000n, effect: "Revenue ×3", unlocked: false },
@@ -55,8 +55,8 @@ export const pachinkoUpgrades: Upgrade[] = [
 ];
 
 export const videoGamesUpgrades: Upgrade[] = [
-    { name: "Efficiency", cost: 4500000000n, effect: "Speed +50%", unlocked: false },
-    { name: "Efficiency", cost: 90000000000n, effect: "Speed +50%", unlocked: false },
+    { name: "Efficiency", cost: 4500000000n, effect: "Speed +100%", unlocked: false },
+    { name: "Efficiency", cost: 90000000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 850000000000n, effect: "Revenue ×2", unlocked: false },
     { name: "Efficiency", cost: 17000000000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 850000000000000n, effect: "Revenue ×3", unlocked: false },
@@ -64,8 +64,8 @@ export const videoGamesUpgrades: Upgrade[] = [
 ];
 
 export const tvUpgrades: Upgrade[] = [
-    { name: "Efficiency", cost: 350000000000n, effect: "Speed +50%", unlocked: false },
-    { name: "Efficiency", cost: 5000000000000n, effect: "Speed +50%", unlocked: false },
+    { name: "Efficiency", cost: 350000000000n, effect: "Speed +100%", unlocked: false },
+    { name: "Efficiency", cost: 5000000000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 15000000000000n, effect: "Revenue ×2", unlocked: false },
     { name: "Efficiency", cost: 750000000000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 5000000000000000n, effect: "Revenue ×3", unlocked: false },
@@ -73,8 +73,8 @@ export const tvUpgrades: Upgrade[] = [
 ];
 
 export const carsUpgrades: Upgrade[] = [
-    { name: "Efficiency", cost: 10000000000000n, effect: "Speed +50%", unlocked: false },
-    { name: "Efficiency", cost: 2500000000000000n, effect: "Speed +50%", unlocked: false },
+    { name: "Efficiency", cost: 10000000000000n, effect: "Speed +100%", unlocked: false },
+    { name: "Efficiency", cost: 2500000000000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 1000000000000000n, effect: "Revenue ×2", unlocked: false },
     { name: "Efficiency", cost: 25000000000000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 900000000000000000n, effect: "Revenue ×3", unlocked: false },
@@ -82,8 +82,8 @@ export const carsUpgrades: Upgrade[] = [
 ];
 
 export const idolsUpgrades: Upgrade[] = [
-    { name: "Efficiency", cost: 1000000000000000n, effect: "Speed +50%", unlocked: false },
-    { name: "Efficiency", cost: 250000000000000000n, effect: "Speed +50%", unlocked: false },
+    { name: "Efficiency", cost: 1000000000000000n, effect: "Speed +100%", unlocked: false },
+    { name: "Efficiency", cost: 250000000000000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 100000000000000000n, effect: "Revenue ×2", unlocked: false },
     { name: "Efficiency", cost: 2500000000000000000n, effect: "Speed +100%", unlocked: false },
     { name: "Revenue", cost: 90000000000000000000n, effect: "Revenue ×3", unlocked: false },

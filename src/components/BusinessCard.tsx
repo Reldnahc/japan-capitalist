@@ -78,7 +78,6 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
         adjustedRevenuePerSecond = (business.revenuePerSecond * fanMultiplier) / FAN_MULTIPLIER_SCALE;
     }
     const adjustedRevenue = (business.revenue * BigInt(business.quantity) * fanMultiplier) / FAN_MULTIPLIER_SCALE;
-
     return (
         <div className="flex items-center border-2  border-gray-500 px-2 py-1 rounded-md bg-gray-800 bg-opacity-40">
             {/* Start Production Button */}

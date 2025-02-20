@@ -82,13 +82,13 @@ export class IdleGame {
         }
     }
 
-    // Clear the save interval (used during reset or cleanup)
+    /*// Clear the save interval (used during reset or cleanup)
     private clearSaveInterval() {
         if (this.saveInterval !== null) {
             clearInterval(this.saveInterval);
             this.saveInterval = null;
         }
-    }
+    }*/
 
     saveGameState() {
         const currentSessionPlaytime = Date.now() - this.sessionStartTime;
@@ -212,28 +212,40 @@ export class IdleGame {
         // Clear local storage
         this.clearGameState();
 
+        this.businessManager.businessTimeouts.forEach((timeoutId, index) => {
+            clearTimeout(timeoutId); // Clear each timeout
+            this.businessManager.businessTimeouts.delete(index); // Remove it from the map
+        });
+
         // Clear all individual business timeouts
-        this.businessManager.businessTimeouts.forEach((timeoutId) => {
-            clearTimeout(timeoutId);
+        this.businessManager.businesses.forEach((_, index) => {
+            this.businessManager.stopRevenuePolling(index); // Stop polling for each business
         });
 
         // Clear the timeout map
         this.businessManager.businessTimeouts.clear();
 
-        this.clearSaveInterval();
-
-        // Reset all properties to their initial state
-        this.businessManager.currency = BigInt(0);
-        this.totalPlaytime = 0; // Reset playtime
         this.businessManager.businesses = defaultBusinesses.map((business) => ({
             ...business,
             cost: business.baseCost,
             isProducing: false,
             startTime: 0,
             endTime: 0,
+            unlocks: business.unlocks.map((unlock) => ({
+                ...unlock,
+                applied: false, // Reset applied status
+                notified: false, // Reset notification status
+            })),
         }));
 
         this.businessManager.unlocks = [];
+        this.businessManager.checkAllUnlocksAndUpgrades(false);
+        this.businessManager.currency = 0n;
+        this.businessManager.totalEarned = 0n;
+        this.businessManager.fans = 0n; // Reset playtime
+        this.businessManager.nextFanThreshold = BigInt(1_000_000_000_000n);
+        this.businessManager.currentFans = 0n;
+        this.totalPlaytime = 0; // Reset playtime
     }
 
     prestige() {
