@@ -1,4 +1,6 @@
-import React from "react";
+import React, {useState} from "react";
+import Alert from "../Alert.tsx";
+import CreditsSection from "../CreditsSection.tsx";
 
 interface SettingsPanelProps {
     isMuted: boolean;
@@ -19,6 +21,20 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                                          onVolumeChange,
                                                          onResetGame,
                                                      }) => {
+    const [isAlertOpen, setIsAlertOpen] = useState(false); // State for managing alert visibility
+    const handleResetGameClick = () => {
+        setIsAlertOpen(true); // Open the alert when the Reset Game button is pressed
+    };
+
+    const handleConfirmReset = () => {
+        onResetGame(); // Execute onResetGame action
+        setIsAlertOpen(false); // Close the alert
+    };
+
+    const handleCancelReset = () => {
+        setIsAlertOpen(false); // Dismiss the alert without taking action
+    };
+
     return (
         <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8">
             {/* Playtime Section */}
@@ -79,25 +95,42 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
 
             {/* Credits Section */}
-            <div className="text-center mt-4">
-                <p className="text-black text-5xl">Credits:</p>
-                <p className="text-black text-2xl font-bold">Development:</p>
-                <p className="text-black text-xl">Chandler</p>
-                <p className="text-black text-2xl font-bold">Playtesting:</p>
-                <p className="text-black text-xl mb-3">Victor, Despot, Danielle, Logan, Aaron</p>
-                <p className="text-black text-xl mb-3">Cash Register by kiddpark -- https://freesound.org/s/201159/ -- License: Attribution 4.0</p>
+            <CreditsSection/>
+            <div    className={`text-red-500 text-center mt-3 font-bold`}>
+                Warning the below button will reset ALL progress and cannot be undone.
             </div>
-
             {/* Reset Game Button */}
             <div className="flex justify-center mt-6">
                 <button
-                    onClick={onResetGame}
+                    onClick={handleResetGameClick}
                     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
                 >
                     Reset Game
                 </button>
             </div>
-        </div>
+            <Alert
+                isOpen={isAlertOpen}
+                text={
+                    <div>
+                        <strong>Warning:</strong> Are you sure you want to reset the game? <br />
+                        <span className="text-red-600">This action will delete all progress and cannot be undone.</span>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Cancel", // Dismiss button text
+                        onClick: handleCancelReset, // Dismiss action
+                        styleClass: "bg-gray-500 text-white hover:bg-gray-600",
+                    },
+                    {
+                        label: "Confirm", // Confirm button text
+                        onClick: handleConfirmReset, // Confirm action
+                        styleClass: "bg-red-500 text-white hover:bg-red-600",
+                    },
+                ]}
+                closeAlert={() => setIsAlertOpen(false)} // Close the alert when dismissed
+            />
+    </div>
     );
 };
 

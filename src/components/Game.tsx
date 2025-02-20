@@ -13,6 +13,7 @@ import backgroundMusic from '../assets/sounds/background.mp3';
 import cashRegisterSound from '../assets/sounds/cash-register.mp3';
 import SettingsPanel from "./panels/SettingsPanel.tsx";
 import { motion, AnimatePresence } from "framer-motion";
+import FansPanel from "./panels/FansPanel.tsx";
 
 
 const game = new IdleGame();
@@ -311,48 +312,12 @@ const Game = () => {
                                     />
                                 )}
                                 {activePanel === "Fans" && (
-                                    <div
-                                        className={`h-[70vh] overflow-y-auto px-6 pb-6 flex flex-col gap-6 items-center  rounded-lg`}
-                                    >
-                                        <div className="text-center">
-                                            <h2 className="text-2xl font-bold  ">
-                                                Fans Panel
-                                            </h2>
-                                            <p className=" text-base md:text-xl text-gray-800  mt-2">
-                                                Gather fans to restart your progress and enjoy a <b>1%</b> revenue
-                                                bonus for every fan you claim!
-                                            </p>
-                                        </div>
+                                    <FansPanel
+                                        currentFans={game.businessManager.currentFans}
+                                        totalFans={fans}
+                                        onClaimFans={handlePrestige}
+                                    />
 
-                                        <div
-                                            className={`flex flex-col items-center justify-center w-full max-w-52 py-4 bg-blue-50 rounded-lg shadow `}
-                                        >
-                                            <p className="text-lg font-medium text-gray-600 ">
-                                                Available Fans to Claim:
-                                            </p>
-                                            <div className="text-4xl font-extrabold text-blue-600 d mt-2">
-                                                {game.businessManager.currentFans}
-                                            </div>
-                                        </div>
-
-                                        <div
-                                            className={`flex flex-col items-center justify-center w-full max-w-52 py-4 bg-green-50 rounded-lg shadow `}
-                                        >
-                                            <p className="text-lg font-medium text-gray-600 ">
-                                                Current Fans:
-                                            </p>
-                                            <div className="text-4xl font-extrabold text-green-600  mt-2">
-                                                {game.businessManager.fans}
-                                            </div>
-                                        </div>
-
-                                        <button
-                                            onClick={handlePrestige}
-                                            className="bg-red-500 text-white px-6 py-3 rounded-md hover:bg-red-600 transition-all focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800 font-bold mt-4"
-                                        >
-                                            Claim Fans!
-                                        </button>
-                                    </div>
                                 )}
                                 {activePanel === "Settings" && (
                                     <SettingsPanel
