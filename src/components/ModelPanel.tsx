@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 
 interface ModalPanelProps {
     title: string; // Title of the panel
@@ -7,6 +7,24 @@ interface ModalPanelProps {
 }
 
 const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => {
+
+    useEffect(() => {
+        // Handler for escape key press
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                onClose(); // Call the onClose function
+            }
+        };
+
+        // Attach event listener
+        window.addEventListener("keydown", handleKeyDown);
+
+        // Cleanup listener on unmount
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [onClose]);
+
     return (
         <>
             {/* Dimmed Background */}

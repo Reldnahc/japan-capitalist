@@ -45,6 +45,50 @@ const Game = () => {
     ).length;
 
     useEffect(() => {
+        const handleKeyPress = (event: KeyboardEvent) => {
+            if (event.key === "m" || event.key === "M") {
+                // Toggle mute when "M" key is pressed
+                toggleMute();
+            } else if (["1", "2", "3", "4", "5", "6"].includes(event.key)) {
+                // Map nummber keys to specific purchase amounts
+                let selectedAmount: string;
+                switch (event.key) {
+                    case "1":
+                        selectedAmount = "x1"; // 1 maps to x1
+                        break;
+                    case "2":
+                        selectedAmount = "x5"; // 2 maps to x5
+                        break;
+                    case "3":
+                        selectedAmount = "x10"; // 3 maps to x10
+                        break;
+                    case "4":
+                        selectedAmount = "x100"; // 4 maps to x100
+                        break;
+                    case "5":
+                        selectedAmount = "next"; // 5 maps to next
+                        break;
+                    case "6":
+                        selectedAmount = "max"; // 6 maps to max
+                        break;
+                    default:
+                        selectedAmount = "x1"; // Default to x1 if no match
+                        break;
+                }
+                setPurchaseAmount(selectedAmount); // Update the selected purchase amount
+            }
+        };
+
+        // Add the event listener
+        window.addEventListener("keydown", handleKeyPress);
+
+        // Cleanup the event listener when the component unmounts
+        return () => {
+            window.removeEventListener("keydown", handleKeyPress);
+        };
+    }, []);
+
+    useEffect(() => {
         window.money = (amount: string) => {
             game.businessManager.earnMoney(BigInt(amount), false);
         };

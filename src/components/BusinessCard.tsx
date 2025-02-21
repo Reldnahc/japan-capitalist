@@ -69,6 +69,18 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
         return { totalCost, quantityToBuy };
     };
 
+    const getVisualEffects = () => {
+        const effects = {
+            showLightning: false
+        };
+
+        if (adjustedRevenuePerSecond >= 1_000_000_000_000_000n) {
+            effects.showLightning = true;
+        }
+
+        return effects;
+    };
+
     const getProgressBarColor = (): string => {
         if (business.productionTime >= SPEED_THRESHOLD) {
             return "hsl(120, 70%, 55%)"; // Calm green
@@ -156,6 +168,27 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                 <div className=" flex-1 rounded-lg h-24 px-1 py-1 md:py-0 flex flex-col justify-between relative">
                     {/* Progress Bar */}
                     <div className="w-full bg-gray-300 h-12 md:h-14 rounded-b-sm overflow-hidden mb-1 relative">
+                        {/* Add effects container */}
+                        <div className="absolute inset-0 pointer-events-none">
+                            {/* Lightning Effect */}
+                            {getVisualEffects().showLightning && (
+                                <svg
+                                    className="absolute inset-0 w-full h-full animate-lightningFlash z-50"
+                                    viewBox="0 0 100 100"
+                                    preserveAspectRatio="none"
+                                >
+                                    <path
+                                        d="M0,50 L20,30 L40,70 L60,40 L80,60 L100,50"
+                                        stroke="yellow"
+                                        strokeWidth="2"
+                                        fill="none"
+                                        strokeLinecap="round"
+                                        opacity="0.7"
+                                    />
+                                </svg>
+                            )}
+
+                        </div>
                         {/* Text Outside the Bar */}
                         <span
                             className="text-nowrap text-xl ml-6 text-black font-fredoka absolute top-1/2 transform -translate-y-1/2 z-20"

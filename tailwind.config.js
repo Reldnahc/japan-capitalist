@@ -24,12 +24,21 @@ export default {
         'gold-glow': {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
-        }
+        },
+        lightningFlash: {
+        '0%, 100%': { opacity: '0' },
+        '2%': { opacity: '1' },
+        '4%': { opacity: '0' },
+        '6%': { opacity: '1' },
+        '8%': { opacity: '0' },
+      }
+
       },
       animation: {
         glow: 'glow 1.5s ease-in-out infinite',
         shine: 'shine 2s infinite',
-        'gold-glow': 'gold-glow 3s ease infinite'
+        'gold-glow': 'gold-glow 3s ease infinite',
+        lightningFlash: 'lightningFlash 4s infinite'
       },
       backgroundImage: {
         'gold-gradient': 'linear-gradient(45deg, #ccac00, #d4af37, #f6e27a, #b08904)',
@@ -39,7 +48,7 @@ export default {
         'gold-inner': 'inset 0 2px 4px rgba(255, 255, 255, 0.3), inset 0 -2px 4px rgba(0, 0, 0, 0.4)',
         'gold-outer': '0 4px 6px rgba(0, 0, 0, 0.6)'
       }
-    },
+    }
   },
   plugins: [
     require('tailwindcss-textshadow'),

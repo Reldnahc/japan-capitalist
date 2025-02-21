@@ -129,12 +129,10 @@ export class IdleGame {
         const savedState = localStorage.getItem('idleGameState');
         if (savedState) {
             const state = JSONbig.parse(savedState);
-            console.log(state.currency.toFixed());
-            console.log(state.currency);
-            const savedCurrency = BigInt(state.currency.toFixed() || 0);
-            const savedTotalEarned = BigInt(state.totalEarned.toFixed() || 0);
+            const savedCurrency = BigInt(state.currency?.toFixed() || 0);
+            const savedTotalEarned = BigInt(state.totalEarned?.toFixed() || 0);
             const savedTotalPlayTime = state.totalPlaytime || 0;
-            const savedFans = BigInt(state.fans.toFixed() || 0);
+            const savedFans = BigInt(state.fans?.toFixed() || 0);
 
             const savedBusinesses = state.businesses || [];
 
