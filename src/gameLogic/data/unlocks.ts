@@ -165,7 +165,7 @@ export const convenienceUnlocks: Unlock[] = [
     { milestone: 77, effect: "Revenue ×3", applied: false },
     { milestone: 88, effect: "Revenue ×2; ALL", applied: false },
     { milestone: 99, effect: "Revenue ×2", applied: false },
-    { milestone: 111, effect: "Revenue ×2", applied: false },
+    { milestone: 111, effect: "Revenue ×5; takoyaki, ramen, burgers, sushi", applied: false },
     { milestone: 222, effect: "Revenue ×5", applied: false },
     { milestone: 333, effect: "Revenue ×5", applied: false },
     { milestone: 444, effect: "Revenue ×5", applied: false },
@@ -179,9 +179,9 @@ export const convenienceUnlocks: Unlock[] = [
 ];
 
 export const pachinkoUnlocks: Unlock[] = [
-    { milestone: 10, effect: "Revenue ×2", applied: false },
+    { milestone: 10, effect: "Revenue ×5", applied: false },
     { milestone: 25, effect: "Speed +100%", applied: false },
-    { milestone: 50, effect: "Revenue ×3", applied: false },
+    { milestone: 50, effect: "Revenue ×6", applied: false },
     { milestone: 100, effect: "Speed +200%", applied: false },
     { milestone: 200, effect: "Revenue ×3", applied: false },
     { milestone: 300, effect: "Revenue ×3", applied: false },

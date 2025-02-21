@@ -33,7 +33,6 @@ const Game = () => {
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const [notification, setNotification] = useState<string | null>(null);
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
-    const [stableReadyBusinessesCount, setStableReadyBusinessesCount] = useState(0);
     const [purchaseAmount, setPurchaseAmount] = useState("x1"); // New state for selected purchase amount
     const [isMuted, setIsMuted] = useState(AudioManager.getMuted());
     const [volume, setVolume] = useState(0.5); // Default half volume
@@ -42,7 +41,7 @@ const Game = () => {
     );
 
     const readyBusinessesCount = businesses.filter(
-        (business) => business.quantity > 0 && !business.isProducing
+        (business) => business.quantity > 0 && !business.isProducing && business.manager?.hired === false
     ).length;
 
     useEffect(() => {
@@ -55,14 +54,6 @@ const Game = () => {
 
         console.log("Specific game functions are now available globally in the console!");
     }, []);
-
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setStableReadyBusinessesCount(readyBusinessesCount); // Update the stable count after 50ms
-        }, 50);
-
-        return () => clearTimeout(timeout); // Clean up to prevent memory leaks
-    }, [readyBusinessesCount]);
 
     // Update currency and progress bars using requestAnimationFrame for smooth updates
     useEffect(() => {
@@ -379,7 +370,7 @@ const Game = () => {
                 onOpenPanel={handleOpenPanel}
                 onPurchaseAmountChange={(amount) => setPurchaseAmount(amount)}
                 onStartProductionForBusiness={handleStartProductionForBusiness}
-                readyBusinessesCount={stableReadyBusinessesCount}
+                readyBusinessesCount={readyBusinessesCount}
                 isMuted={isMuted}
                 onToggleMute={toggleMute}
             />

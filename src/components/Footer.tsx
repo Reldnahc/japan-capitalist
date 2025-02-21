@@ -144,7 +144,7 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
 
                     {/* Buttons take remaining space to the right */}
                     <div className="flex items-center ml-auto space-x-2">
-                        {readyBusinessesCount > 0 && (
+                        {readyBusinessesCount > 0  && (
                             <button
                                 onClick={onStartProductionForBusiness}
                                 className="relative bg-red-600 text-white min-w-12 px-3 md:h-16 md:w-20 md:text-2xl py-2 rounded hover:bg-red-700 transition"
