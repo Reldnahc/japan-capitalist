@@ -92,10 +92,9 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                                                 upgrade.unlocked ? "bg-green-100" : "bg-gray-200"
                                             }`}
                                         >
-                                            <span className="font-medium">{upgrade.name}</span>
-                                            <span className="text-sm text-gray-600">{upgrade.effect}</span>
+                                            <span className="font-medium text-sm md:text-base w-32">{upgrade.effect}</span>
+                                            <span className="text-gray-800 text-sm md:text-lg w-full ml-6  text-left">¥${formatBigIntWithSuffix(upgrade.cost)}</span>
                                             <button
-                                                disabled={upgrade.unlocked || currency < upgrade.cost}
                                                 onClick={() => {
                                                     const businessIndex = businesses.findIndex(
                                                         (b) => b.name === selectedBusiness.name
@@ -104,13 +103,35 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                                                         onManagerUpgrade(businessIndex, idx);
                                                     }
                                                 }}
-                                                className={`px-3 py-1 text-sm rounded ${
+                                                disabled={upgrade.unlocked || currency < upgrade.cost}
+                                                className={`relative px-1 py-1 text-xs md:text-lg rounded w-20 md:w-28 flex justify-center items-center ${
                                                     upgrade.unlocked
-                                                        ? "bg-gray-300 text-white cursor-not-allowed"
-                                                        : "bg-blue-500 text-white hover:bg-blue-600"
+                                                        ? "bg-gray-400 text-white cursor-not-allowed"
+                                                        : currency < upgrade.cost
+                                                            ? "bg-gray-300 text-gray-500 cursor-not-allowed" // Can't afford: gray background
+                                                            : "bg-gold-gradient text-white hover:brightness-120 animate-gold-glow shadow-gold-outer" // Can afford: gold button
                                                 }`}
+                                                style={{
+                                                    backgroundSize: '300% 300%',
+                                                }}
                                             >
-                                                {upgrade.unlocked ? "Purchased" : `¥${formatBigIntWithSuffix(upgrade.cost)}`}
+                                                {/* Shine Animation Overlay (only for active buttons) */}
+                                                {!upgrade.unlocked && currency >= upgrade.cost && (
+                                                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/10 via-white/50 to-white/10 opacity-0 hover:opacity-75 animate-shine pointer-events-none" />
+                                                )}
+
+                                                {/* Button Text */}
+                                                <span
+                                                    className={`text-sm md:text-base font-extrabold ${
+                                                        upgrade.unlocked
+                                                            ? "" // No special styling for unlocked buttons
+                                                            : currency < upgrade.cost
+                                                                ? "" // No text shadow for unaffordable gray buttons
+                                                                : "[text-shadow:0px_1px_2px_rgba(255,215,0,0.9),0px_3px_5px_rgba(0,0,0,0.8)]" // Special gold shadow styling
+                                                    }`}
+                                                >
+                                                {upgrade.unlocked ? "Bought" : "Buy"}
+                                            </span>
                                             </button>
                                         </div>
                                     ))}

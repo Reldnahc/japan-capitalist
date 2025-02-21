@@ -13,6 +13,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@tailwindcss/line-clamp": "^0.4.4",
     "framer-motion": "^12.4.5",
     "json-bigint": "^1.0.0",
     "react": "^19.0.0",

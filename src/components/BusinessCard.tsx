@@ -114,35 +114,48 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
     const adjustedRevenue = (business.revenue * BigInt(business.quantity) * fanMultiplier) / FAN_MULTIPLIER_SCALE;
 
 
+    const canAffordManagerUpgrade = () => {
+        for (const upgrade of business.manager?.upgrades || []) { // Iterate over upgrades
+            if (upgrade.cost <= currency && upgrade.unlocked === false) {
+                return true; // Stop execution and return true if condition is met
+            }
+        }
+        return false; // Return false if none of the upgrades meet the condition
+    };
+
+
+
     return (
         <div className="flex items-center border-2  border-gray-500 px-2 py-1 rounded-md bg-gray-800 bg-opacity-40">
             {/* Start Production Button */}
-            <button
-                onClick={onStartProduction}
-                disabled={business.isProducing || (business.manager && business.manager.hired) || business.quantity === 0}
-                className={`relative w-20 h-20 md:w-28 md:h-28 bg-gray-200 flex items-center ring-4 ring-gray-800 justify-center mr-4 rounded-full transition-all duration-300 focus:outline-none ${
-                    !(business.isProducing || (business.manager && business.manager.hired) || business.quantity === 0)
-                        ? "ring-4 ring-yellow-400 animate-glow"
-                        : " cursor-not-allowed"
-                }`}
-                style={{
-                    backgroundImage: `url(/japan-capitalist/images/businesses/${business.name.toLowerCase().replace(" ","")}/icon.webp)`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                }}
-            >
-                <span className="absolute -top-1 left-1/2 transform -translate-x-1/2 font-bold text-base md:text-lg text-black text-shadow-white-outline text-nowrap">{business.name}</span>
-                {/* Quantity and Next Unlock */}
-                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 px-1.5 py-0.5 text-nowrap bg-black bg-opacity-60 rounded text-white text-xs md:text-sm font-semibold">
-                    {business.quantity} / {nextUnlockMilestone || "-"}
-                </div>
-            </button>
+            <div className="">
+                <button
+                    onClick={onStartProduction}
+                    disabled={business.isProducing || (business.manager && business.manager.hired) || business.quantity === 0}
+                    className={`relative w-20 h-20 md:w-28 md:h-28 bg-gray-200 flex items-center ring-4 ring-gray-800 justify-center mr-4 rounded-full transition-all duration-300 focus:outline-none ${
+                        !(business.isProducing || (business.manager && business.manager.hired) || business.quantity === 0)
+                            ? "ring-4 ring-yellow-400 animate-glow"
+                            : " cursor-not-allowed"
+                    }`}
+                    style={{
+                        backgroundImage: `url(/japan-capitalist/images/businesses/${business.name.toLowerCase().replace(" ","")}/icon.webp)`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                    }}
+                >
+                    <span className="absolute -top-1 left-1/2 transform -translate-x-1/2 font-bold text-base md:text-lg text-black text-shadow-white-outline text-nowrap">{business.name}</span>
+                    {/* Quantity and Next Unlock */}
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 px-1.5 py-0.5 text-nowrap bg-black bg-opacity-60 rounded text-white text-xs md:text-sm font-semibold">
+                        {business.quantity} / {nextUnlockMilestone || "-"}
+                    </div>
+                </button>
+            </div>
 
             {/* Business Info Card (conditionally rendered) */}
             {business.quantity > 0 ? (
-                <div className="flex-1 rounded-lg h-24 px-1 py-2 flex flex-col justify-between relative">
+                <div className=" flex-1 rounded-lg h-24 px-1 py-1 md:py-0 flex flex-col justify-between relative">
                     {/* Progress Bar */}
-                    <div className="w-full bg-gray-300 h-12 rounded-b-sm overflow-hidden mb-1 relative">
+                    <div className="w-full bg-gray-300 h-12 md:h-14 rounded-b-sm overflow-hidden mb-1 relative">
                         {/* Text Outside the Bar */}
                         <span
                             className="text-nowrap text-xl ml-6 text-black font-fredoka absolute top-1/2 transform -translate-y-1/2 z-20"
@@ -171,22 +184,45 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                     </div>
 
                     {/* Buttons Section */}
-                    <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center justify-between">
                         {/* Buy Button */}
-                        <div className="flex">
+                        <div className="flex flex-1">
                             <button
                                 onClick={onBuyBusiness}
                                 disabled={isButtonDisabled}
-                                className={`px-2 py-1 rounded md:text-base ${
+                                className={`relative w-full mr-1 px-2 py-1 rounded h-8 md:h-10 text-xs md:text-base flex flex-col items-center justify-center leading-none overflow-hidden ${
                                     isButtonDisabled
                                         ? "bg-gray-400 cursor-not-allowed"
-                                        : "bg-green-500 hover:bg-green-600 text-white"
+                                        : "bg-gold-gradient text-white cursor-pointer hover:brightness-120 animate-gold-glow shadow-gold-outer"
                                 }`}
+                                style={{
+                                    backgroundSize: '300% 300%',
+                                }}
                             >
-                                {purchaseAmount === "max" || purchaseAmount === "next"
-                                    ? `${quantityToBuy} x`
-                                    : purchaseAmount}{" "}
+                                {/* Shine Animation Overlay */}
+                                {!isButtonDisabled && (
+                                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/10 via-white/50 to-white/10 opacity-0 hover:opacity-75 animate-shine pointer-events-none" />
+                                )}
+
+                                {/* Button Text */}
+                                <span
+                                    className={`text-sm md:text-base font-extrabold ${
+                                        !isButtonDisabled
+                                            ? "[text-shadow:0px_1px_2px_rgba(255,215,0,0.9),0px_3px_5px_rgba(0,0,0,0.8)]"
+                                            : ""
+                                    }`}
+                                >
+                                    Buy x{quantityToBuy}
+                                </span>
+                                <span
+                                    className={`text-sm md:text-base -mt-1.5 ${
+                                        !isButtonDisabled
+                                            ? "[text-shadow:0px_1px_2px_rgba(255,215,0,0.9),0px_3px_5px_rgba(0,0,0,0.8)]"
+                                            : ""
+                                    }`}
+                                >
                                 ¥{formatBigIntWithSuffix(totalCost, 1)}
+                            </span>
                             </button>
                         </div>
 
@@ -195,7 +231,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                             {business.manager && (
                                 <button
                                     onClick={onClickManager}
-                                    className="relative flex justify-center items-center bg-blue-500 text-white px-2 py-1.5 rounded text-xs hover:bg-blue-600"
+                                    className="relative flex justify-center h-8 md:h-10 w-8 md:w-10 items-center bg-blue-500 text-white px-2 py-1.5 rounded text-xs hover:bg-blue-600"
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -210,15 +246,15 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                                         <circle cx="32" cy="20" r="12" />
                                         <path d="M16,48 a16,16 0 0,1 32,0" />
                                     </svg>
-                                    { !business.manager.hired && currency >= business.manager.cost && (
+                                    { (!business.manager.hired && currency >= business.manager.cost) || canAffordManagerUpgrade() && (
                                         <span className="absolute -top-1.5 -right-1.5 bg-yellow-500 text-black font-bold text-md w-4 h-4 flex items-center justify-center rounded-full">
-                                    !
-                                    </span>
+                                        !
+                                        </span>
                                     )}
                                 </button>
                             )}
 
-                            <div className="text-sm min-w-16 text-center text-gray-800 bg-gray-300 px-2 py-1 rounded">
+                            <div className="flex items-center justify-center text-xs md:text-sm min-w-16 md:min-w-20  h-8 md:h-10 text-center text-gray-800 bg-gray-300 px-2 py-1 rounded">
                                 {business.isProducing
                                     ? formatTime(
                                         Math.max(

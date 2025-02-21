@@ -30,6 +30,6 @@ export const businesses: Business[] = [
     new Business("Pachinko", BigInt(4050000), BigInt(105840), 1.11, 30000, pachinkoUnlocks, 0, pachinkoManager),
     new Business("Video Games", BigInt(81000000), BigInt(4558000), 1.11, 60000, videoGamesUnlocks, 0, videoGamesManager),
     new Business("TV", BigInt(1620000000), BigInt(258760000), 1.08, 3600000, tvUnlocks, 0, tvManager),
-    new Business("Cars", BigInt(24300000000), BigInt(1381400000), 1.11, 43200000, carsUnlocks, 0, carsManager),
-    new Business("Idols", BigInt(607500000000), BigInt(173900000000), 1.2, 86400000, idolsUnlocks, 0, idolsManager),
+    new Business("Cars", BigInt(24300000000), BigInt(2681400000), 1.11, 43200000, carsUnlocks, 0, carsManager),
+    new Business("Idols", BigInt(2750000000000), BigInt(343900000000), 1.2, 86400000, idolsUnlocks, 0, idolsManager),
 ];
