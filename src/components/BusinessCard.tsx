@@ -69,6 +69,40 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
         return { totalCost, quantityToBuy };
     };
 
+    const getProgressBarColor = (): string => {
+        if (business.productionTime >= SPEED_THRESHOLD) {
+            return "hsl(120, 70%, 55%)"; // Calm green
+        }
+
+        const ONE_MILLION = 1_000_000n;
+        const ONE_BILLION = 1_000_000_000n;
+        const ONE_TRILLION = 1_000_000_000_000n;
+
+        if (adjustedRevenuePerSecond < ONE_MILLION) {
+            return "hsl(55, 85%, 60%)"; // Warm yellow
+        }
+
+        if (adjustedRevenuePerSecond < ONE_BILLION) {
+            // Yellow to orange transition (1M to 1B)
+            const ratio = Number(adjustedRevenuePerSecond - ONE_MILLION) / Number(ONE_BILLION - ONE_MILLION);
+            const eased = Math.pow(ratio, 0.6); // Fast initial transition
+
+            const hue = 55 - (eased * 25); // 55° (yellow) → 30° (orange)
+            return `hsl(${hue}, 85%, 60%)`;
+        }
+
+        if (adjustedRevenuePerSecond < ONE_TRILLION) {
+            // Orange to red transition (1B to 1T)
+            const ratio = Number(adjustedRevenuePerSecond - ONE_BILLION) / Number(ONE_TRILLION - ONE_BILLION);
+            const eased = Math.pow(ratio, 0.4); // Slow final transition
+
+            const hue = 30 - (eased * 30); // 30° (orange) → 0° (red)
+            return `hsl(${hue}, ${85 - (ratio * 15)}%, ${60 - (ratio * 5)}%)`;
+        }
+
+        return "hsl(0, 70%, 55%)"; // Muted red
+    };
+
     const { totalCost, quantityToBuy } = calculateTotalPrice();
     const isButtonDisabled = totalCost > currency;
     const FAN_MULTIPLIER_SCALE = 100n; // Assume scaling in BigInt
@@ -78,6 +112,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
         adjustedRevenuePerSecond = (business.revenuePerSecond * fanMultiplier) / FAN_MULTIPLIER_SCALE;
     }
     const adjustedRevenue = (business.revenue * BigInt(business.quantity) * fanMultiplier) / FAN_MULTIPLIER_SCALE;
+
+
     return (
         <div className="flex items-center border-2  border-gray-500 px-2 py-1 rounded-md bg-gray-800 bg-opacity-40">
             {/* Start Production Button */}
@@ -122,18 +158,14 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                         {/* Progress Bar */}
                         <div
                             key={business.isProducing ? "producing" : "reset"}
-                            className={`h-full ${
-                                business.productionTime <= SPEED_THRESHOLD && business.manager?.hired
-                                    ? "bg-yellow-400"
-                                    : "bg-green-500"
-                            } flex items-center transition-transform duration-0`}
+                            className={`h-full flex w-full items-center transition-transform duration-0`}
                             style={{
+                                backgroundColor: getProgressBarColor(),
                                 transform: !business.isProducing
                                     ? "translateX(-100%)"
                                     : business.productionTime <= SPEED_THRESHOLD && business.manager?.hired
                                         ? "translateX(0)"
                                         : `translateX(${progress - 100}%)`,
-                                width: "100%", // Keep width static since we use transform
                             }}
                         ></div>
                     </div>
