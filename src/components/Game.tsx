@@ -33,16 +33,29 @@ const Game = () => {
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const [notification, setNotification] = useState<string | null>(null);
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
-    const [purchaseAmount, setPurchaseAmount] = useState("x1"); // New state for selected purchase amount
     const [isMuted, setIsMuted] = useState(AudioManager.getMuted());
-    const [volume, setVolume] = useState(0.5); // Default half volume
     const [appliedUnlocks, setAppliedUnlocks] = useState(() =>
         game.businessManager.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied))
     );
+    const [volume, setVolume] = useState(() => {
+        const savedVolume = localStorage.getItem("gameVolume");
+        return savedVolume !== null ? parseFloat(savedVolume) : 0.5; // Default to 0.5 (50%)
+    });
+    const [purchaseAmount, setPurchaseAmount] = useState(() => {
+        return localStorage.getItem("purchaseAmount") || "x1";
+    });
 
     const readyBusinessesCount = businesses.filter(
         (business) => business.quantity > 0 && !business.isProducing && business.manager?.hired === false
     ).length;
+
+    useEffect(() => {
+        localStorage.setItem("purchaseAmount", purchaseAmount);
+    }, [purchaseAmount]);
+
+    useEffect(() => {
+        localStorage.setItem("gameVolume", String(volume));
+    }, [volume]);
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {

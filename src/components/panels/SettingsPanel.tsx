@@ -65,10 +65,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         value={volume}
                         onChange={onVolumeChange}
                         className="w-full h-4 mx-2 rounded-lg appearance-none bg-gray-300 outline-none
-                            transition-all duration-200 hover:bg-gray-400 focus:ring focus:ring-purple-300"
+                            transition-all duration-200 hover:bg-gray-400 focus:ring focus:ring-blue-300"
                         style={{
                             backgroundImage:
-                                "linear-gradient(90deg, rgb(156, 39, 176) 0%, rgb(156, 39, 176) " +
+                                "linear-gradient(90deg, rgb(33, 150, 243) 0%, rgb(33, 150, 243) " +
                                 volume * 100 +
                                 "%, rgb(229, 231, 235) " +
                                 volume * 100 +
