@@ -182,7 +182,7 @@ export const pachinkoUnlocks: Unlock[] = [
     { milestone: 10, effect: "Revenue ×5", applied: false },
     { milestone: 25, effect: "Speed +100%", applied: false },
     { milestone: 50, effect: "Revenue ×6", applied: false },
-    { milestone: 100, effect: "Speed +200%", applied: false },
+    { milestone: 100, effect: "Revenue ×2", applied: false },
     { milestone: 200, effect: "Revenue ×3", applied: false },
     { milestone: 300, effect: "Revenue ×3", applied: false },
     { milestone: 400, effect: "Revenue ×3", applied: false },

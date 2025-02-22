@@ -136,7 +136,6 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
     };
 
 
-
     return (
         <div className="flex items-center border-2  border-gray-500 px-2 py-1 rounded-md bg-gray-800 bg-opacity-40">
             {/* Start Production Button */}

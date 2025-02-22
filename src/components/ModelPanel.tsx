@@ -114,21 +114,22 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
                 onClick={onClose} // Close the panel on overlay click
             ></div>
             {/* Panel Content */}
-            <div className=" relative inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <div className=" fixed inset-0 flex h-[79vh] items-center justify-center z-50 pointer-events-none my-auto">
                     {particlesElement}
 
-                <div className="rounded-lg w-full max-w-lg pt-3 shadow-xl pointer-events-auto relative">
+                <div className="rounded-lg w-full max-w-lg pt-3 pointer-events-auto relative">
 
                     {/* Close Button */}
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                        className="absolute flex items-center justify-center top-1.5 md:top-0 right-1 bg-red-500 text-white font-extrabold p-3 h-8 w-8 rounded-lg hover:bg-red-600"
                     >
                         X
                     </button>
 
                     {/* Panel Title */}
                     <h2 className="text-xl md:text-3xl font-bold mb-4 ml-3 text-white font-fredoka z-10">{title}</h2>
+                    <hr className="border-t border-gray-400 mx-1 my-2" />
 
                     {/* Panel Content */}
                     {children}

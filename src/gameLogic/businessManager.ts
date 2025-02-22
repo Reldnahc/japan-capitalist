@@ -203,9 +203,7 @@ export class BusinessManager {
 
                     // Restart production if a manager is active
                     if (business.manager?.hired) {
-                        setTimeout(() => {
-                            this.startProduction(index);
-                        }, 1);
+                        this.startProduction(index);
                     }
                     this.businessTimeouts.delete(index);
                 }, business.productionTime) as unknown as number;
@@ -258,6 +256,7 @@ export class BusinessManager {
     }
 
     applyEffect(business: Business, effect: string, updateSpeed = true) {
+        console.log(">[BusinessManager] Applying effect: " + effect);
         if (effect.includes("Revenue ×")) {
             const [revenueEffect, target] = effect.split(";");
             const multiplier = parseFloat(revenueEffect.replace("Revenue ×", "").trim());
@@ -273,11 +272,10 @@ export class BusinessManager {
             } else if (target){
                 // Apply to specific businesses (comma-separated identifiers)
                 const targets = target.split(",").map(t => t.trim());
-                this.businesses.forEach((b) => {
+                this.businesses.forEach((b, index) => {
                     if (targets.includes(b.name.toLowerCase())) {
                         b.revenue *= BigInt(Math.floor(multiplier));
                     }
-                    const index = this.businesses.findIndex(b => b === business);
                     if (b.manager?.hired && b.productionTime <= SPEED_THRESHOLD) {
                         this.stopRevenuePolling(index); // Stop old polling
                         this.pollRevenue(index); // Start new polling with updated values
@@ -347,10 +345,7 @@ export class BusinessManager {
             business.endTime = 0;
 
             if (business.manager?.hired) {
-                // For manager-driven production, restart production after a short delay.
-                setTimeout(() => {
-                    this.startProduction(index);
-                }, 1);
+                this.startProduction(index);
             }
             this.businessTimeouts.delete(index);
         }, remainingTime) as unknown as number;
