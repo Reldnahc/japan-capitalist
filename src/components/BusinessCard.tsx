@@ -173,14 +173,14 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                             {/* Lightning Effect */}
                             {getVisualEffects().showLightning && (
                                 <svg
-                                    className="absolute inset-0 w-full h-full animate-lightningFlash z-50"
+                                    className="absolute inset-0 w-full h-full animate-lightningFlash z-20"
                                     viewBox="0 0 100 100"
                                     preserveAspectRatio="none"
                                 >
                                     <path
                                         d="M0,50 L20,30 L40,70 L60,40 L80,60 L100,50"
                                         stroke="yellow"
-                                        strokeWidth="2"
+                                        strokeWidth="10"
                                         fill="none"
                                         strokeLinecap="round"
                                         opacity="0.7"

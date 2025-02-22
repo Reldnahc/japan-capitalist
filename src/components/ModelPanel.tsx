@@ -16,7 +16,7 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
         () => ( {
                 fullScreen: false, // Particles will cover the full screen
                 background: {
-                    color: "#ddd", // Black background for contrast
+                    color: "#374151", // Black background for contrast
                 },
                 fpsLimit: 60, // Maximum frames per second
                 particles: {
@@ -124,11 +124,11 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
                         onClick={onClose}
                         className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
                     >
-                        Close
+                        X
                     </button>
 
                     {/* Panel Title */}
-                    <h2 className="text-xl md:text-3xl font-bold mb-4 ml-3 font-fredoka z-10">{title}</h2>
+                    <h2 className="text-xl md:text-3xl font-bold mb-4 ml-3 text-white font-fredoka z-10">{title}</h2>
 
                     {/* Panel Content */}
                     {children}

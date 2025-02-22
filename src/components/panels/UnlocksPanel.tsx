@@ -25,7 +25,7 @@ const UnlocksPanel: React.FC<UnlocksPanelProps> = ({ businesses }) => {
                         {/* Business Name */}
                         <h3 className="text-xl md:text-3xl font-semibold mb-2 text-center">{business.name}</h3>
                         <div
-                            className="grid grid-cols-[repeat(5,minmax(auto,2.5rem))] gap-5 justify-center"
+                            className="grid grid-cols-[repeat(4,minmax(auto,2.5rem))] md:grid-cols-[repeat(5,minmax(auto,2.5rem))] gap-5 justify-center"
                         >
                             {/* Display each unlock as an icon */}
                             {business.unlocks.map((unlock, unlockIdx) => (

@@ -17,13 +17,13 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
     const handleBack = () => setSelectedBusiness(null); // Back to the selection screen
 
     return (
-        <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8" >
+        <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8 text-white" >
             {/* Business Selection Panel */}
             {!selectedBusiness && (
                 <div className="grid grid-cols-2 gap-3 w-full">
                     {businesses.map((business, index) => (
                         <div key={index} className="shadow">
-                            <h3 className="text-lg font-bold text-center z-20 ">
+                            <h3 className="text-lg md:text-2xl font-bold text-center z-20 ">
                                 {business.name}
                             </h3>
                             <div
@@ -33,7 +33,7 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                                 style={{ backgroundImage: `url('/japan-capitalist/images/businesses/${business.name.toLowerCase().replace(" ","")}/employee_face.webp')` }}
                             >
                             </div>
-                            <h3 className="text-md font-semibold text-center z-20">
+                            <h3 className="text-md md:text-lg font-semibold text-center z-20">
                                 {business.manager?.name}
                             </h3>
                         </div>
@@ -70,26 +70,26 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                             alt={selectedBusiness.name}
                             className=" object-contain rounded -mt-6"
                         />
-                        <p className="text-2xl text-black mt-3 mb-1 font-fredoka">
+                        <p className="text-2xl text-white mt-3 mb-1 font-fredoka">
                             {selectedBusiness.manager?.name} - <span className="font-yuji">{selectedBusiness.manager?.kanji}</span>
                         </p>
                         {selectedBusiness.manager?.bio && (
-                            <p className="text-md text-gray-600 italic mb-6 text-left">
+                            <p className="text-base md:text-lg text-gray-50 italic mb-6 text-left">
                                 "{selectedBusiness.manager.bio}"
                             </p>
                         )}
                         {selectedBusiness.manager?.hired ? (
                             <div className="mt-4">
-                                <h4 className="text-3xl text-gray-800 font-semibold mb-3">Upgrades</h4>
+                                <h4 className="text-3xl text-gray-50 font-semibold mb-3">Upgrades</h4>
                                 <div className="space-y-2 pb-8">
                                     {selectedBusiness.manager.upgrades?.map((upgrade, idx) => (
                                         <div
                                             key={idx}
                                             className={`flex justify-between items-center px-4 py-2 rounded-md ${
-                                                upgrade.unlocked ? "bg-green-100" : "bg-gray-200"
+                                                upgrade.unlocked ? "bg-green-100 opacity-30" : "bg-gray-300 "
                                             }`}
                                         >
-                                            <span className="font-medium text-sm md:text-base w-32">{upgrade.effect}</span>
+                                            <span className=" text-sm md:text-base text-gray-800 font-bold w-32">{upgrade.effect}</span>
                                             <span className="text-gray-800 text-sm md:text-lg w-full ml-6  text-left">¥${formatBigIntWithSuffix(upgrade.cost)}</span>
                                             <button
                                                 onClick={() => {
@@ -101,11 +101,11 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                                                     }
                                                 }}
                                                 disabled={upgrade.unlocked || currency < upgrade.cost}
-                                                className={`relative px-1 py-1 text-xs md:text-lg rounded w-20 md:w-28 flex justify-center items-center ${
+                                                className={`relative px-1 py-1 text-xs md:text-lg rounded w-20 md:w-28 flex  justify-center items-center ${
                                                     upgrade.unlocked
                                                         ? "bg-gray-400 text-white cursor-not-allowed"
                                                         : currency < upgrade.cost
-                                                            ? "bg-gray-300 text-gray-500 cursor-not-allowed" // Can't afford: gray background
+                                                            ? "bg-gray-300 text-gray-500 border-2 border-gray-400 cursor-not-allowed" // Can't afford: gray background
                                                             : "bg-gold-gradient text-white hover:brightness-120 animate-gold-glow shadow-gold-outer" // Can afford: gold button
                                                 }`}
                                                 style={{
