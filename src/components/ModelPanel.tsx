@@ -12,60 +12,152 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
     const {engine, initialized } = useContext(ParticlesContext);
     const containerRef = useRef<Container | null>(null);
 
-    const options: ISourceOptions = useMemo(
-        () => ( {
-                fullScreen: false, // Particles will cover the full screen
-                background: {
-                    color: "#374151", // Black background for contrast
-                },
-                fpsLimit: 60, // Maximum frames per second
-                particles: {
-                    number: {
-                        value: 100, // Total number of particles
-                        density: {
-                            enable: true,
-                            area: 200, // Spread particles over the visible area
+    const getImagesForBusiness = (business: string) => [
+        {
+            src: `/japan-capitalist/images/businesses/${business}/bg_1.webp`,
+            width: 64,
+            height: 64,
+        },
+        {
+            src: `/japan-capitalist/images/businesses/${business}/bg_2.webp`,
+            width: 64,
+            height: 64,
+        },
+        {
+            src: `/japan-capitalist/images/businesses/${business}/bg_3.webp`,
+            width: 64,
+            height: 64,
+        },
+    ];
+
+    const generateParticlesConfig = (panelType: string, businessName?: string): ISourceOptions => {
+        switch (panelType) {
+            case "Managers": {
+                if (!businessName) {
+                    return {
+                        fullScreen: false,
+                        background: {
+                            color: "#374151",
+                        }, particles: {
+                            number: {value: 80},
+                            color: {value: "#3498DB"}, // Blue particles
+                            shape: {type: "star"},
+                            size: {value: {min: 3, max: 8}},
+                            move: {enable: true, speed: 1},
+                        },
+                    };
+                }
+
+                // Dynamic manager-specific configuration
+                return {
+                    fpsLimit: 60,
+                    detectRetina: true,
+                    fullScreen: false,
+                    background: { color: "#374151" },
+                    emitters: {
+                        position: {
+                            x: 50,
+                            y: -10,
+                        },
+                        rate: {
+                            delay: 2,
+                            quantity: 1,
+                        },
+                        size: {
+                            width: 0,
+                            height: 0,
+                        },
+                        particles: {
+                            shape: {
+                                type: "images",
+                                options: {
+                                    images: getImagesForBusiness(businessName),
+                                },
+                            },
+                            opacity: { value: 1 },
+                            size: { value: 50 },
+                            move: {
+                                enable: true,
+                                speed: 5,
+                                direction: "top",
+                                outModes: { default: "out" },
+                            },
+                            rotate: {
+                                value: { min: 0, max: 360 },
+                                animation: { enable: true, speed: 10, sync: false },
+                            },
                         },
                     },
-                    color: {
-                        value: "#FFD700", // Yellow color for stars
-                    },
-                    shape: {
-                        type: "star", // Use the star shape
-                    },
-                    opacity: {
-                        value: 0.8, // Slightly transparent stars
-                        random: false, // Opacity remains constant
-                    },
-                    size: {
-                        value: { min: 5, max: 10 }, // Randomized size for variation
-                        random: true, // Sizes will vary for each star
-                    },
-                    move: {
-                        enable: true, // Enable movement
-                        speed: 2, // Slow falling speed
-                        direction: "bottom", // Make stars fall downward
-                        random: false, // Consistent direction
-                        outModes: {
-                            default: "out", // Stars will leave the screen after falling
-                        },
-                    },
-                    rotate: {
-                        value: 0, // Initial rotation angle (starts at 0 degrees)
-                        random: true, // Randomize initial rotation for each particle
-                        direction: "clockwise", // Make stars rotate clockwise
-                        animation: {
-                            enable: true, // Enable animation for rotation
-                            speed: 7, // Control the speed of rotation
-                            sync: false, // Each star rotates independently
-                        },
-                    },
-                },
-                detectRetina: true, // Support high-DPI devices
+                };
             }
-        ),
-        [],
-    );
+
+            case "Settings":
+                return {
+                    fullScreen: false,
+                    background: { color: "#374151" },
+                    particles: {
+                        number: { value: 50 },
+                        color: { value: "#4CAF50" },
+                        shape: { type: "star" },
+                        move: { enable: true, speed: 3, direction: "bottom" },
+                    },
+                };
+
+            case "Fans":
+                return {
+                    fullScreen: false,
+                    background: { color: "#374151" },
+                    particles: {
+                        number: { value: 100 },
+                        color: { value: "#FF5733" },
+                        shape: { type: "star" },
+                        move: { enable: true, speed: 2, direction: "bottom" },
+                    },
+                };
+
+            case "Unlocks":
+                return {
+                    fullScreen: false,
+                    background: { color: "#374151" },
+                    particles: {
+                        number: { value: 60 },
+                        color: { value: "#F1C40F" },
+                        shape: { type: "star" },
+                        move: { enable: true, speed: 4, direction: "top" },
+                    },
+                };
+
+            default:
+                return {
+                    fullScreen: false,
+                    background: { color: "#374151" },
+                    fpsLimit: 60,
+                    particles: {
+                        number: { value: 100 },
+                        color: { value: "#FFD700" },
+                        shape: { type: "star" },
+                        opacity: { value: 0.8 },
+                        size: { value: { min: 5, max: 10 }},
+                        move: { enable: true, speed: 2, direction: "bottom", outModes: { default: "out" } },
+                        rotate: {
+                            value: 0,
+                            random: true,
+                            animation: { enable: true, speed: 7, sync: false },
+                        },
+                    },
+                };
+        }
+    };
+    const options = useMemo(() => {
+        // Check if title matches "Managers - {BusinessName}" format
+        if (title.includes("Managers - ")) {
+            const businessName = title.split(" - ")[1]?.toLowerCase();
+            return generateParticlesConfig("Managers", businessName);
+        }
+
+        // Handle non-dynamic panels like Settings, Fans, etc.
+        return generateParticlesConfig(title);
+    }, [title]);
 
     const particlesLoaded = useCallback(
         async (container?: Container): Promise<void> => {

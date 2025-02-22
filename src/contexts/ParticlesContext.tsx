@@ -1,8 +1,7 @@
-// ParticlesProvider.tsx
 import { createContext, ReactNode, useEffect, useState, useRef } from "react";
 import type { Engine } from "@tsparticles/engine";
-import { loadFull } from "tsparticles";
 import { initParticlesEngine } from "@tsparticles/react";
+import {loadFull} from "tsparticles";
 
 interface ParticlesContextType {
     initialized: boolean;
