@@ -10,7 +10,7 @@ export class BusinessManager {
     fans: bigint;
     currentFans: bigint = 0n; //current amount claimable
     nextFanThreshold: bigint = 1_000_000_000_000n;//_000_000n;
-    fanRate: bigint = 103n;
+    fanRate: bigint = 102n;
     businessTimeouts: Map<number, number> = new Map();
     unlocks: GlobalUnlock[] = [];
 

@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import Alert from "../Alert.tsx";
 import CreditsSection from "../CreditsSection.tsx";
+import {FaVolumeDown, FaVolumeUp} from "react-icons/fa";
 
 interface SettingsPanelProps {
     isMuted: boolean;
@@ -37,15 +38,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
     return (
         <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8">
-            {/* Playtime Section */}
-            <div className="text-center mt-4">
-                <p className="text-black text-2xl font-bold">Total Playtime:</p>
-                <p className="text-black text-xl">{formatPlaytime(totalPlaytime)}</p>
-            </div>
+
 
             {/* Mute Button */}
-            <div className="flex items-center mt-4">
-                <label className="mr-3 text-sm">Mute:</label>
+            <div className="flex items-center mt-4 font-bold">
+                <label className="mr-3 text-base md:text-2xl ">Mute:</label>
                 <button
                     onClick={onToggleMute}
                     className={`px-4 py-2 rounded bg-${isMuted ? 'red' : 'green'}-500 text-white`}
@@ -56,15 +53,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
             {/* Volume Slider */}
             <div className="mt-6">
-                <label className="block text-sm mb-2">Volume:</label>
+                <label className="block text-base md:text-2xl mb-2 font-bold">Volume:</label>
                 <div className="flex items-center gap-3">
-                    <span
-                        className="text-2xl text-gray-700"
-                        role="img"
-                        aria-label="Low volume"
-                    >
-                        🔈
-                    </span>
+
+                    <FaVolumeDown className={`ml-2`} size={36}/>
                     <input
                         type="range"
                         min="0"
@@ -72,7 +64,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         step="0.1"
                         value={volume}
                         onChange={onVolumeChange}
-                        className="w-full h-4 rounded-lg appearance-none bg-gray-300 outline-none
+                        className="w-full h-4 mx-2 rounded-lg appearance-none bg-gray-300 outline-none
                             transition-all duration-200 hover:bg-gray-400 focus:ring focus:ring-purple-300"
                         style={{
                             backgroundImage:
@@ -83,22 +75,21 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                 "%)",
                         }}
                     />
-                    <span
-                        className="text-2xl text-gray-700"
-                        role="img"
-                        aria-label="High volume"
-                    >
-                        🔊
-                    </span>
+
+                    <FaVolumeUp className={`mr-2`} size={48} />
+
                 </div>
             </div>
-
+            <div className={`border w-4/5 mx-auto mt-3 bg-gray-300 rounded-lg opacity-75`}>
+            {/* Playtime Section */}
+            <div className="text-center mt-4">
+                <p className="text-black text-2xl font-bold">Total Playtime:</p>
+                <p className="text-black text-xl">{formatPlaytime(totalPlaytime)}</p>
+            </div>
 
             {/* Credits Section */}
             <CreditsSection/>
-            <div    className={`text-red-500 text-center mt-3 font-bold`}>
-                Warning the below button will reset ALL progress and cannot be undone.
-            </div>
+        </div>
             {/* Reset Game Button */}
             <div className="flex justify-center mt-6">
                 <button

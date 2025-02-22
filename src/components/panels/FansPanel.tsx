@@ -29,8 +29,8 @@ const FansPanel: React.FC<FansPanelProps> = ({ currentFans, totalFans, onClaimFa
                 <div className="text-center">
                     <BsPeopleFill className="mx-auto text-blue-600" size={40} />
 
-                    <p className="text-base md:text-xl text-gray-800 mt-2">
-                        Gather fans to restart your progress and enjoy a <b>1%</b> revenue bonus for every fan you claim!
+                    <p className="text-base md:text-xl text-gray-300 mt-2">
+                        Gather fans to restart your progress and enjoy a <span className={`text-lg md:text-2xl font-extrabold font-fredoka`}>1%</span> revenue bonus for every fan you claim!
                     </p>
                 </div>
 
@@ -43,7 +43,6 @@ const FansPanel: React.FC<FansPanelProps> = ({ currentFans, totalFans, onClaimFa
                     <p className="text-lg font-medium text-gray-600">Current Fans:</p>
                     <div className="text-4xl font-extrabold text-green-600 mt-2">{totalFans}</div>
                 </div>
-                <div className={`text-base md:text-2xl text-center font-extrabold text-red-600 mt-3`}>Pressing this button will restart your game!</div>
                 <button
                     onClick={handleClaimFansClick}
                     className="bg-red-500 text-white px-8 py-4 rounded-md hover:bg-red-600 transition-all focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800 font-bold mt-3"
