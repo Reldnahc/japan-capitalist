@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import Alert from "../Alert.tsx";
+import {BsPeopleFill} from "react-icons/bs";
 
 interface FansPanelProps {
     currentFans: bigint;
@@ -26,6 +27,8 @@ const FansPanel: React.FC<FansPanelProps> = ({ currentFans, totalFans, onClaimFa
     return (
             <div className={`h-[70vh] overflow-y-auto px-6 pb-6 flex flex-col gap-6 items-center rounded-lg`}>
                 <div className="text-center">
+                    <BsPeopleFill className="mx-auto text-blue-600" size={40} />
+
                     <p className="text-base md:text-xl text-gray-800 mt-2">
                         Gather fans to restart your progress and enjoy a <b>1%</b> revenue bonus for every fan you claim!
                     </p>
@@ -40,7 +43,7 @@ const FansPanel: React.FC<FansPanelProps> = ({ currentFans, totalFans, onClaimFa
                     <p className="text-lg font-medium text-gray-600">Current Fans:</p>
                     <div className="text-4xl font-extrabold text-green-600 mt-2">{totalFans}</div>
                 </div>
-                <div className={`text-base md:text-2xl font-extrabold text-red-600 mt-3`}>Pressing this button will resart your game!</div>
+                <div className={`text-base md:text-2xl text-center font-extrabold text-red-600 mt-3`}>Pressing this button will restart your game!</div>
                 <button
                     onClick={handleClaimFansClick}
                     className="bg-red-500 text-white px-8 py-4 rounded-md hover:bg-red-600 transition-all focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800 font-bold mt-3"

@@ -264,24 +264,24 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                             {business.manager && (
                                 <button
                                     onClick={onClickManager}
-                                    className="relative flex justify-center h-8 md:h-10 w-8 md:w-10 items-center bg-blue-500 text-white px-2 py-1.5 rounded text-xs hover:bg-blue-600"
+                                    className="relative flex justify-center items-center h-8 md:h-10 w-8 md:w-10 bg-blue-500 text-white px-2 py-1.5 rounded text-xs hover:bg-blue-600"
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         viewBox="0 0 64 64"
-                                        width="15"
-                                        height="15"
+                                        width="25"
+                                        height="25"
                                         fill="black"
                                         stroke="black"
                                         strokeWidth="2"
-                                        className="my-auto"
+                                        className="block"
                                     >
                                         <circle cx="32" cy="20" r="12" />
                                         <path d="M16,48 a16,16 0 0,1 32,0" />
                                     </svg>
-                                    { (!business.manager.hired && currency >= business.manager.cost) || canAffordManagerUpgrade() && (
+                                    { ((!business.manager.hired && currency >= business.manager.cost) || canAffordManagerUpgrade()) && (
                                         <span className="absolute -top-1.5 -right-1.5 bg-yellow-500 text-black font-bold text-md w-4 h-4 flex items-center justify-center rounded-full">
-                                        !
+                                            !
                                         </span>
                                     )}
                                 </button>

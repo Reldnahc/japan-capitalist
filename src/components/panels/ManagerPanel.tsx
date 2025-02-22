@@ -28,13 +28,10 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                             </h3>
                             <div
                                 key={business.name}
-                                className="relative flex flex-col items-center mx-auto w-40 h-40 bg-gray-100 px-4 py-1 shadow-sm rounded-full cursor-pointer hover:shadow-2xl bg-no-repeat bg-center opacity-75 hover:opacity-100  bg-cover transition"
+                                className="relative flex flex-col items-center mx-auto w-32 h-32 md:w-40 md:h-40 bg-gray-100 px-4 py-1 shadow-sm rounded-full cursor-pointer hover:shadow-2xl bg-no-repeat bg-center opacity-100  bg-cover transition"
                                 onClick={() => setSelectedBusiness(business)}
                                 style={{ backgroundImage: `url('/japan-capitalist/images/businesses/${business.name.toLowerCase().replace(" ","")}/employee_face.webp')` }}
                             >
-                                <div
-                                    className="w-24 h-24 object-contain rounded-full z-20"
-                                />
                             </div>
                             <h3 className="text-md font-semibold text-center z-20">
                                 {business.manager?.name}

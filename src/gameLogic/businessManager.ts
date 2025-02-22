@@ -261,12 +261,11 @@ export class BusinessManager {
         if (effect.includes("Revenue ×")) {
             const [revenueEffect, target] = effect.split(";");
             const multiplier = parseFloat(revenueEffect.replace("Revenue ×", "").trim());
-
             if (target && target.trim() === "ALL") {
                 // Apply to all businesses
                 this.businesses.forEach((b,index) => {
                     b.revenue *= BigInt(Math.floor(multiplier));
-                    if (business.manager?.hired && business.productionTime <= SPEED_THRESHOLD) {
+                    if (b.manager?.hired && b.productionTime <= SPEED_THRESHOLD) {
                         this.stopRevenuePolling(index); // Stop old polling
                         this.pollRevenue(index); // Start new polling with updated values
                     }
@@ -279,7 +278,7 @@ export class BusinessManager {
                         b.revenue *= BigInt(Math.floor(multiplier));
                     }
                     const index = this.businesses.findIndex(b => b === business);
-                    if (business.manager?.hired && business.productionTime <= SPEED_THRESHOLD) {
+                    if (b.manager?.hired && b.productionTime <= SPEED_THRESHOLD) {
                         this.stopRevenuePolling(index); // Stop old polling
                         this.pollRevenue(index); // Start new polling with updated values
                     }
