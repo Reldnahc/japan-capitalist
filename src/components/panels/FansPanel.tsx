@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import Alert from "../Alert.tsx";
 import {BsPeopleFill} from "react-icons/bs";
+import {useAudioManager} from "../../contexts/AudioManagerProvider.tsx";
 
 interface FansPanelProps {
     currentFans: bigint;
@@ -10,17 +11,21 @@ interface FansPanelProps {
 
 const FansPanel: React.FC<FansPanelProps> = ({ currentFans, totalFans, onClaimFans }) => {
     const [isAlertOpen, setIsAlertOpen] = useState(false); // Manage alert visibility
+    const { play } = useAudioManager();
 
     const handleClaimFansClick = () => {
+        play('tack');
         setIsAlertOpen(true); // Open the confirmation alert
     };
 
     const handleConfirmClaimFans = () => {
+        play('tack');
         onClaimFans(); // Execute the actual "Claim Fans" action
         setIsAlertOpen(false); // Close the alert
     };
 
     const handleCancelClaimFans = () => {
+        play('tack');
         setIsAlertOpen(false); // Dismiss the alert without action
     };
 

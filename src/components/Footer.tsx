@@ -18,7 +18,7 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
     // State to handle menu visibility
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const purchaseOptions = ["x1", "x5", "x10", "x100", "next", "max"];
-    const { isMuted, toggleMute } = useAudioManager();
+    const { isMuted, toggleMute, play } = useAudioManager();
 
     // Scroll locking logic
     useEffect(() => {
@@ -35,6 +35,7 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
     }, [isMenuOpen]);
 
     const cyclePurchaseAmount = () => {
+        play('tack');
         const currentIndex = purchaseOptions.indexOf(purchaseAmount);
         const nextIndex = (currentIndex + 1) % purchaseOptions.length; // Cycle through options
         const nextAmount = purchaseOptions[nextIndex];

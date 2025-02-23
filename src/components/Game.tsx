@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {IdleGame} from '../gameLogic/idleGame';
 import Footer from "./Footer.tsx";
 import UnlocksPanel from "./panels/UnlocksPanel.tsx";
@@ -12,8 +12,6 @@ import SettingsPanel from "./panels/SettingsPanel.tsx";
 import { motion, AnimatePresence } from "framer-motion";
 import FansPanel from "./panels/FansPanel.tsx";
 import {useAudioManager} from "../contexts/AudioManagerProvider.tsx";
-import {AudioManager} from "../utils/audioManager.ts";
-
 // Extend the TypeScript definition for the Window object
 declare global {
     interface Window {
@@ -43,7 +41,7 @@ const Game = () => {
         (business) => business.quantity > 0 && !business.isProducing && business.manager?.hired === false
     ).length;
 
-    const { isMuted, volumes, toggleMute, play, setVolume } = useAudioManager();
+    const { toggleMute, play } = useAudioManager();
 
     useEffect(() => {
         localStorage.setItem("purchaseAmount", purchaseAmount);
@@ -202,14 +200,9 @@ const Game = () => {
         };
     }, [activePanel]);
 
-    // Handle volume changes
-    const handleVolumeChange = (type: 'music' | 'soundEffects') => (event: React.ChangeEvent<HTMLInputElement>) => {
-        const newVolume = parseFloat(event.target.value);
-        setVolume(type, newVolume); // Sync AudioManager's volume
-        localStorage.setItem(`${type}Volume`, String(newVolume)); // Persist volume in storage
-    };
 
     const closePanel = () => {
+        play('tack');
         setActivePanel(null);
     };
 
@@ -245,7 +238,7 @@ const Game = () => {
 
     const handleManagerUpgrade = (businessIndex: number, upgradeIndex: number) => {
         game.businessManager.buyManagerUpgrade(businessIndex, upgradeIndex);
-        AudioManager.play('cashRegister');
+        play('cashRegister');
         setBusinesses([...game.businessManager.businesses]); // Update UI state
         setCurrency(game.businessManager.currency); // Reflect new currency after the purchase
     };
@@ -280,12 +273,12 @@ const Game = () => {
             setSelectedBusiness(null); // Reset selected business when Managers is opened
         }
         setActivePanel(panelName); // Open the requested panel
-        AudioManager.play('tack');
+        play('tack');
     };
 
     const handleBuyBusiness = (index: number, amount: string = purchaseAmount) => {
         game.businessManager.buyBusiness(index, amount);
-        AudioManager.play('cashRegister');
+        play('cashRegister');
         setCurrency(game.businessManager.currency);
         setBusinesses([...game.businessManager.businesses]);
     };
@@ -295,18 +288,20 @@ const Game = () => {
     };
 
     const handleStartProduction = (index: number) => {
+        play('tack');
         game.businessManager.startProduction(index);
         setBusinesses([...game.businessManager.businesses]);
     };
 
     const handleBuyManager = (index: number) => {
         game.businessManager.buyManager(index);
-        AudioManager.play('cashRegister');
+        play('cashRegister');
         setCurrency(game.businessManager.currency);
         setBusinesses([...game.businessManager.businesses]);
     };
 
     const handleClickManager = (index: number) => {
+        play('tack');
         setSelectedBusiness(businesses[index]);
         setActivePanel("Managers");
     };
@@ -317,6 +312,7 @@ const Game = () => {
         );
 
         if (nonProducingBusinesses.length > 0) {
+            play('tack');
             const index = businesses.indexOf(nonProducingBusinesses[0]);
             game.businessManager.startProduction(index);
             setBusinesses([...game.businessManager.businesses]);
