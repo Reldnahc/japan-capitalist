@@ -16,7 +16,6 @@ export class IdleGame {
     constructor() {
         const savedState = this.loadGameState();
         if (savedState) {
-            console.log(savedState);
             const now = Date.now();
             this.totalPlaytime = savedState.totalPlaytime || 0;
             this.businessManager = new BusinessManager(savedState.businesses, savedState.currency, savedState.totalEarned, savedState.fans, savedState.unlocks);

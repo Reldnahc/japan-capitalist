@@ -98,7 +98,6 @@ const Game = () => {
         window.fans = (amount: string) => {
             game.businessManager.addFans(BigInt(amount));
         };
-        console.log("Specific game functions are now available globally in the console!");
         const handleClick = (event: MouseEvent) => {
             // Extract the cursor's position and subtract 10
             const x = event.pageX - 10;

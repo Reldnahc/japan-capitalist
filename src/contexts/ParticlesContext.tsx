@@ -23,7 +23,6 @@ export const ParticlesProvider: React.FC<{ children: ReactNode }> = ({ children 
             return;
         }
         isInitializing.current = true;
-        console.log("ParticlesProvider useEffect");
         initParticlesEngine(async (engine) => {
             await loadFull(engine);
             setEngine(engine);
