@@ -39,13 +39,13 @@ const Game = () => {
     const [appliedUnlocks, setAppliedUnlocks] = useState(() =>
         game.businessManager.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied))
     );
-    const [musicVolume, setMusicVolume] = useState(() => {
-        const savedVolume = localStorage.getItem("musicVolume");
-        return savedVolume !== null ? parseFloat(savedVolume) : 0.5; // Default to 0.5 (50%)
-    });
-    const [effectVolume, setEffectVolume] = useState(() => {
-        const savedVolume = localStorage.getItem("effectVolume");
-        return savedVolume !== null ? parseFloat(savedVolume) : 0.5; // Default to 0.5 (50%)
+    const [volumes, setVolumes] = useState(() => {
+        const savedMusicVolume = localStorage.getItem("musicVolume");
+        const savedEffectVolume = localStorage.getItem("soundEffectsVolume");
+        return {
+            music: savedMusicVolume !== null ? parseFloat(savedMusicVolume) : 0.5, // Default 50%
+            soundEffects: savedEffectVolume !== null ? parseFloat(savedEffectVolume) : 0.5, // Default 50%
+        };
     });
     const [purchaseAmount, setPurchaseAmount] = useState(() => {
         return localStorage.getItem("purchaseAmount") || "x1";
@@ -60,14 +60,12 @@ const Game = () => {
     }, [purchaseAmount]);
 
     useEffect(() => {
-        localStorage.setItem("musicVolume", String(musicVolume));
-        AudioManager.setVolume('music', musicVolume); // Sync with AudioManager
-    }, [musicVolume]);
-
-    useEffect(() => {
-        localStorage.setItem("effectVolume", String(effectVolume));
-        AudioManager.setVolume('soundEffects', effectVolume); // Sync with AudioManager
-    }, [effectVolume]);
+        // Save volumes to local storage and sync with AudioManager
+        Object.entries(volumes).forEach(([type, volume]) => {
+            localStorage.setItem(`${type}Volume`, String(volume));
+            AudioManager.setVolume(type as 'music' | 'soundEffects', volume); // Sync with AudioManager
+        });
+    }, [volumes]);
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -244,16 +242,11 @@ const Game = () => {
 
 
     // Handle volume changes
-    const handleMusicVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleVolumeChange = (type: 'music' | 'soundEffects') => (event: React.ChangeEvent<HTMLInputElement>) => {
         const newVolume = parseFloat(event.target.value);
-        setMusicVolume(newVolume); // Update the React state
-        AudioManager.setVolume('music', newVolume); // Sync AudioManager's volume
-    };
-
-    const handleEffectVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const newVolume = parseFloat(event.target.value);
-        setEffectVolume(newVolume); // Update the React state
-        AudioManager.setVolume('soundEffects', newVolume); // Sync AudioManager's volume
+        setVolumes((prev) => ({ ...prev, [type]: newVolume })); // Update the volume state
+        AudioManager.setVolume(type, newVolume); // Sync AudioManager's volume
+        localStorage.setItem(`${type}Volume`, String(newVolume)); // Persist volume in storage
     };
 
 // Toggle mute sounds
@@ -445,14 +438,14 @@ const Game = () => {
                                 )}
                                 {activePanel === "Settings" && (
                                     <SettingsPanel
-                                        isMuted={isMuted}
-                                        musicVolume={musicVolume}
-                                        soundEffectsVolume={effectVolume}
+                                        audioSettings={{
+                                            isMuted,
+                                            volumes,
+                                            onToggleMute: toggleMute,
+                                            onUpdateVolume: handleVolumeChange,
+                                        }}
                                         formatPlaytime={formatPlaytime}
                                         totalPlaytime={game.getTotalPlaytime()}
-                                        onToggleMute={toggleMute}
-                                        onMusicVolumeChange={handleMusicVolumeChange}
-                                        onSoundEffectsVolumeChange={handleEffectVolumeChange}
                                         onResetGame={() => game.resetGame()}
                                     />
                                 )}
