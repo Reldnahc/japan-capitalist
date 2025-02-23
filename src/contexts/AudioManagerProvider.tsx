@@ -1,8 +1,8 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
 import { AudioManager } from "../utils/audioManager"; // Import your AudioManager class
-import background from '../assets/sounds/background.ogg';
-import tack from  '../assets/sounds/tack.ogg';
-import cashRegister from  '../assets/sounds/cash-register.ogg';
+import background from '../assets/sounds/background.mp3';
+import tack from  '../assets/sounds/tack.mp3';
+import cashRegister from  '../assets/sounds/cash-register.mp3';
 
 interface AudioManagerContextType {
   isMuted: boolean;

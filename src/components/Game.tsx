@@ -269,9 +269,7 @@ const Game = () => {
     };
 
     const handleOpenPanel = (panelName: string) => {
-        if (panelName === "Managers") {
-            setSelectedBusiness(null); // Reset selected business when Managers is opened
-        }
+        setSelectedBusiness(null); // Reset selected business when a tab is opened
         setActivePanel(panelName); // Open the requested panel
         play('tack');
     };
