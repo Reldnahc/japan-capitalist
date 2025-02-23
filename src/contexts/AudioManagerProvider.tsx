@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useState } from "react";
+import React, {createContext, useContext, useEffect, useState} from "react";
 import { AudioManager } from "../utils/audioManager"; // Import your AudioManager class
+import background from '../assets/sounds/background.ogg';
+import tack from  '../assets/sounds/tack.ogg';
+import cashRegister from  '../assets/sounds/cash-register.ogg';
 
-// Define the shape of the AudioManager context
 interface AudioManagerContextType {
   isMuted: boolean;
   volumes: { music: number; soundEffects: number };
@@ -11,10 +13,8 @@ interface AudioManagerContextType {
   toggleMute: () => void;
 }
 
-// Create the context
 const AudioManagerContext = createContext<AudioManagerContextType | null>(null);
 
-// Custom hook for consuming the AudioManager context
 export const useAudioManager = () => {
   const context = useContext(AudioManagerContext);
   if (!context) {
@@ -31,6 +31,28 @@ export const AudioManagerProvider: React.FC<{ children: React.ReactNode }> = ({ 
     music: AudioManager.getVolume("music"),
     soundEffects: AudioManager.getVolume("soundEffects"),
   });
+
+  useEffect(() => {
+    // Centralized sound loading
+    AudioManager.loadSounds({
+      background: { src: background, type: "music" },
+      tack: { src: tack, type: "soundEffects" },
+      cashRegister: { src: cashRegister, type: "soundEffects" },
+    });
+
+    // Set background music to loop
+    AudioManager.audioElements["background"].loop = true;
+
+    // Automatically play background music if not muted
+    if (!isMuted) {
+      AudioManager.play("background");
+    }
+
+    return () => {
+      // Pause background music on cleanup
+      AudioManager.pause("background");
+    };
+  }, [isMuted]);
 
   // Play audio
   const play = (soundKey: string) => {

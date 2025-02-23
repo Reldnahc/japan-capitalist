@@ -8,13 +8,11 @@ import BusinessCard from "./BusinessCard.tsx";
 import ManagerPanel from "./panels/ManagerPanel.tsx";
 import {Business} from "../gameLogic/types/business.types.ts";
 import {formatPlaytime} from "../utils/formatTime.ts";
-import {AudioManager} from "../utils/audioManager.ts";
 import SettingsPanel from "./panels/SettingsPanel.tsx";
-import background from '../assets/sounds/background.ogg';
-import tack from  '../assets/sounds/tack.ogg';
-import cashRegister from  '../assets/sounds/cash-register.ogg';
 import { motion, AnimatePresence } from "framer-motion";
 import FansPanel from "./panels/FansPanel.tsx";
+import {useAudioManager} from "../contexts/AudioManagerProvider.tsx";
+import {AudioManager} from "../utils/audioManager.ts";
 
 // Extend the TypeScript definition for the Window object
 declare global {
@@ -31,22 +29,14 @@ const Game = () => {
     const [fans, setFans] = useState(game.businessManager.fans);
     const [businesses, setBusinesses] = useState(game.businessManager.businesses);
     const [progress, setProgress] = useState<number[]>(new Array(game.businessManager.businesses.length).fill(0));
+    const { isMuted, volumes, toggleMute, play, setVolume } = useAudioManager();
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const [notification, setNotification] = useState<string | null>(null);
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
-    const [isMuted, setIsMuted] = useState(AudioManager.getMuted());
     const [clickPositions, setClickPositions] = useState<{ x: number; y: number; id: number }[]>([]);
     const [appliedUnlocks, setAppliedUnlocks] = useState(() =>
         game.businessManager.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied))
     );
-    const [volumes, setVolumes] = useState(() => {
-        const savedMusicVolume = localStorage.getItem("musicVolume");
-        const savedEffectVolume = localStorage.getItem("soundEffectsVolume");
-        return {
-            music: savedMusicVolume !== null ? parseFloat(savedMusicVolume) : 0.5, // Default 50%
-            soundEffects: savedEffectVolume !== null ? parseFloat(savedEffectVolume) : 0.5, // Default 50%
-        };
-    });
     const [purchaseAmount, setPurchaseAmount] = useState(() => {
         return localStorage.getItem("purchaseAmount") || "x1";
     });
@@ -63,7 +53,7 @@ const Game = () => {
         // Save volumes to local storage and sync with AudioManager
         Object.entries(volumes).forEach(([type, volume]) => {
             localStorage.setItem(`${type}Volume`, String(volume));
-            AudioManager.setVolume(type as 'music' | 'soundEffects', volume); // Sync with AudioManager
+            setVolume(type as 'music' | 'soundEffects', volume); // Sync with AudioManager
         });
     }, [volumes]);
 
@@ -140,7 +130,7 @@ const Game = () => {
                 return;
             }
 
-            AudioManager.play('tack');
+            play('tack');
         };
 
         // Add event listener
@@ -220,45 +210,12 @@ const Game = () => {
         };
     }, [activePanel]);
 
-    // Load sounds on mount
-    useEffect(() => {
-        // Centralize all sounds in AudioManager
-        AudioManager.loadSounds({
-            background: { src: background, type: 'music'},
-            cashRegister: { src: cashRegister, type: 'soundEffects'},
-            tack: { src: tack, type: 'soundEffects'},
-        });
-
-        // Play background music on loop
-        AudioManager.audioElements['background'].loop = true;
-        if (!isMuted) {
-            AudioManager.play('background');
-        }
-
-        return () => {
-            AudioManager.pause('background'); // Pause the background music when the component unmounts
-        };
-    }, [isMuted]);
-
-
     // Handle volume changes
     const handleVolumeChange = (type: 'music' | 'soundEffects') => (event: React.ChangeEvent<HTMLInputElement>) => {
         const newVolume = parseFloat(event.target.value);
-        setVolumes((prev) => ({ ...prev, [type]: newVolume })); // Update the volume state
-        AudioManager.setVolume(type, newVolume); // Sync AudioManager's volume
+        setVolume(type, newVolume); // Sync AudioManager's volume
         localStorage.setItem(`${type}Volume`, String(newVolume)); // Persist volume in storage
     };
-
-// Toggle mute sounds
-    const toggleMute = () => {
-        setIsMuted((prev) => !prev); // Update the React state
-        if (isMuted) {
-            AudioManager.setMuted(false);
-        } else {
-            AudioManager.setMuted(true);
-        }
-    };
-
 
     const closePanel = () => {
         setActivePanel(null);
@@ -331,6 +288,7 @@ const Game = () => {
             setSelectedBusiness(null); // Reset selected business when Managers is opened
         }
         setActivePanel(panelName); // Open the requested panel
+        AudioManager.play('tack');
     };
 
     const handleBuyBusiness = (index: number, amount: string = purchaseAmount) => {
@@ -481,8 +439,6 @@ const Game = () => {
                 onPurchaseAmountChange={(amount) => setPurchaseAmount(amount)}
                 onStartProductionForBusiness={handleStartProductionForBusiness}
                 readyBusinessesCount={readyBusinessesCount}
-                isMuted={isMuted}
-                onToggleMute={toggleMute}
             />
         </div>
     );
