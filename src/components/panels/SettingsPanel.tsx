@@ -34,7 +34,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ formatPlaytime, totalPlay
 
 
     return (
-        <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8">
+        <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800">
 
 
             {/* Mute Button */}
@@ -62,7 +62,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ formatPlaytime, totalPlay
                 onVolumeChange={onUpdateVolume('soundEffects')}
             />
 
-            <div className={`w-4/5 mx-auto border-gray-500 border-2 rounded-lg p-4 mt-4 bg-gray-800 bg-opacity-80`}>
+            <div className={`w-4/5 mx-auto border-gray-500 border-2 rounded-lg p-4 mt-4 bg-gray-800 bg-opacity-80 `}>
             {/* Playtime Section */}
             <div className="text-center mt-4">
                 <p className="text-white text-2xl font-bold">Total Playtime:</p>

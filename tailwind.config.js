@@ -63,5 +63,7 @@ export default {
   },
   plugins: [
     require('tailwindcss-textshadow'),
+    require('tailwind-scrollbar')({ nocompatible: true })
+
   ],
 }

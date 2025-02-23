@@ -17,7 +17,7 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
     const handleBack = () => setSelectedBusiness(null); // Back to the selection screen
 
     return (
-        <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8 text-white" >
+        <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8 text-white scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800" >
             {/* Business Selection Panel */}
             {!selectedBusiness && (
                 <div className="grid grid-cols-2 gap-3 w-full">

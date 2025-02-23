@@ -1,10 +1,13 @@
 import React, { useState } from "react";
+import {useAudioManager} from "../contexts/AudioManagerProvider.tsx";
 
 const CreditsSection: React.FC = () => {
     const [isAttributionOpen, setIsAttributionOpen] = useState(false); // State to toggle the panel
+    const { play } = useAudioManager();
 
     // Toggle the openable panel
     const toggleAttributions = () => {
+        play('tack');
         setIsAttributionOpen(!isAttributionOpen);
     };
 
