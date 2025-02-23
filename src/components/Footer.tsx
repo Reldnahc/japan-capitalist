@@ -47,7 +47,7 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
         <div className="font-fredoka">
             {isMenuOpen && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-50 z-40"
+                    className="fixed inset-0 bg-black bg-opacity-50 z-50"
                     onClick={() => setIsMenuOpen(false)} // Close the menu when clicking the overlay
                 ></div>
             )}
@@ -56,17 +56,21 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                 {/* Updated Layout */}
                 <div className="container mx-auto max-w-xl flex items-center px-4 justify-between">
                     {/* Currency on the left */}
+                    <div className="text-4xl md:text-7xl mr-3">¥</div>
+
                     { money[1] ? (
                         <div className="flex items-center">
-                            <div className="text-4xl md:text-7xl mr-3">¥</div>
                             <div className="md:text-2xl leading-tight">
                                 {money[0]} <br/> {money[1]}
                             </div>
                         </div>
                     ) : (
+
                         <div className="text-md md:text-3xl">
-                            ¥ {money}
+                            {money}
                         </div>
+
+
                     )}
 
                     {/* Hamburger menu in the center */}

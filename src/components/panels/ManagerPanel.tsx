@@ -1,6 +1,7 @@
 import { Business } from "../../gameLogic/types/business.types";
 import {formatBigIntWithSuffix} from "../../utils/formatNumber.ts";
 import React from "react";
+import {useAudioManager} from "../../contexts/AudioManagerProvider.tsx";
 
 type ManagerPanelProps = {
     businesses: Business[]; // List of businesses
@@ -13,23 +14,29 @@ type ManagerPanelProps = {
 
 const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness, setSelectedBusiness, onHireManager,
                                                        currency, onManagerUpgrade}) => {
+    const { play } = useAudioManager();
 
-    const handleBack = () => setSelectedBusiness(null); // Back to the selection screen
-
+    const handleBack = () => {
+        play('tack');
+        setSelectedBusiness(null);
+    };
     return (
         <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8 text-white scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800" >
             {/* Business Selection Panel */}
             {!selectedBusiness && (
                 <div className="grid grid-cols-2 gap-3 w-full">
                     {businesses.map((business, index) => (
-                        <div key={index} className="shadow border-gray-500 border-2 rounded-lg p-4 bg-opacity-80 bg-gray-800 bg-opacity-80`">
+                        <div
+                            key={index}
+                            className="shadow border-gray-500 border-2 rounded-lg p-4 bg-opacity-80 bg-gray-800 cursor-pointer hover:bg-opacity-95"
+                            onClick={() => setSelectedBusiness(business)}
+                        >
                             <h3 className="text-lg md:text-2xl font-bold text-center z-20 ">
                                 {business.name}
                             </h3>
                             <div
                                 key={business.name}
-                                className="relative flex flex-col items-center mx-auto w-32 h-32 md:w-40 md:h-40 bg-gray-100 px-4 py-1 shadow-sm rounded-full cursor-pointer hover:shadow-2xl bg-no-repeat bg-center opacity-100 bg-cover transition"
-                                onClick={() => setSelectedBusiness(business)}
+                                className="relative flex flex-col items-center mx-auto w-32 h-32 md:w-40 md:h-40 bg-gray-100 px-4 py-1 shadow-sm rounded-full hover:shadow-2xl bg-no-repeat bg-center opacity-100 bg-cover transition"
                                 style={{ backgroundImage: `url('/japan-capitalist/images/businesses/${business.name.toLowerCase().replace(" ","")}/employee_face.webp')` }}
                             >
                             </div>
