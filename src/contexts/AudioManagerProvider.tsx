@@ -27,10 +27,24 @@ export const useAudioManager = () => {
 export const AudioManagerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // States for managing audio
   const [isMuted, setIsMuted] = useState(AudioManager.getMuted());
-  const [volumes, setVolumes] = useState<{ music: number; soundEffects: number }>({
-    music: AudioManager.getVolume("music"),
-    soundEffects: AudioManager.getVolume("soundEffects"),
+  const [volumes, setVolumes] = useState(() => {
+    const storedMusicVolume = localStorage.getItem("musicVolume");
+    const storedSoundEffectsVolume = localStorage.getItem("soundEffectsVolume");
+
+    return {
+      music: storedMusicVolume !== null ? parseFloat(storedMusicVolume) : AudioManager.getVolume("music"),
+      soundEffects: storedSoundEffectsVolume !== null ? parseFloat(storedSoundEffectsVolume) : AudioManager.getVolume("soundEffects"),
+    };
   });
+
+  useEffect(() => {
+    Object.entries(volumes).forEach(([type, volume]) => {
+      if (type === "music" || type === "soundEffects") {
+        localStorage.setItem(`${type}Volume`, String(volume));
+        AudioManager.setVolume(type, volume); // Sync with AudioManager
+      }
+    });
+  }, [volumes]);
 
   useEffect(() => {
     // Centralized sound loading

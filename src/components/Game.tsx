@@ -29,7 +29,6 @@ const Game = () => {
     const [fans, setFans] = useState(game.businessManager.fans);
     const [businesses, setBusinesses] = useState(game.businessManager.businesses);
     const [progress, setProgress] = useState<number[]>(new Array(game.businessManager.businesses.length).fill(0));
-    const { isMuted, volumes, toggleMute, play, setVolume } = useAudioManager();
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const [notification, setNotification] = useState<string | null>(null);
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
@@ -40,22 +39,15 @@ const Game = () => {
     const [purchaseAmount, setPurchaseAmount] = useState(() => {
         return localStorage.getItem("purchaseAmount") || "x1";
     });
-
     const readyBusinessesCount = businesses.filter(
         (business) => business.quantity > 0 && !business.isProducing && business.manager?.hired === false
     ).length;
 
+    const { isMuted, volumes, toggleMute, play, setVolume } = useAudioManager();
+
     useEffect(() => {
         localStorage.setItem("purchaseAmount", purchaseAmount);
     }, [purchaseAmount]);
-
-    useEffect(() => {
-        // Save volumes to local storage and sync with AudioManager
-        Object.entries(volumes).forEach(([type, volume]) => {
-            localStorage.setItem(`${type}Volume`, String(volume));
-            setVolume(type as 'music' | 'soundEffects', volume); // Sync with AudioManager
-        });
-    }, [volumes]);
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -396,12 +388,6 @@ const Game = () => {
                                 )}
                                 {activePanel === "Settings" && (
                                     <SettingsPanel
-                                        audioSettings={{
-                                            isMuted,
-                                            volumes,
-                                            onToggleMute: toggleMute,
-                                            onUpdateVolume: handleVolumeChange,
-                                        }}
                                         formatPlaytime={formatPlaytime}
                                         totalPlaytime={game.getTotalPlaytime()}
                                         onResetGame={() => game.resetGame()}

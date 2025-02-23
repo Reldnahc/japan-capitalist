@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {formatBigIntWithSuffix} from "../utils/formatNumber.ts";
-import { FaVolumeUp, FaVolumeMute } from "react-icons/fa"; // Import icons
+import { FaVolumeUp, FaVolumeMute } from "react-icons/fa";
+import {useAudioManager} from "../contexts/AudioManagerProvider.tsx"; // Import icons
 
 // Define Footer props
 interface FooterProps {
@@ -10,15 +11,14 @@ interface FooterProps {
     onPurchaseAmountChange: (amount: string) => void;
     onStartProductionForBusiness: () => void;
     readyBusinessesCount: number;
-    onToggleMute: () => void; // Add mute toggle handler
-    isMuted: boolean; // Receive mute state
 }
 
 const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, onPurchaseAmountChange,
-                                           onStartProductionForBusiness, readyBusinessesCount, onToggleMute, isMuted }) => {
+                                           onStartProductionForBusiness, readyBusinessesCount }) => {
     // State to handle menu visibility
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const purchaseOptions = ["x1", "x5", "x10", "x100", "next", "max"];
+    const { isMuted, toggleMute } = useAudioManager();
 
     // Scroll locking logic
     useEffect(() => {
@@ -123,7 +123,7 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                             )}
                         </div>
                         <button
-                            onClick={onToggleMute}
+                            onClick={toggleMute}
                             className="absolute -left-12 md:-left-16 top-1/2 transform -translate-y-1/2 text-white text-2xl md:text-4xl hover:text-yellow-400 transition"
                             aria-label={isMuted ? "Unmute" : "Mute"}
                         >

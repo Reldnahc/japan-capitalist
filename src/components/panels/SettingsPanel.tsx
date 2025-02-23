@@ -2,25 +2,17 @@ import React, {useState} from "react";
 import Alert from "../Alert.tsx";
 import CreditsSection from "../CreditsSection.tsx";
 import VolumeSlider from "../VolumeSlider.tsx";
-
-interface AudioSettings {
-    isMuted: boolean;
-    volumes: { music: number; soundEffects: number };
-    onToggleMute: () => void;
-    onUpdateVolume: (type: 'music' | 'soundEffects') => (event: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
+import {useAudioManager} from "../../contexts/AudioManagerProvider.tsx";
 
 interface SettingsPanelProps {
-    audioSettings: AudioSettings;
     formatPlaytime: (seconds: number) => string;
     totalPlaytime: number;
     onResetGame: () => void;
 }
 
-const SettingsPanel: React.FC<SettingsPanelProps> = ({ audioSettings, formatPlaytime, totalPlaytime, onResetGame}) => {
+const SettingsPanel: React.FC<SettingsPanelProps> = ({ formatPlaytime, totalPlaytime, onResetGame}) => {
     const [isAlertOpen, setIsAlertOpen] = useState(false); // State for managing alert visibility
-    const { isMuted, volumes, onToggleMute, onUpdateVolume } = audioSettings;
+    const { isMuted, volumes, toggleMute, setVolume } = useAudioManager();
 
     const handleResetGameClick = () => {
         setIsAlertOpen(true); // Open the alert when the Reset Game button is pressed
@@ -35,6 +27,12 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ audioSettings, formatPlay
         setIsAlertOpen(false); // Dismiss the alert without taking action
     };
 
+    const onUpdateVolume = (type: "music" | "soundEffects") => (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newVolume = parseFloat(event.target.value);
+        setVolume(type, newVolume); // Update volume through context
+    };
+
+
     return (
         <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-3 pb-8">
 
@@ -43,7 +41,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ audioSettings, formatPlay
             <div className="flex items-center ml-2 mt-4 font-bold">
                 <label className="mr-3 text-base md:text-2xl text-gray-100 ">Mute:</label>
                 <button
-                    onClick={onToggleMute}
+                    onClick={toggleMute}
                     className={`px-4 py-2 rounded bg-${isMuted ? 'red' : 'green'}-500 text-white`}
                 >
                     {isMuted ? 'Unmute' : 'Mute'}
