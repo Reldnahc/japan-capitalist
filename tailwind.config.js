@@ -31,14 +31,25 @@ export default {
         '4%': { opacity: '0' },
         '6%': { opacity: '1' },
         '8%': { opacity: '0' },
-      }
-
+        },
+        click: {
+          '0%': {
+            transform: 'scale(1)',
+            opacity: '0.8',
+          },
+          '100%': {
+            transform: 'scale(2.5)',
+            opacity: '0',
+          },
+        },
       },
       animation: {
         glow: 'glow 1.5s ease-in-out infinite',
         shine: 'shine 2s infinite',
         'gold-glow': 'gold-glow 3s ease infinite',
-        lightningFlash: 'lightningFlash 4s infinite'
+        lightningFlash: 'lightningFlash 4s infinite',
+        click: 'click 0.6s ease-out',
+
       },
       backgroundImage: {
         'gold-gradient': 'linear-gradient(45deg, #ccac00, #d4af37, #f6e27a, #b08904)',

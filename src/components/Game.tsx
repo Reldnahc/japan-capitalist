@@ -9,9 +9,10 @@ import ManagerPanel from "./panels/ManagerPanel.tsx";
 import {Business} from "../gameLogic/types/business.types.ts";
 import {formatPlaytime} from "../utils/formatTime.ts";
 import {AudioManager} from "../utils/audioManager.ts";
-import backgroundMusic from '../assets/sounds/background.mp3';
-import cashRegisterSound from '../assets/sounds/cash-register.mp3';
 import SettingsPanel from "./panels/SettingsPanel.tsx";
+import background from '../assets/sounds/background.ogg';
+import tack from  '../assets/sounds/tack.ogg';
+import cashRegister from  '../assets/sounds/cash-register.ogg';
 import { motion, AnimatePresence } from "framer-motion";
 import FansPanel from "./panels/FansPanel.tsx";
 
@@ -34,11 +35,16 @@ const Game = () => {
     const [notification, setNotification] = useState<string | null>(null);
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
     const [isMuted, setIsMuted] = useState(AudioManager.getMuted());
+    const [clickPositions, setClickPositions] = useState<{ x: number; y: number; id: number }[]>([]);
     const [appliedUnlocks, setAppliedUnlocks] = useState(() =>
         game.businessManager.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied))
     );
-    const [volume, setVolume] = useState(() => {
-        const savedVolume = localStorage.getItem("gameVolume");
+    const [musicVolume, setMusicVolume] = useState(() => {
+        const savedVolume = localStorage.getItem("musicVolume");
+        return savedVolume !== null ? parseFloat(savedVolume) : 0.5; // Default to 0.5 (50%)
+    });
+    const [effectVolume, setEffectVolume] = useState(() => {
+        const savedVolume = localStorage.getItem("effectVolume");
         return savedVolume !== null ? parseFloat(savedVolume) : 0.5; // Default to 0.5 (50%)
     });
     const [purchaseAmount, setPurchaseAmount] = useState(() => {
@@ -54,8 +60,14 @@ const Game = () => {
     }, [purchaseAmount]);
 
     useEffect(() => {
-        localStorage.setItem("gameVolume", String(volume));
-    }, [volume]);
+        localStorage.setItem("musicVolume", String(musicVolume));
+        AudioManager.setVolume('music', musicVolume); // Sync with AudioManager
+    }, [musicVolume]);
+
+    useEffect(() => {
+        localStorage.setItem("effectVolume", String(effectVolume));
+        AudioManager.setVolume('soundEffects', effectVolume); // Sync with AudioManager
+    }, [effectVolume]);
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -108,8 +120,38 @@ const Game = () => {
         window.fans = (amount: string) => {
             game.businessManager.addFans(BigInt(amount));
         };
-
         console.log("Specific game functions are now available globally in the console!");
+        const handleClick = (event: MouseEvent) => {
+            // Extract the cursor's position and subtract 10
+            const x = event.pageX - 10;
+            const y = event.pageY - 10;
+            const uniqueId = Date.now();
+
+            setClickPositions((prev) => [
+                ...prev,
+                { x, y, id: uniqueId }, // Use the adjusted coordinates
+            ]);
+
+            // Automatically remove the circle after animation
+            setTimeout(() => {
+                setClickPositions((prev) => prev.filter((position) => position.id !== uniqueId));
+            }, 400);
+
+            if ((event.target as HTMLElement).closest('button')) {
+                // Do nothing if the click is on a button or its child
+                return;
+            }
+
+            AudioManager.play('tack');
+        };
+
+        // Add event listener
+        document.addEventListener("click", handleClick);
+
+        // Cleanup event listener on component unmount
+        return () => {
+            document.removeEventListener("click", handleClick);
+        };
     }, []);
 
     // Update currency and progress bars using requestAnimationFrame for smooth updates
@@ -184,8 +226,9 @@ const Game = () => {
     useEffect(() => {
         // Centralize all sounds in AudioManager
         AudioManager.loadSounds({
-            background: backgroundMusic,
-            cashRegister: cashRegisterSound,
+            background: { src: background, type: 'music'},
+            cashRegister: { src: cashRegister, type: 'soundEffects'},
+            tack: { src: tack, type: 'soundEffects'},
         });
 
         // Play background music on loop
@@ -201,19 +244,25 @@ const Game = () => {
 
 
     // Handle volume changes
-    const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleMusicVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newVolume = parseFloat(event.target.value);
-        setVolume(newVolume); // Update the React state
-        AudioManager.setVolume(newVolume); // Sync AudioManager's volume
+        setMusicVolume(newVolume); // Update the React state
+        AudioManager.setVolume('music', newVolume); // Sync AudioManager's volume
+    };
+
+    const handleEffectVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newVolume = parseFloat(event.target.value);
+        setEffectVolume(newVolume); // Update the React state
+        AudioManager.setVolume('soundEffects', newVolume); // Sync AudioManager's volume
     };
 
 // Toggle mute sounds
     const toggleMute = () => {
         setIsMuted((prev) => !prev); // Update the React state
         if (isMuted) {
-            AudioManager.unmute();
+            AudioManager.setMuted(false);
         } else {
-            AudioManager.mute();
+            AudioManager.setMuted(true);
         }
     };
 
@@ -254,6 +303,7 @@ const Game = () => {
 
     const handleManagerUpgrade = (businessIndex: number, upgradeIndex: number) => {
         game.businessManager.buyManagerUpgrade(businessIndex, upgradeIndex);
+        AudioManager.play('cashRegister');
         setBusinesses([...game.businessManager.businesses]); // Update UI state
         setCurrency(game.businessManager.currency); // Reflect new currency after the purchase
     };
@@ -308,6 +358,7 @@ const Game = () => {
 
     const handleBuyManager = (index: number) => {
         game.businessManager.buyManager(index);
+        AudioManager.play('cashRegister');
         setCurrency(game.businessManager.currency);
         setBusinesses([...game.businessManager.businesses]);
     };
@@ -339,6 +390,13 @@ const Game = () => {
             className="font-baloo w-full max-w-xl flex flex-col bg-cover bg-no-repeat min-h-screen shadow-lg rounded-lg"
             style={{ backgroundImage: `url('/japan-capitalist/images/background.webp')` }}
         >
+            {clickPositions.map(({ x, y, id }) => (
+                <div
+                    key={id}
+                    style={{ left: x, top: y }}
+                    className="absolute w-5 h-5 bg-blue-500 rounded-full pointer-events-none animate-click z-[100]"
+                ></div>
+            ))}
             {notification && (
                 <Notification message={notification} onClose={closeNotification}/>
             )}
@@ -388,11 +446,13 @@ const Game = () => {
                                 {activePanel === "Settings" && (
                                     <SettingsPanel
                                         isMuted={isMuted}
-                                        volume={volume}
+                                        musicVolume={musicVolume}
+                                        soundEffectsVolume={effectVolume}
                                         formatPlaytime={formatPlaytime}
                                         totalPlaytime={game.getTotalPlaytime()}
                                         onToggleMute={toggleMute}
-                                        onVolumeChange={handleVolumeChange}
+                                        onMusicVolumeChange={handleMusicVolumeChange}
+                                        onSoundEffectsVolumeChange={handleEffectVolumeChange}
                                         onResetGame={() => game.resetGame()}
                                     />
                                 )}

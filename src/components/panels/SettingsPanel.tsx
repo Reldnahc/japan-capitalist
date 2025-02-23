@@ -5,22 +5,19 @@ import {FaVolumeDown, FaVolumeUp} from "react-icons/fa";
 
 interface SettingsPanelProps {
     isMuted: boolean;
-    volume: number;
+    musicVolume: number;
+    soundEffectsVolume: number;
     formatPlaytime: (time: number) => string;
     totalPlaytime: number;
     onToggleMute: () => void;
-    onVolumeChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onMusicVolumeChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onSoundEffectsVolumeChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onResetGame: () => void;
 }
 
-const SettingsPanel: React.FC<SettingsPanelProps> = ({
-                                                         isMuted,
-                                                         volume,
-                                                         formatPlaytime,
-                                                         totalPlaytime,
-                                                         onToggleMute,
-                                                         onVolumeChange,
-                                                         onResetGame,
+const SettingsPanel: React.FC<SettingsPanelProps> = ({ isMuted, musicVolume, soundEffectsVolume, totalPlaytime,
+                                                         formatPlaytime, onToggleMute, onMusicVolumeChange,
+                                                         onSoundEffectsVolumeChange, onResetGame,
                                                      }) => {
     const [isAlertOpen, setIsAlertOpen] = useState(false); // State for managing alert visibility
     const handleResetGameClick = () => {
@@ -53,7 +50,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
             {/* Volume Slider */}
             <div className="mt-6">
-                <label className="block text-base md:text-2xl mb-2 font-bold">Volume:</label>
+                <label className="block text-base md:text-2xl mb-2 font-bold">Music Volume:</label>
                 <div className="flex items-center gap-3">
 
                     <FaVolumeDown className={`ml-2`} size={36}/>
@@ -62,16 +59,45 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         min="0"
                         max="1"
                         step="0.1"
-                        value={volume}
-                        onChange={onVolumeChange}
+                        value={musicVolume}
+                        onChange={onMusicVolumeChange}
                         className="w-full h-4 mx-2 rounded-lg appearance-none bg-gray-300 outline-none
                             transition-all duration-200 hover:bg-gray-400 focus:ring focus:ring-blue-300"
                         style={{
                             backgroundImage:
                                 "linear-gradient(90deg, rgb(33, 150, 243) 0%, rgb(33, 150, 243) " +
-                                volume * 100 +
+                                musicVolume * 100 +
                                 "%, rgb(229, 231, 235) " +
-                                volume * 100 +
+                                musicVolume * 100 +
+                                "%)",
+                        }}
+                    />
+
+                    <FaVolumeUp className={`mr-2`} size={48} />
+
+                </div>
+            </div>
+            {/* Volume Slider */}
+            <div className="mt-6">
+                <label className="block text-base md:text-2xl mb-2 font-bold">Effects Volume:</label>
+                <div className="flex items-center gap-3">
+
+                    <FaVolumeDown className={`ml-2`} size={36}/>
+                    <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={soundEffectsVolume}
+                        onChange={onSoundEffectsVolumeChange}
+                        className="w-full h-4 mx-2 rounded-lg appearance-none bg-gray-300 outline-none
+                            transition-all duration-200 hover:bg-gray-400 focus:ring focus:ring-blue-300"
+                        style={{
+                            backgroundImage:
+                                "linear-gradient(90deg, rgb(33, 150, 243) 0%, rgb(33, 150, 243) " +
+                                soundEffectsVolume * 100 +
+                                "%, rgb(229, 231, 235) " +
+                                soundEffectsVolume * 100 +
                                 "%)",
                         }}
                     />

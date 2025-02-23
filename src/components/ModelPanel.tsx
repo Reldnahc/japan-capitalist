@@ -14,23 +14,28 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
 
     const getImagesForBusiness = (business: string) => [
         {
-            src: `/japan-capitalist/images/businesses/${business}/bg_1.webp`,
+            src: `/japan-capitalist/images/businesses/${business.toLowerCase().replace(" ","")}/bg_1.webp`,
             width: 64,
             height: 64,
         },
         {
-            src: `/japan-capitalist/images/businesses/${business}/bg_2.webp`,
+            src: `/japan-capitalist/images/businesses/${business.toLowerCase().replace(" ","")}/bg_2.webp`,
             width: 64,
             height: 64,
         },
         {
-            src: `/japan-capitalist/images/businesses/${business}/bg_3.webp`,
+            src: `/japan-capitalist/images/businesses/${business.toLowerCase().replace(" ","")}/bg_3.webp`,
             width: 64,
             height: 64,
         },
     ];
 
     const generateParticlesConfig = (panelType: string, businessName?: string): ISourceOptions => {
+
+        const getRandomDelay = (min: number, max: number) => {
+            return Math.random() * (max - min) + min; // Random value between min and max
+        };
+
         switch (panelType) {
             case "Managers": {
                 if (!businessName) {
@@ -54,41 +59,134 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
                     detectRetina: true,
                     fullScreen: false,
                     background: { color: "#374151" },
-                    emitters: {
-                        position: {
-                            x: 50,
-                            y: -10,
-                        },
-                        rate: {
-                            delay: 2,
-                            quantity: 1,
-                        },
-                        size: {
-                            width: 0,
-                            height: 0,
-                        },
-                        particles: {
-                            shape: {
-                                type: "images",
-                                options: {
-                                    images: getImagesForBusiness(businessName),
+                    emitters: [
+                        {
+                            position: { x: 0, y: 0 }, // Top-left corner
+                            rate: {
+                                delay: getRandomDelay(2, 5),
+                                quantity: 1,
+                            },
+                            size: {
+                                width: 0,
+                                height: 0,
+                            },
+                            particles: {
+                                shape: {
+                                    type: "images",
+                                    options: {
+                                        images: getImagesForBusiness(businessName),
+                                    },
+                                },
+                                opacity: { value: 1 },
+                                size: { value: 40 },
+                                move: {
+                                    enable: true,
+                                    speed: 5,
+                                    direction: "bottom-right", // Drift diagonally downwards
+                                    outModes: { default: "destroy" },
+                                },
+                                rotate: {
+                                    value: { min: 0, max: 360 },
+                                    animation: { enable: true, speed: 10, sync: false },
                                 },
                             },
-                            opacity: { value: 1 },
-                            size: { value: 50 },
-                            move: {
-                                enable: true,
-                                speed: 5,
-                                direction: "top",
-                                outModes: { default: "out" },
+                        },
+                        {
+                            position: { x: 100, y: 0 }, // Top-right corner
+                            rate: {
+                                delay: getRandomDelay(2, 5),
+                                quantity: 1,
                             },
-                            rotate: {
-                                value: { min: 0, max: 360 },
-                                animation: { enable: true, speed: 10, sync: false },
+                            size: {
+                                width: 0,
+                                height: 0,
+                            },
+                            particles: {
+                                shape: {
+                                    type: "images",
+                                    options: {
+                                        images: getImagesForBusiness(businessName),
+                                    },
+                                },
+                                opacity: { value: 1 },
+                                size: { value: 40 },
+                                move: {
+                                    enable: true,
+                                    speed: 5,
+                                    direction: "bottom-left", // Drift diagonally downwards
+                                    outModes: { default: "destroy" },
+                                },
+                                rotate: {
+                                    value: { min: 0, max: 360 },
+                                    animation: { enable: true, speed: 10, sync: false },
+                                },
                             },
                         },
-                    },
+                        {
+                            position: { x: 0, y: 100 }, // Bottom-left corner
+                            rate: {
+                                delay: getRandomDelay(2, 5),
+                                quantity: 1,
+                            },
+                            size: {
+                                width: 0,
+                                height: 0,
+                            },
+                            particles: {
+                                shape: {
+                                    type: "images",
+                                    options: {
+                                        images: getImagesForBusiness(businessName),
+                                    },
+                                },
+                                opacity: { value: 1 },
+                                size: { value: 40 },
+                                move: {
+                                    enable: true,
+                                    speed: 5,
+                                    direction: "top-right",
+                                    outModes: { default: "destroy" },
+                                },
+                                rotate: {
+                                    value: { min: 0, max: 360 },
+                                    animation: { enable: true, speed: 10, sync: false },
+                                },
+                            },
+                        },
+                        {
+                            position: { x: 100, y: 100 }, // Bottom-right corner
+                            rate: {
+                                delay: getRandomDelay(2, 5),
+                                quantity: 1,
+                            },
+                            size: {
+                                width: 0,
+                                height: 0,
+                            },
+                            particles: {
+                                shape: {
+                                    type: "images",
+                                    options: {
+                                        images: getImagesForBusiness(businessName),
+                                    },
+                                },
+                                opacity: { value: 1 },
+                                size: { value: 40 },
+                                move: {
+                                    enable: true,
+                                    speed: 5,
+                                    direction: "top-left",
+                                    outModes: { default: "destroy" },
+                                },
+                                rotate: {
+                                    value: { min: 0, max: 360 },
+                                    animation: { enable: true, speed: 10, sync: false },
+                                },
+                            },
+                        },
+                    ],
                 };
+
             }
 
             case "Settings":

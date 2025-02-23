@@ -70,14 +70,18 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                             alt={selectedBusiness.name}
                             className=" object-contain rounded -mt-6"
                         />
-                        <p className="text-2xl text-white mt-3 mb-1 font-fredoka">
-                            {selectedBusiness.manager?.name} - <span className="font-yuji">{selectedBusiness.manager?.kanji}</span>
-                        </p>
-                        {selectedBusiness.manager?.bio && (
-                            <p className="text-base md:text-lg text-gray-50 italic mb-6 text-left">
-                                "{selectedBusiness.manager.bio}"
+
+                        <div className={`border-gray-500 border-2 rounded-lg px-4 mt-4 bg-gray-800 bg-opacity-80`}>
+                            <p className="text-2xl text-white mt-3 mb-2 font-fredoka">
+                                {selectedBusiness.manager?.name} -
+                                <span className="font-yuji">{selectedBusiness.manager?.kanji}</span>
                             </p>
-                        )}
+                            {selectedBusiness.manager?.bio && (
+                                <p className="text-base md:text-lg text-gray-50 italic mb-6 text-left">
+                                    "{selectedBusiness.manager.bio}"
+                                </p>
+                            )}
+                        </div>
                         {selectedBusiness.manager?.hired ? (
                             <div className="mt-4">
                                 <h4 className="text-3xl text-gray-50 font-semibold mb-3">Upgrades</h4>
@@ -136,7 +140,7 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
                             </div>
                             ) : (
                             <button
-                                className="relative bg-green-500 text-white px-4 py-2 mb-6 rounded hover:bg-green-600 focus:outline-none"
+                                className="relative  mt-3 bg-green-500 text-white px-4 py-2 mb-6 rounded hover:bg-green-600 focus:outline-none"
                                 onClick={() => {
                                     const index = businesses.findIndex(
                                         (business) => business.name === selectedBusiness.name

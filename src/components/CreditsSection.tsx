@@ -52,6 +52,18 @@ const CreditsSection: React.FC = () => {
                                 </a>
                                 <span> – License: Attribution 4.0</span>
                             </li>
+                            <li>
+                                <span>Tacking paper to a cork board by pfranzen – </span>
+                                <a
+                                    href="https://freesound.org/s/266894/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-500 underline hover:text-blue-700"
+                                >
+                                    https://freesound.org/s/201159/
+                                </a>
+                                <span> – License: Attribution 4.0</span>
+                            </li>
                             {/* Add more attributions here if necessary */}
                         </ul>
                     </div>
