@@ -31,6 +31,7 @@ const Game = () => {
     const [notification, setNotification] = useState<string | null>(null);
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
     const [clickPositions, setClickPositions] = useState<{ x: number; y: number; id: number }[]>([]);
+    const [direction, setDirection] = useState<"left" | "right">("left"); // Controls animation direction
     const [appliedUnlocks, setAppliedUnlocks] = useState(() =>
         game.businessManager.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied))
     );
@@ -323,6 +324,16 @@ const Game = () => {
     const handlePrestige = () => {
         game.prestige();
     }
+
+    const handleManagerBack = () => {
+        play("tack");
+        setDirection("right"); // Set direction for sliding right
+        setTimeout(() => {
+            setSelectedBusiness(null);
+        }, 10);
+
+    };
+
     return (
         <div
             className="font-baloo w-full max-w-xl flex flex-col bg-cover bg-no-repeat min-h-screen shadow-lg rounded-lg"
@@ -339,7 +350,7 @@ const Game = () => {
                 <Notification message={notification} onClose={closeNotification}/>
             )}
             {/* Conditional Panel UI */}
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
                 {activePanel && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                         {/* Static Background (No animation applied here) */}
@@ -358,6 +369,8 @@ const Game = () => {
                                         : activePanel
                                 }
                                 onClose={closePanel}
+                                onBack={selectedBusiness ? handleManagerBack : undefined}
+
                             >
                                 {activePanel === "Unlocks" && (
                                     <UnlocksPanel businesses={businesses} />
@@ -371,6 +384,8 @@ const Game = () => {
                                         onHireManager={handleBuyManager}
                                         currency={currency}
                                         onManagerUpgrade={handleManagerUpgrade}
+                                        direction={direction}
+                                        setDirection={setDirection}
                                     />
                                 )}
                                 {activePanel === "Fans" && (

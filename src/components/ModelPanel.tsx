@@ -1,14 +1,15 @@
-import React, {useCallback, useContext, useEffect, useMemo, useRef} from "react";
+import React, {useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import Particles from "@tsparticles/react";
 import {Container, ISourceOptions} from "@tsparticles/engine";
 import {ParticlesContext} from "../contexts/ParticlesContext.tsx"; // if you are going to use `loadSlim`, install the "@tsparticles/slim" package too.
 interface ModalPanelProps {
     title: string; // Title of the panel
     onClose: () => void; // Function to close the panel
+    onBack?: () => void; // Optional back handler
     children: React.ReactNode; // Content to render inside the panel
 }
 
-const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => {
+const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, onBack, children }) => {
     const {engine, initialized } = useContext(ParticlesContext);
     const containerRef = useRef<Container | null>(null);
 
@@ -317,7 +318,8 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
         <>
             {/* Dimmed Background */}
             <div
-                className="fixed inset-0 z-40"
+                className="fixed inset-0 z-40 bg-black bg-opacity-50
+"
                 onClick={onClose} // Close the panel on overlay click
             ></div>
             {/* Panel Content */}
@@ -325,17 +327,35 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
                     {particlesElement}
 
                 <div className="rounded-lg w-full max-w-lg pt-3 pointer-events-auto relative ">
+                    <div className="flex items-center justify-between px-4">
+                        {/* Panel Title */}
+                        <h2 className="text-xl md:text-3xl font-bold text-white font-fredoka">
+                            {title}
+                        </h2>
 
-                    {/* Close Button */}
-                    <button
-                        onClick={onClose}
-                        className="absolute flex items-center justify-center top-1.5 md:top-0 right-1 bg-red-500 text-white font-extrabold p-3 h-8 w-8 rounded-lg hover:bg-red-600"
-                    >
-                        X
-                    </button>
+                        {/* Buttons */}
+                        <div className="flex space-x-2">
+                            {onBack && (
+                                <button
+                                    onClick={onBack}
+                                    className="flex items-center justify-center w-6 md:h-10 md:w-10 bg-blue-500 text-sm text-white rounded hover:bg-blue-600"
+                                >
+                                    Back
+                                </button>
+
+                            )}
+
+                            <button
+                                onClick={onClose}
+                                className="flex items-center justify-center w-6 md:h-10 md:w-10 bg-red-500 text-white font-extrabold rounded hover:bg-red-600"
+                            >
+                                X
+                            </button>
+                        </div>
+                    </div>
+
 
                     {/* Panel Title */}
-                    <h2 className="text-xl md:text-3xl font-bold mb-4 ml-3 text-white font-fredoka z-10">{title}</h2>
                     <hr className="border-t border-gray-400 mx-1 my-2" />
 
                     {/* Panel Content */}

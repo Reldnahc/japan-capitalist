@@ -23,7 +23,7 @@ const UnlocksPanel: React.FC<UnlocksPanelProps> = ({ businesses }) => {
                 {businesses.map((business, bizIdx) => (
                     <div key={bizIdx}>
                         {/* Business Name */}
-                        <h3 className="text-xl md:text-3xl font-semibold mb-2 text-center">{business.name}</h3>
+                        <h3 className="text-xl md:text-3xl text-white font-semibold mb-2 text-center">{business.name}</h3>
                         <div
                             className="grid grid-cols-[repeat(4,minmax(auto,2.5rem))] md:grid-cols-[repeat(5,minmax(auto,2.5rem))] gap-5 justify-center"
                         >
