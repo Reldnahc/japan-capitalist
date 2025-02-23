@@ -49,6 +49,10 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
                             shape: {type: "star"},
                             size: {value: {min: 3, max: 8}},
                             move: {enable: true, speed: 1},
+                            rotate: {
+                                value: { min: 0, max: 360 },
+                                animation: { enable: true, speed: 3, sync: false },
+                            },
                         },
                     };
                 }
@@ -198,6 +202,10 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
                         color: { value: "#4CAF50" },
                         shape: { type: "star" },
                         move: { enable: true, speed: 3, direction: "bottom" },
+                        rotate: {
+                            value: { min: 0, max: 360 },
+                            animation: { enable: true, speed: 3, sync: false },
+                        },
                     },
                 };
 
@@ -207,9 +215,14 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
                     background: { color: "#374151" },
                     particles: {
                         number: { value: 100 },
-                        color: { value: "#FF5733" },
+                        color: { value: "#FFD700" },
                         shape: { type: "star" },
+                        size: {value: {min: 3, max: 5}},
                         move: { enable: true, speed: 2, direction: "bottom" },
+                        rotate: {
+                            value: { min: 0, max: 360 },
+                            animation: { enable: true, speed: 3, sync: false },
+                        },
                     },
                 };
 
@@ -222,6 +235,10 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, children }) => 
                         color: { value: "#F1C40F" },
                         shape: { type: "star" },
                         move: { enable: true, speed: 4, direction: "top" },
+                        rotate: {
+                            value: { min: 0, max: 360 },
+                            animation: { enable: true, speed: 3, sync: false },
+                        },
                     },
                 };
 

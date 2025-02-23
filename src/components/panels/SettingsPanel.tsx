@@ -64,11 +64,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ audioSettings, formatPlay
                 onVolumeChange={onUpdateVolume('soundEffects')}
             />
 
-            <div className={`border w-4/5 mx-auto mt-6 bg-gray-300 rounded-lg opacity-75`}>
+            <div className={`w-4/5 mx-auto border-gray-500 border-2 rounded-lg p-4 mt-4 bg-gray-800 bg-opacity-80`}>
             {/* Playtime Section */}
             <div className="text-center mt-4">
-                <p className="text-black text-2xl font-bold">Total Playtime:</p>
-                <p className="text-black text-xl">{formatPlaytime(totalPlaytime)}</p>
+                <p className="text-white text-2xl font-bold">Total Playtime:</p>
+                <p className="text-white text-xl">{formatPlaytime(totalPlaytime)}</p>
             </div>
 
             {/* Credits Section */}

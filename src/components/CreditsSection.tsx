@@ -11,18 +11,18 @@ const CreditsSection: React.FC = () => {
     return (
         <div className="text-center mt-8 px-4">
             {/* Main Heading */}
-            <h1 className="text-black text-4xl font-bold mb-6">Credits</h1>
+            <h1 className="text-gray-100 text-4xl font-bold mb-6">Credits</h1>
 
             {/* Development Section */}
             <div className="mb-6">
-                <h2 className="text-black text-2xl font-bold underline">Development</h2>
-                <p className="text-gray-700 text-xl mt-2">Chandler</p>
+                <h2 className="text-white text-2xl font-bold underline">Development</h2>
+                <p className="text-gray-100 text-xl mt-2">Chandler</p>
             </div>
 
             {/* Playtesting Section */}
             <div className="mb-6">
-                <h2 className="text-black text-2xl font-bold underline">Playtesting</h2>
-                <p className="text-gray-700 text-xl mt-2">
+                <h2 className="text-white text-2xl font-bold underline">Playtesting</h2>
+                <p className="text-gray-100 text-xl mt-2">
                     Victor, Despot, Danielle, Logan, Aaron
                 </p>
             </div>

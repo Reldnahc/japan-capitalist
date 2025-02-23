@@ -26,7 +26,7 @@ const FansPanel: React.FC<FansPanelProps> = ({ currentFans, totalFans, onClaimFa
 
     return (
             <div className={`h-[70vh] overflow-y-auto px-6 pb-6 flex flex-col gap-6 items-center rounded-lg`}>
-                <div className="text-center">
+                <div className="text-center border-gray-500 border-2 rounded-lg p-4 mt-4 bg-gray-800 bg-opacity-80">
                     <BsPeopleFill className="mx-auto text-blue-600" size={40} />
 
                     <p className="text-base md:text-xl text-gray-300 mt-2">

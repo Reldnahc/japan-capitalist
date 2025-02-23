@@ -22,13 +22,13 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({businesses, selectedBusiness
             {!selectedBusiness && (
                 <div className="grid grid-cols-2 gap-3 w-full">
                     {businesses.map((business, index) => (
-                        <div key={index} className="shadow">
+                        <div key={index} className="shadow border-gray-500 border-2 rounded-lg p-4 bg-opacity-80 bg-gray-800 bg-opacity-80`">
                             <h3 className="text-lg md:text-2xl font-bold text-center z-20 ">
                                 {business.name}
                             </h3>
                             <div
                                 key={business.name}
-                                className="relative flex flex-col items-center mx-auto w-32 h-32 md:w-40 md:h-40 bg-gray-100 px-4 py-1 shadow-sm rounded-full cursor-pointer hover:shadow-2xl bg-no-repeat bg-center opacity-100  bg-cover transition"
+                                className="relative flex flex-col items-center mx-auto w-32 h-32 md:w-40 md:h-40 bg-gray-100 px-4 py-1 shadow-sm rounded-full cursor-pointer hover:shadow-2xl bg-no-repeat bg-center opacity-100 bg-cover transition"
                                 onClick={() => setSelectedBusiness(business)}
                                 style={{ backgroundImage: `url('/japan-capitalist/images/businesses/${business.name.toLowerCase().replace(" ","")}/employee_face.webp')` }}
                             >
