@@ -81,13 +81,13 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({
                             initial="hidden"
                             animate="visible"
                             exit="exit">
-                            <ManagerDetailsPanel
-                                selectedBusiness={selectedBusiness}
-                                businesses={businesses}
-                                onHireManager={onHireManager}
-                                onManagerUpgrade={onManagerUpgrade}
-                                currency={currency}
-                            />
+                                <ManagerDetailsPanel
+                                    selectedBusiness={selectedBusiness}
+                                    businesses={businesses}
+                                    onHireManager={onHireManager}
+                                    onManagerUpgrade={onManagerUpgrade}
+                                    currency={currency}
+                                />
                         </motion.div>
                     )}
             </AnimatePresence>

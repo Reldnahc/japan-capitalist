@@ -113,6 +113,17 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                                             </button>
                                         </li>
                                         <li>
+                                        <button
+                                            className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
+                                            onClick={() => {
+                                                onOpenPanel("Gallery");
+                                                setIsMenuOpen(false);
+                                            }}
+                                        >
+                                            Gallery
+                                        </button>
+                                        </li>
+                                        <li>
                                             <button
                                                 className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
                                                 onClick={() => {
@@ -138,7 +149,10 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                         <button
                             className="flex flex-col items-center justify-center w-10 h-10 md:w-16 md:h-16 bg-gray-600 rounded-md hover:bg-gray-500 transition"
                             aria-label="Menu"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            onClick={() => {
+                                play('tack');
+                                setIsMenuOpen(!isMenuOpen);
+                            }}
                         >
                             {/* Hamburger menu lines */}
                             <span className="block w-6 h-0.5 md:w-10 md:h-1 bg-white mb-1 md:mb-2"></span>

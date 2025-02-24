@@ -1,23 +1,18 @@
 import React from "react";
+import ImageCarousel from "../ImageCarousel.tsx";
 
 // Define Prop Types
 interface ManagerGalleryPanelProps {
-    unlocks: typeof game.businessManager.unlocks; // Use the type of `unlocks` from `game`
+    images: string[]; // Use the type of `unlocks` from `game`
 }
 
-const ManagerGalleryPanel: React.FC<ManagerGalleryPanelProps> = ({ unlocks }) => {
+const ManagerGalleryPanel: React.FC<ManagerGalleryPanelProps> = ({ images }) => {
+
     return (
         <div>
-            {/* Placeholder content */}
-            <h2>Manager Gallery Panel</h2>
-            <p>Number of Unlocks: {unlocks ? unlocks.length : 0}</p>
-            {unlocks && (
-                <ul>
-                    {unlocks.map((unlock, index) => (
-                        <li key={index}>{JSON.stringify(unlock)}</li> // Adjust as necessary for unlock structure
-                    ))}
-                </ul>
-            )}
+            <ImageCarousel
+                images={images}
+            />
         </div>
     );
 };

@@ -1,59 +1,71 @@
-   import React, { useState, useEffect } from "react";
-   import Game from "./Game"; // Adjust path as needed
+import { useState, useEffect } from "react";
+import Game from "./Game"; // Adjust path as needed
 
-   // Function to preload images
-   const preloadImages = (imagePaths: string[]): Promise<void[]> => {
-       return Promise.all(
-           imagePaths.map(
-               (path) =>
-                   new Promise((resolve, reject) => {
-                       const img = new Image();
-                       img.src = path;
-                       img.onload = () => resolve();
-                       img.onerror = (err) => reject(err);
-                   })
-           )
-       );
-   };
+const GamePreloader = () => {
+    const [isReady, setIsReady] = useState(false); // Tracks loading state
+    const [hasError, setHasError] = useState(false); // Tracks loading errors
+    const [loadingProgress, setLoadingProgress] = useState(0); // Track percentage of images loaded
 
-   // Preloader component
-   const GamePreloader = () => {
-       const [isReady, setIsReady] = useState(false); // Tracks loading state
-       const [hasError, setHasError] = useState(false); // Tracks loading errors
+    useEffect(() => {
+        const loadImages = async () => {
+            try {
+                // Fetch the image paths from the JSON file
+                const response = await fetch('/japan-capitalist/images.json');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch images.json: ${response.statusText}`);
+                }
 
-       // List of all image paths to preload
-       const imagePaths = [
-           "/path/to/image1.webp",
-           "/path/to/image2.webp",
-           "/path/to/image3.webp",
-           "/path/to/image4.webp",
-       ];
+                const imagePaths: string[] = await response.json();
 
-       useEffect(() => {
-           // Start preloading images
-           preloadImages(imagePaths)
-               .then(() => setIsReady(true)) // Set to ready when all images are loaded
-               .catch((error) => {
-                   console.error("Error preloading images:", error);
-                   setHasError(true); // Handle any loading errors
-               });
-       }, []);
+                // Preload images and track progress
+                let loaded = 0;
+                await Promise.all(
+                    imagePaths.map(
+                        (path) =>
+                            new Promise<void>((resolve, reject) => {
+                                const img = new Image();
+                                img.src = path;
+                                img.onload = () => {
+                                    loaded++;
+                                    setLoadingProgress((loaded / imagePaths.length) * 100); // Update progress
+                                    resolve();
+                                };
+                                img.onerror = (err) => reject(err);
+                            })
+                    )
+                );
+                console.log("All images loaded! " + loaded);
+                setIsReady(true); // Set ready state to true once all images are loaded
+            } catch (error) {
+                console.error("Error preloading images:", error);
+                setHasError(true); // Show an error message if something fails
+            }
+        };
 
-       // Loading or error states
-       if (!isReady) {
-           return (
-               <div className="flex items-center justify-center h-screen bg-black text-white">
-                   {hasError ? (
-                       <div>Error loading resources, please refresh the page.</div>
-                   ) : (
-                       <div>Loading...</div>
-                   )}
-               </div>
-           );
-       }
+        loadImages();
+    }, []);
 
-       // Render game whenever loading is complete
-       return <Game />;
-   };
+    // Loading or error states
+    if (!isReady) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-black text-white text-xl flex-col">
+                {hasError ? (
+                    <div>Error loading resources, please refresh the page.</div>
+                ) : (
+                    <div>
+                        Loading... {Math.floor(loadingProgress)}%
+                    </div>
+                )}
+            </div>
+        );
+    }
 
-   export default GamePreloader;
+    // Render game whenever loading is complete
+    return (
+        <div className="bg-gray-800 min-h-screen flex items-center justify-center">
+            <Game />
+        </div>
+    );
+};
+
+export default GamePreloader;

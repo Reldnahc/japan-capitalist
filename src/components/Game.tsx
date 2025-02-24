@@ -12,6 +12,7 @@ import SettingsPanel from "./panels/SettingsPanel.tsx";
 import { motion, AnimatePresence } from "framer-motion";
 import FansPanel from "./panels/FansPanel.tsx";
 import {useAudioManager} from "../contexts/AudioManagerProvider.tsx";
+import GalleryPanel from "./panels/GalleryPanel.tsx";
 // Extend the TypeScript definition for the Window object
 declare global {
     interface Window {
@@ -332,6 +333,16 @@ const Game = () => {
 
     };
 
+    const getPanelTitle = (): string => {
+        if (activePanel === "Managers" && selectedBusiness) {
+            return `Managers - ${selectedBusiness.name}`;
+        } else if (activePanel === "Gallery" && selectedBusiness) {
+            return `Gallery - ${selectedBusiness.manager?.name}`;
+        }
+        return activePanel || "";
+    };
+
+
     return (
         <div
             className="font-baloo w-full max-w-xl flex flex-col bg-cover bg-no-repeat min-h-screen shadow-lg rounded-lg"
@@ -361,11 +372,7 @@ const Game = () => {
                             className=" p-6 rounded-lg shadow-lg w-full max-w-xl"
                         >
                             <ModalPanel
-                                title={
-                                    activePanel === "Managers" && selectedBusiness
-                                        ? `Managers - ${selectedBusiness.name}`
-                                        : activePanel
-                                }
+                                title={getPanelTitle()}
                                 onClose={closePanel}
                                 onBack={selectedBusiness ? handleManagerBack : undefined}
 
@@ -393,6 +400,16 @@ const Game = () => {
                                         onClaimFans={handlePrestige}
                                     />
 
+                                )}
+                                {activePanel === "Gallery" && (
+                                    <GalleryPanel
+                                        unlocks={game.businessManager?.unlocks}
+                                        businesses={businesses}
+                                        selectedBusiness={selectedBusiness}
+                                        setSelectedBusiness={setSelectedBusiness}
+                                        direction={direction}
+                                        setDirection={setDirection}
+                                    />
                                 )}
                                 {activePanel === "Settings" && (
                                     <SettingsPanel

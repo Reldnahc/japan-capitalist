@@ -257,6 +257,9 @@ export class BusinessManager {
 
     applyEffect(business: Business, effect: string, updateSpeed = true) {
         console.log(">[BusinessManager] Applying effect: " + effect);
+        if (effect.includes("Unlocked")){
+
+        }
         if (effect.includes("Revenue ×")) {
             const [revenueEffect, target] = effect.split(";");
             const multiplier = parseFloat(revenueEffect.replace("Revenue ×", "").trim());
@@ -391,7 +394,7 @@ export class BusinessManager {
             if (upgrade.unlocked) {
                 this.applyEffect(business, upgrade.effect, updateSpeed);
                 upgrade.unlocked = true;
-               // this.unlocks.push({ description: `${business.name}: ${upgrade.effect}`, applied: true });
+                this.unlocks.push({ description: `${business.name}: ${upgrade.effect}`, applied: true });
             }
         });
     }

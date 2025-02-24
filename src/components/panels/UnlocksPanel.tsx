@@ -1,4 +1,5 @@
 import React from "react";
+import {FaImage} from "react-icons/fa";
 
 type Unlock = {
     effect: string;
@@ -41,7 +42,11 @@ const UnlocksPanel: React.FC<UnlocksPanelProps> = ({ businesses }) => {
                                         alt={business.name}
                                         className=" object-contain rounded-full h-8 w-8 md:h-12 md:w-12 flex items-center justify-center mt-1 flex-shrink-0 leading-none"
                                     />
-
+                                    { unlock.effect.includes("Unlocked") && (
+                                        <span className="absolute -top-2 -right-2 bg-blue-500 text-white font-bold text-md w-7 h-7 flex items-center justify-center rounded-full">
+                                            <FaImage/>
+                                        </span>
+                                    )}
 
                                     {/* Number (Milestone Text) */}
                                     <span className="text-sm md:text-base text-gray-800 text-center mb-1 leading-none mt-0.5">

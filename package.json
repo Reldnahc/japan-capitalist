@@ -5,8 +5,11 @@
   "type": "module",
   "homepage": "https://reldnahc.github.io/japan-capitalist",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "convert-to-webp": "node scripts/convert-to-webp.js",
+    "generate-images": "node scripts/generateImagesJson.js",
+    "prebuild": "npm run convert-to-webp && npm run generate-images",
+    "dev": "npm run prebuild && vite",
+    "build": "npm run prebuild && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",

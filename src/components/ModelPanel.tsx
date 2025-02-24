@@ -1,7 +1,8 @@
 import React, {useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import Particles from "@tsparticles/react";
 import {Container, ISourceOptions} from "@tsparticles/engine";
-import {ParticlesContext} from "../contexts/ParticlesContext.tsx"; // if you are going to use `loadSlim`, install the "@tsparticles/slim" package too.
+import {ParticlesContext} from "../contexts/ParticlesContext.tsx";
+import { FaArrowLeft } from "react-icons/fa";
 interface ModalPanelProps {
     title: string; // Title of the panel
     onClose: () => void; // Function to close the panel
@@ -340,7 +341,7 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, onBack, childre
                                     onClick={onBack}
                                     className="flex items-center justify-center w-6 md:h-10 md:w-10 bg-blue-500 text-sm text-white rounded hover:bg-blue-600"
                                 >
-                                    Back
+                                    <FaArrowLeft />
                                 </button>
 
                             )}
