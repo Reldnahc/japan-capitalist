@@ -2,7 +2,6 @@ import { Business } from './types/business.types';
 import { businesses as defaultBusinesses } from './data/businesses.ts';
 import JSONbig from 'json-bigint';
 import {BusinessManager} from "./businessManager.ts";
-import {SPEED_THRESHOLD} from "./config.ts";
 import {Manager} from "./types/manager.types.ts";
 import {calculateCost} from "../utils/calculateCost.ts";
 import {GameLoop} from "./gameLoop.ts";
@@ -10,7 +9,6 @@ import {GameLoop} from "./gameLoop.ts";
 export class IdleGame {
 
     businessManager: BusinessManager;
-    saveInterval: number | null = null; // Timer ID for saving periodically
     totalPlaytime: number = 0;
     sessionStartTime: number = 0;
     private gameLoop: GameLoop;
@@ -26,19 +24,8 @@ export class IdleGame {
 
             // Calculate offline time and update production
             const offlineTime = now - savedState.lastSaved;
-            this.businessManager.updateProduction(offlineTime);
-
-            // Reset production timers
-            this.businessManager.businesses.forEach(business => {
-                if (business.isProducing) {
-                    business.lastProduced = now;
-                    if (business.productionTime > SPEED_THRESHOLD) {
-                        business.endTime = now + business.productionTime;
-                    }
-                }
-            });
-
             this.businessManager.checkAllUnlocksAndUpgrades();
+            this.businessManager.updateProduction(offlineTime);
         } else {
             this.businessManager = new BusinessManager(defaultBusinesses, BigInt(0), BigInt(0), BigInt(0), []);
         }
@@ -182,16 +169,7 @@ export class IdleGame {
         // Clear local storage
         this.clearGameState();
 
-        this.businessManager.businessTimeouts.forEach((timeoutId, index) => {
-            clearTimeout(timeoutId); // Clear each timeout
-            this.businessManager.businessTimeouts.delete(index); // Remove it from the map
-        });
 
-        // Clear all individual business timeouts
-
-
-        // Clear the timeout map
-        this.businessManager.businessTimeouts.clear();
 
         this.businessManager.businesses = defaultBusinesses.map((business) => ({
             ...business,
@@ -220,15 +198,6 @@ export class IdleGame {
         console.log("fan claim triggered");
         const fansToClaim = this.businessManager.currentFans;
 
-        this.businessManager.businessTimeouts.forEach((timeoutId, index) => {
-            clearTimeout(timeoutId); // Clear each timeout
-            this.businessManager.businessTimeouts.delete(index); // Remove it from the map
-        });
-
-        // Clear all individual business timeouts
-
-        // Clear the timeout map
-        this.businessManager.businessTimeouts.clear();
 
         this.businessManager.currency = BigInt(0);
         this.businessManager.totalEarned = BigInt(0);

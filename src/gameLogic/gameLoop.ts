@@ -1,4 +1,3 @@
-// gameLoop.ts
 export class GameLoop {
     private animationFrameId: number = 0;
     private updateInterval: number = 100; // ms

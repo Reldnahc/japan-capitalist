@@ -1,7 +1,7 @@
 import { Business } from './types/business.types';
 import {GlobalUnlock} from "./types/unlocks.types.ts";
-import {SPEED_THRESHOLD} from "./config.ts";
 import {calculateCost} from "../utils/calculateCost.ts";
+import {SPEED_THRESHOLD} from "./config.ts";
 
 export class BusinessManager {
     businesses: Business[];
@@ -11,8 +11,8 @@ export class BusinessManager {
     currentFans: bigint = 0n; //current amount claimable
     nextFanThreshold: bigint = 1_000_000_000_000n;//_000_000n;
     fanRate: bigint = 102n;
-    businessTimeouts: Map<number, number> = new Map();
     unlocks: GlobalUnlock[] = [];
+    offlineEarnings: bigint = 0n;
     private lastUpdate: number = Date.now();
 
     constructor(businesses: Business[], currency: bigint, totalEarned: bigint, fans: bigint, unlocks: GlobalUnlock[]) {
@@ -23,12 +23,10 @@ export class BusinessManager {
         this.unlocks = unlocks;
     }
 
-
     private resetProductionTimer(business: Business) {
-
-            business.startTime = Date.now();
-            business.endTime = business.startTime + business.productionTime;
-
+        business.startTime = Date.now();
+        business.endTime = business.startTime + business.productionTime;
+        business.lastProduced = Date.now();
     }
 
     // Modify startProduction
@@ -86,8 +84,6 @@ export class BusinessManager {
          if (business.manager?.hired){
             this.startProduction(index)
         }
-
-       // this.saveGameState();
     }
 
     // Calculate next unlock milestone quantity
@@ -218,15 +214,21 @@ export class BusinessManager {
             const percentage = parseFloat(effect.replace("Speed +", "").replace("%", ""));
             const newProductionTime = Math.floor(business.productionTime / (1 + percentage / 100));
 
-            // Calculate progress preservation
-            const progress = business.isProducing ?
-                (Date.now() - business.lastProduced) / business.productionTime : 0;
-
-            business.productionTime = newProductionTime;
-
             if (business.isProducing) {
-                business.accumulatedTime = progress * newProductionTime;
-                business.lastProduced = Date.now() - (progress * newProductionTime);
+                // Adjust accumulated time proportionally to the change in production speed
+                business.accumulatedTime = Math.min(
+                    business.accumulatedTime, // Prevent excessive accumulated time
+                    business.productionTime
+                ) * (newProductionTime / business.productionTime);
+
+                // Update production time
+                business.productionTime = newProductionTime;
+
+                // Adjust the lastProduced to account for the new production cycle
+                business.lastProduced = Date.now() - business.accumulatedTime;
+            } else {
+                // Recalculate production time but no changes to accumulated time since it's not producing
+                business.productionTime = newProductionTime;
             }
         }
     }
@@ -234,33 +236,35 @@ export class BusinessManager {
     updateProduction(deltaTime?: number) {
         const now = Date.now();
         const calculatedDelta = deltaTime !== undefined ? deltaTime : now - this.lastUpdate;
+        let totalEarnedThisUpdate = 0n;
 
         this.businesses.forEach((business) => {
             if (!business.isProducing) return;
-
             if (business.productionTime <= SPEED_THRESHOLD) {
-                // Fast producers: use accumulated time
-                business.accumulatedTime += calculatedDelta;
-                const cycles = Math.floor(business.accumulatedTime / business.productionTime);
+                business.revenuePerSecond = (business.revenue * BigInt(business.quantity) * 1000n) / BigInt(business.productionTime);
+            }
+            const elapsed = deltaTime !== undefined ? calculatedDelta : now - business.startTime;
+            let cycles = Math.floor(elapsed / business.productionTime);
+            if (cycles > 0) {
+                if (!business.manager?.hired) {
+                    business.isProducing = false;
+                    cycles = 1;
+                }
+                totalEarnedThisUpdate += business.revenue * BigInt(business.quantity * cycles);
+                const remaining = elapsed % business.productionTime;
+                business.startTime = now - remaining;
+                business.endTime = business.startTime + business.productionTime;
 
-                if (cycles > 0) {
-                    this.earnMoney(business.revenue * BigInt(business.quantity * cycles));
-                    business.accumulatedTime %= business.productionTime;
-                }
-            } else {
-                // Slow producers: check end time
-                if (now >= business.endTime) {
-                    this.earnMoney(business.revenue * BigInt(business.quantity));
-                    if (!business.manager?.hired) {
-                        business.isProducing = false;
-                    }
-                    this.resetProductionTimer(business);
-                }
             }
         });
 
+        this.earnMoney(totalEarnedThisUpdate);
+
         if (deltaTime === undefined) {
             this.lastUpdate = now;
+        } else {
+            this.offlineEarnings = totalEarnedThisUpdate;
+            console.log("earned this much while gone: " + totalEarnedThisUpdate);
         }
     }
 
@@ -306,6 +310,5 @@ export class BusinessManager {
             }
         });
     }
-
 
 }
