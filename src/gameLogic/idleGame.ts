@@ -5,6 +5,7 @@ import {BusinessManager} from "./businessManager.ts";
 import {SPEED_THRESHOLD} from "./config.ts";
 import {Manager} from "./types/manager.types.ts";
 import {calculateCost} from "../utils/calculateCost.ts";
+import {GameLoop} from "./gameLoop.ts";
 
 export class IdleGame {
 
@@ -12,82 +13,51 @@ export class IdleGame {
     saveInterval: number | null = null; // Timer ID for saving periodically
     totalPlaytime: number = 0;
     sessionStartTime: number = 0;
+    private gameLoop: GameLoop;
+    private lastSave: number = 0;
 
     constructor() {
         const savedState = this.loadGameState();
         if (savedState) {
             const now = Date.now();
             this.totalPlaytime = savedState.totalPlaytime || 0;
-            this.businessManager = new BusinessManager(savedState.businesses, savedState.currency, savedState.totalEarned, savedState.fans, savedState.unlocks);
-            this.businessManager.checkAllUnlocksAndUpgrades(false);
-            // Process offline progression
-            this.businessManager.businesses.forEach((business, index) => {
-                if (business.quantity > 0 && business.isProducing) {
-                    const remainingTime = business.endTime - now;
-                    if (remainingTime > 0) {
-                        // Resume production using the saved remaining time
-                        this.businessManager.resumeProduction(index, remainingTime);
-                    } else {
-                        // Production should have finished while offline
-                        // If a manager is active, calculate how many full cycles were missed
-                        if (business.manager?.hired) {
-                            if (business.productionTime <= SPEED_THRESHOLD) {
-                                const elapsedTime = now - business.startTime;
+            this.businessManager = new BusinessManager(savedState.businesses, savedState.currency,
+                savedState.totalEarned, savedState.fans, savedState.unlocks);
 
-                                const SCALE = 1000n; // Scale factor to handle fractions as integers
+            // Calculate offline time and update production
+            const offlineTime = now - savedState.lastSaved;
+            this.businessManager.updateProduction(offlineTime);
 
-                                const totalRevenue = business.revenue * BigInt(business.quantity); // Total revenue as BigInt
-                                const productionTimeMillis = BigInt(business.productionTime); // Production time in milliseconds
-                                const elapsedTimeMillis = BigInt(elapsedTime); // Elapsed time in milliseconds
-                                const revenuePerSecond = (totalRevenue * SCALE) / productionTimeMillis; // Scaled revenue per second
-                                const totalOfflineRevenue = (revenuePerSecond * elapsedTimeMillis) / SCALE; // Scaled calculation for offline revenue
-                                this.businessManager.earnMoney(totalOfflineRevenue); // Add offline revenue
-                            } else {
-                                // Regular businesses with longer production times
-                                const cyclesCompleted = Math.floor((now - business.startTime) / business.productionTime);
-                                if (cyclesCompleted > 0) {
-                                    this.businessManager.earnMoney(BigInt(cyclesCompleted) * business.revenue * BigInt(business.quantity));
-                                }
-                            }
-                            // Start a new production cycle immediately
-                            business.isProducing = false;
-                            business.startTime = 0;
-                            business.endTime = 0;
-                            this.businessManager.startProduction(index);
-
-                        } else {
-                            // For manual production, simply mark production as finished
-                            this.businessManager.earnMoney(business.revenue * BigInt(business.quantity));
-                            business.isProducing = false;
-                            business.startTime = 0;
-                            business.endTime = 0;
-                        }
+            // Reset production timers
+            this.businessManager.businesses.forEach(business => {
+                if (business.isProducing) {
+                    business.lastProduced = now;
+                    if (business.productionTime > SPEED_THRESHOLD) {
+                        business.endTime = now + business.productionTime;
                     }
                 }
             });
+
+            this.businessManager.checkAllUnlocksAndUpgrades();
         } else {
             this.businessManager = new BusinessManager(defaultBusinesses, BigInt(0), BigInt(0), BigInt(0), []);
         }
         this.businessManager.checkAndAwardFans();
         this.sessionStartTime = Date.now(); // Set session start time
-        this.startSaveInterval();
+        this.gameLoop = new GameLoop(() => {
+            this.businessManager.updateProduction();
+            this.checkAutoSave();
+        });
+        this.gameLoop.start();
     }
 
-    private startSaveInterval() {
-        if (this.saveInterval === null) {
-            this.saveInterval = setInterval(() => {
-                this.saveGameState();
-            }, 3000) as unknown as number; // Save every 3 seconds
+    private checkAutoSave() {
+        const now = Date.now();
+        if (now - this.lastSave > 3000) { // 3 seconds
+            this.saveGameState();
+            this.lastSave = now;
         }
     }
-
-    /*// Clear the save interval (used during reset or cleanup)
-    private clearSaveInterval() {
-        if (this.saveInterval !== null) {
-            clearInterval(this.saveInterval);
-            this.saveInterval = null;
-        }
-    }*/
 
     saveGameState() {
         const currentSessionPlaytime = Date.now() - this.sessionStartTime;
@@ -132,6 +102,7 @@ export class IdleGame {
             const savedTotalEarned = BigInt(state.totalEarned?.toFixed() || 0);
             const savedTotalPlayTime = state.totalPlaytime || 0;
             const savedFans = BigInt(state.fans?.toFixed() || 0);
+            const savedLastSaved = state.lastSaved || 0;
 
             const savedBusinesses = state.businesses || [];
 
@@ -188,6 +159,7 @@ export class IdleGame {
                 currency: savedCurrency,
                 totalEarned: savedTotalEarned,
                 fans: savedFans,
+                lastSaved: savedLastSaved,
                 businesses: recalculatedBusinesses,
                 unlocks: [], // Assuming unlocks should always start fresh or be recalculated
                 totalPlaytime: savedTotalPlayTime,
@@ -216,9 +188,7 @@ export class IdleGame {
         });
 
         // Clear all individual business timeouts
-        this.businessManager.businesses.forEach((_, index) => {
-            this.businessManager.stopRevenuePolling(index); // Stop polling for each business
-        });
+
 
         // Clear the timeout map
         this.businessManager.businessTimeouts.clear();
@@ -237,7 +207,7 @@ export class IdleGame {
         }));
 
         this.businessManager.unlocks = [];
-        this.businessManager.checkAllUnlocksAndUpgrades(false);
+        this.businessManager.checkAllUnlocksAndUpgrades();
         this.businessManager.currency = 0n;
         this.businessManager.totalEarned = 0n;
         this.businessManager.fans = 0n; // Reset playtime
@@ -256,9 +226,6 @@ export class IdleGame {
         });
 
         // Clear all individual business timeouts
-        this.businessManager.businesses.forEach((_, index) => {
-            this.businessManager.stopRevenuePolling(index); // Stop polling for each business
-        });
 
         // Clear the timeout map
         this.businessManager.businessTimeouts.clear();
@@ -282,7 +249,7 @@ export class IdleGame {
         this.businessManager.fans += fansToClaim;
         this.businessManager.nextFanThreshold = BigInt(1_000_000_000_000n);
         this.businessManager.currentFans = 0n;
-        this.businessManager.checkAllUnlocksAndUpgrades(false);
+        this.businessManager.checkAllUnlocksAndUpgrades();
 
     }
 }

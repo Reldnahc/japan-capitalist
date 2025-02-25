@@ -13,6 +13,7 @@ export class BusinessManager {
     fanRate: bigint = 102n;
     businessTimeouts: Map<number, number> = new Map();
     unlocks: GlobalUnlock[] = [];
+    private lastUpdate: number = Date.now();
 
     constructor(businesses: Business[], currency: bigint, totalEarned: bigint, fans: bigint, unlocks: GlobalUnlock[]) {
         this.businesses = businesses;
@@ -20,6 +21,24 @@ export class BusinessManager {
         this.totalEarned = totalEarned;
         this.fans = fans;
         this.unlocks = unlocks;
+    }
+
+
+    private resetProductionTimer(business: Business) {
+
+            business.startTime = Date.now();
+            business.endTime = business.startTime + business.productionTime;
+
+    }
+
+    // Modify startProduction
+    startProduction(index: number) {
+        const business = this.businesses[index];
+        if (business.quantity > 0 && !business.isProducing) {
+            business.isProducing = true;
+            business.accumulatedTime = 0;
+            this.resetProductionTimer(business);
+        }
     }
 
     addFans(amount: bigint){
@@ -64,10 +83,7 @@ export class BusinessManager {
             }
         }
 
-        if (business.manager?.hired && business.productionTime <= SPEED_THRESHOLD) {
-            this.stopRevenuePolling(index); // Stop old polling
-            this.pollRevenue(index); // Start new polling with updated values
-        } else if (business.manager?.hired){
+         if (business.manager?.hired){
             this.startProduction(index)
         }
 
@@ -100,57 +116,6 @@ export class BusinessManager {
         return quantity;
     }
 
-    stopRevenuePolling(index: number) {
-        const intervalId = this.businessTimeouts.get(index);
-        if (intervalId) {
-            clearInterval(intervalId);
-            this.businessTimeouts.delete(index);
-        }
-    }
-
-    pollRevenue(index: number) {
-        const business = this.businesses[index];
-        if (!business.manager?.hired) {
-            console.error(`[Polling] Business ${business.name} (Index ${index}): Polling should not be enabled without a manager!`);
-            return;
-        }
-
-        // Mark the business as producing
-        business.isProducing = true;
-
-        // Scaling factor for percentage calculations
-
-        // Correct productionTime scaling and calculate revenue per second
-        const scaleFactor = BigInt(1000n); // To maintain scaling precision
-        const productionTime = BigInt(Math.floor(business.productionTime)); // For BigInt scaling calculations
-
-        // Apply fan multiplier and scale back
-        business.revenuePerSecond = (business.revenue * BigInt(business.quantity) * scaleFactor) / productionTime; // Base revenue
-
-        console.log(
-            `[Polling] Business ${business.name} (Index ${index}): Polling started - Revenue per second: ${business.revenuePerSecond}`
-        );
-
-        // Start polling if not already active
-        if (!this.businessTimeouts.has(index)) {
-            const intervalId = setInterval(() => {
-                if (business.revenuePerSecond) {
-                    this.earnMoney(business.revenuePerSecond); // Add raw revenue to total currency
-                    business.startTime = Date.now();
-                }
-            }, 1000) as unknown as number; // Run every 1 second
-
-            this.businessTimeouts.set(index, intervalId);
-            console.log(
-                `[Polling] Business ${business.name} (Index ${index}): Interval started with ID ${intervalId}`
-            );
-        } else {
-            console.warn(
-                `[Polling] Business ${business.name} (Index ${index}): Polling is already active. Skipping duplicate setup.`
-            );
-        }
-    }
-
     earnMoney(amount: bigint, boost = true) {
         if (boost) {
             const FAN_MULTIPLIER_SCALE = 100n;
@@ -173,43 +138,13 @@ export class BusinessManager {
     }
 
     checkAndAwardFans(): void {
-        while (this.totalEarned >= this.nextFanThreshold) {
-            // Award a fan and calculate the next threshold
-            this.currentFans += 1n;
+        if (this.totalEarned < this.nextFanThreshold) return;
 
-            // Apply exponential scaling: growth factor is 1.5x (or 150%)
-            this.nextFanThreshold = this.nextFanThreshold * this.fanRate / 100n;
-        }
-    }
-
-
-    // Start production for a business
-    startProduction(index: number) {
-        const business = this.businesses[index];
-        if (business.quantity > 0 && !business.isProducing) {
-            if (business.productionTime <= SPEED_THRESHOLD && business.manager?.hired) {
-                this.stopRevenuePolling(index); // Stop old polling
-                this.pollRevenue(index);
-            } else {
-                business.isProducing = true;
-                business.startTime = Date.now();
-                business.endTime = Date.now() + business.productionTime;
-
-                const timeoutId = setTimeout(() => {
-                    this.earnMoney(business.revenue * BigInt(business.quantity));
-                    business.isProducing = false;
-                    business.startTime = 0;
-                    business.endTime = 0;
-
-                    // Restart production if a manager is active
-                    if (business.manager?.hired) {
-                        this.startProduction(index);
-                    }
-                    this.businessTimeouts.delete(index);
-                }, business.productionTime) as unknown as number;
-
-                this.businessTimeouts.set(index, timeoutId);
-            }
+        // Calculate how many fans to award at once
+        const fansEarned = this.totalEarned / this.nextFanThreshold;
+        if (fansEarned > 0n) {
+            this.currentFans += fansEarned;
+            this.nextFanThreshold *= (this.fanRate / 100n) ** fansEarned;
         }
     }
 
@@ -255,125 +190,98 @@ export class BusinessManager {
         }
     }
 
-    applyEffect(business: Business, effect: string, updateSpeed = true) {
+    applyEffect(business: Business, effect: string) {
         console.log(">[BusinessManager] Applying effect: " + effect);
-        if (effect.includes("Unlocked")){
-
-        }
         if (effect.includes("Revenue ×")) {
             const [revenueEffect, target] = effect.split(";");
             const multiplier = parseFloat(revenueEffect.replace("Revenue ×", "").trim());
             if (target && target.trim() === "ALL") {
                 // Apply to all businesses
-                this.businesses.forEach((b,index) => {
+                this.businesses.forEach((b) => {
                     b.revenue *= BigInt(Math.floor(multiplier));
-                    if (b.manager?.hired && b.productionTime <= SPEED_THRESHOLD) {
-                        this.stopRevenuePolling(index); // Stop old polling
-                        this.pollRevenue(index); // Start new polling with updated values
-                    }
                 });
             } else if (target){
                 // Apply to specific businesses (comma-separated identifiers)
                 const targets = target.split(",").map(t => t.trim());
-                this.businesses.forEach((b, index) => {
+                this.businesses.forEach((b) => {
                     if (targets.includes(b.name.toLowerCase())) {
                         b.revenue *= BigInt(Math.floor(multiplier));
-                    }
-                    if (b.manager?.hired && b.productionTime <= SPEED_THRESHOLD) {
-                        this.stopRevenuePolling(index); // Stop old polling
-                        this.pollRevenue(index); // Start new polling with updated values
                     }
                 });
             } else {
                 business.revenue *= BigInt(Math.floor(multiplier));
-            }
-
-            if (business.manager?.hired && business.productionTime <= SPEED_THRESHOLD) {
-                const index = this.businesses.findIndex(b => b === business);
-                this.stopRevenuePolling(index); // Stop old polling
-                this.pollRevenue(index); // Start new polling with updated values
             }
         }
 
 
         if (effect.includes("Speed +")) {
             const percentage = parseFloat(effect.replace("Speed +", "").replace("%", ""));
-            const oldProductionTime = business.productionTime; // Store the old production time
-            const newProductionTime = Math.floor(oldProductionTime / (1 + percentage / 100));
+            const newProductionTime = Math.floor(business.productionTime / (1 + percentage / 100));
 
-            // If the business is currently producing, recalculate the current progress
-            if (business.isProducing && updateSpeed) {
-                console.log(business);
-                const now = Date.now();
-                const elapsedTime = now - business.startTime; // Time already passed
-                const progressFraction = Math.min(elapsedTime / oldProductionTime, 1); // Clamp to [0, 1]
+            // Calculate progress preservation
+            const progress = business.isProducing ?
+                (Date.now() - business.lastProduced) / business.productionTime : 0;
 
-                // Calculate new start and end times based on the recalculated progress and new production time
-                const remainingTime = newProductionTime * (1 - progressFraction); // Remaining time adjusted to new speed
-                business.productionTime = newProductionTime; // Update the production time
-                business.startTime = now - Math.floor(newProductionTime * progressFraction); // Adjust start time
-                business.endTime = now + Math.floor(remainingTime); // Adjust end time
+            business.productionTime = newProductionTime;
 
-                // Clear the timeout for this specific business
-                const businessIndex = this.businesses.indexOf(business);
-                const timeoutId = this.businessTimeouts.get(businessIndex);
-                if (timeoutId) {
-                    clearTimeout(timeoutId); // Clear only this business's timeout
-                    this.businessTimeouts.delete(businessIndex); // Remove from the map
-                }
-
-                // Restart production with corrected timings
-                this.resumeProduction(this.businesses.indexOf(business), Math.floor(remainingTime));
-            } else {
-                // Update production time normally if production is not active
-                business.productionTime = newProductionTime;
+            if (business.isProducing) {
+                business.accumulatedTime = progress * newProductionTime;
+                business.lastProduced = Date.now() - (progress * newProductionTime);
             }
         }
     }
 
-    resumeProduction(index: number, remainingTime: number) {
-        const business = this.businesses[index];
+    updateProduction(deltaTime?: number) {
         const now = Date.now();
-        // Ensure production state is correctly tracked
-        business.isProducing = true;
-        business.startTime = now - (business.productionTime - remainingTime); // Simulate start
-        business.endTime = now + remainingTime; // Set the remaining time properly
+        const calculatedDelta = deltaTime !== undefined ? deltaTime : now - this.lastUpdate;
 
+        this.businesses.forEach((business) => {
+            if (!business.isProducing) return;
 
-        // Timeout for remainingTime
-        const timeoutId = setTimeout(() => {
-            this.earnMoney(business.revenue * BigInt(business.quantity));
-            business.isProducing = false;
-            business.startTime = 0;
-            business.endTime = 0;
+            if (business.productionTime <= SPEED_THRESHOLD) {
+                // Fast producers: use accumulated time
+                business.accumulatedTime += calculatedDelta;
+                const cycles = Math.floor(business.accumulatedTime / business.productionTime);
 
-            if (business.manager?.hired) {
-                this.startProduction(index);
+                if (cycles > 0) {
+                    this.earnMoney(business.revenue * BigInt(business.quantity * cycles));
+                    business.accumulatedTime %= business.productionTime;
+                }
+            } else {
+                // Slow producers: check end time
+                if (now >= business.endTime) {
+                    this.earnMoney(business.revenue * BigInt(business.quantity));
+                    if (!business.manager?.hired) {
+                        business.isProducing = false;
+                    }
+                    this.resetProductionTimer(business);
+                }
             }
-            this.businessTimeouts.delete(index);
-        }, remainingTime) as unknown as number;
+        });
 
-        this.businessTimeouts.set(index, timeoutId);
+        if (deltaTime === undefined) {
+            this.lastUpdate = now;
+        }
     }
 
-    checkAllUnlocksAndUpgrades(updateSpeed = true){
-        this.checkAllUnlocks(updateSpeed);
-        this.checkAllUpgrades(updateSpeed);
+    checkAllUnlocksAndUpgrades(){
+        this.checkAllUnlocks();
+        this.checkAllUpgrades();
     }
 
-    checkAllUnlocks(updateSpeed = true) {
+    checkAllUnlocks() {
         this.businesses.forEach((_, index) => {
-            this.checkUnlocks(index, updateSpeed);
+            this.checkUnlocks(index, );
         });
     }
 
     // Check and apply unlocks when milestones are reached
-    checkUnlocks(index: number, updateSpeed = true) {
+    checkUnlocks(index: number) {
         const business = this.businesses[index];
 
         business.unlocks.forEach((unlock) => {
             if (!unlock.applied && business.quantity >= unlock.milestone) {
-                this.applyEffect(business, unlock.effect, updateSpeed);
+                this.applyEffect(business, unlock.effect);
                 unlock.applied = true;
                 unlock.notified = false;
                 this.unlocks.push({ description: `${business.name}: ${unlock.effect}`, applied: true });
@@ -381,18 +289,18 @@ export class BusinessManager {
         });
     }
 
-    checkAllUpgrades(updateSpeed = true) {
+    checkAllUpgrades() {
         this.businesses.forEach((_, index) => {
-            this.checkUpgrades(index, updateSpeed);
+            this.checkUpgrades(index);
         });
     }
 
-    checkUpgrades(index: number, updateSpeed = true) {
+    checkUpgrades(index: number) {
         const business = this.businesses[index];
 
         business.manager?.upgrades.forEach((upgrade) => {
             if (upgrade.unlocked) {
-                this.applyEffect(business, upgrade.effect, updateSpeed);
+                this.applyEffect(business, upgrade.effect);
                 upgrade.unlocked = true;
                 this.unlocks.push({ description: `${business.name}: ${upgrade.effect}`, applied: true });
             }

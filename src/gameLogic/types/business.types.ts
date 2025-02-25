@@ -24,6 +24,8 @@ export class Business {
     unlocks: Unlock[];          // List of unlocks for the business
     manager: Manager | null;    // Manager data
     revenuePerSecond?: bigint;  // for polling
+    lastProduced: number; // Timestamp of last production
+    accumulatedTime: number; // Milliseconds accumulated since last production
 
     constructor(
         name: string,
@@ -45,6 +47,8 @@ export class Business {
         this.productionTime = productionTime;
         this.baseProductionTime = productionTime;
         this.unlocks = unlocks;
+        this.lastProduced = 0
+        this.accumulatedTime = 0;
 
         this.manager = new Manager(
             manager.name,
