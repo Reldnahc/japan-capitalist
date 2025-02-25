@@ -203,9 +203,21 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                         {/* Progress Bar */}
                         <div
                             key={business.isProducing ? "producing" : "reset"}
-                            className={`h-full flex w-full items-center transition-transform duration-0`}
+                            className={`h-full flex w-full items-center transition-transform duration-0 ${
+                                business.isProducing ? "animate-progress-gradient" : ""
+                            }`}
                             style={{
-                                backgroundColor: getProgressBarColor(),
+                                backgroundImage: business.isProducing
+                                    ? `linear-gradient(90deg, 
+                                        hsl(120,70%,55%) 0%, 
+                                        ${getProgressBarColor()} 10%, 
+                                        ${getProgressBarColor()} 90%, 
+                                        hsl(120,70%,55%) 100%)`
+                                    : "none",
+                                backgroundColor: !business.isProducing
+                                    ? getProgressBarColor()
+                                    : "transparent",
+                                backgroundSize: business.isProducing ? "300% 100%" : undefined,
                                 transform: !business.isProducing
                                     ? "translateX(-100%)"
                                     : business.productionTime <= SPEED_THRESHOLD && business.manager?.hired
@@ -213,6 +225,9 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                                         : `translateX(${progress - 100}%)`,
                             }}
                         ></div>
+
+
+
                     </div>
 
                     {/* Buttons Section */}

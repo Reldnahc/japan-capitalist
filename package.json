@@ -9,7 +9,7 @@
     "generate-images": "node scripts/generateImagesJson.js",
     "prebuild": "npm run convert-to-webp && npm run generate-images",
     "dev": "npm run prebuild && vite",
-    "build": "npm run prebuild && tsc -b && vite build",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",

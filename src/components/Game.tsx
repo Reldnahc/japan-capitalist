@@ -359,7 +359,7 @@ const Game = () => {
                 <Notification message={notification} onClose={closeNotification}/>
             )}
             {/* Conditional Panel UI */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
                 {activePanel && (
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                         {/* Static Background (No animation applied here) */}

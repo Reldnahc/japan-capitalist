@@ -5,6 +5,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes progress-gradient {
+    0% {
+        background-position: 0% 50%; /* Start the gradient at the left */
+    }
+    100% {
+        background-position: -300% 50%; /* Move the gradient to the right */
+    }
+}
+
+.animate-progress-gradient {
+    animation: progress-gradient 10s linear infinite; /* Correct keyframe reference */
+}
 /* Disable text selection for the entire project */
 * {
     user-select: none;

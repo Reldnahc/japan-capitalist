@@ -32,17 +32,17 @@ const ManagerPanel: React.FC<ManagerPanelProps> = ({
     const containerVariants = {
         hidden: (dir: "left" | "right") => ({
             x: dir === "left" ? "100%" : "-100%", // Start off-screen based on direction
-            opacity: 1,
+            opacity: .1,
         }),
         visible: {
             x: 0, // Slide into the center of the screen
             opacity: 1,
-            transition: { ease: "easeInOut", duration: .4 },
+            transition: { ease: "easeInOut", duration: .6 },
         },
         exit: (dir: "left" | "right") => ({
             x: dir === "left" ? "-100%" : "100%", // Slide out to the left or right
-            opacity: 1,
-            transition: { ease: "easeInOut", duration: .4 },
+            opacity: .1,
+            transition: { ease: "easeInOut", duration: .6},
         }),
     };
 

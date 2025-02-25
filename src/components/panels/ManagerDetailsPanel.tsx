@@ -19,7 +19,7 @@ const ManagerDetailsPanel: React.FC<ManagerDetailsPanelProps> = ({
 }) => {
     return (
         <div
-            className="relative flex flex-col h-[70vh] max-w-md mt-8 mx-auto px-3 rounded-lg"
+            className="relative flex flex-col h-[70vh] max-w-md pt-8 mx-auto px-3 rounded-lg"
         >
             <div className="text-center">
                 <img
