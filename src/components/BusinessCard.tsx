@@ -4,6 +4,7 @@ import {businesses} from "../gameLogic/data/businesses.ts";
 import {formatBigIntWithSuffix} from "../utils/formatNumber.ts";
 import {SPEED_THRESHOLD} from "../gameLogic/config.ts";
 import {calculateCost} from "../utils/calculateCost.ts";
+import {adjustValue} from "../utils/calculateAdjustedValues.ts";
 
 interface BusinessCardProps {
     business: typeof businesses[number];
@@ -117,13 +118,12 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
 
     const { totalCost, quantityToBuy } = calculateTotalPrice();
     const isButtonDisabled = totalCost > currency;
-    const FAN_MULTIPLIER_SCALE = 100n; // Assume scaling in BigInt
-    const fanMultiplier = FAN_MULTIPLIER_SCALE + fans;
-    let adjustedRevenuePerSecond = 0n;
+
+    let adjustedRevenuePerSecond = BigInt(0);
     if (business.revenuePerSecond){
-        adjustedRevenuePerSecond = (business.revenuePerSecond * fanMultiplier) / FAN_MULTIPLIER_SCALE;
+        adjustedRevenuePerSecond = adjustValue(business.revenuePerSecond, fans);
     }
-    const adjustedRevenue = (business.revenue * BigInt(business.quantity) * fanMultiplier) / FAN_MULTIPLIER_SCALE;
+    const adjustedRevenue = adjustValue(business.revenue * BigInt(business.quantity), fans) ;
 
 
     const canAffordManagerUpgrade = () => {

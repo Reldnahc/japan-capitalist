@@ -13,6 +13,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import FansPanel from "./panels/FansPanel.tsx";
 import {useAudioManager} from "../contexts/AudioManagerProvider.tsx";
 import GalleryPanel from "./panels/GalleryPanel.tsx";
+import Alert from "./Alert.tsx";
+import {formatBigIntWithSuffix} from "../utils/formatNumber.ts";
+import {adjustValue} from "../utils/calculateAdjustedValues.ts";
 // Extend the TypeScript definition for the Window object
 declare global {
     interface Window {
@@ -31,6 +34,8 @@ const Game = () => {
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const [notification, setNotification] = useState<string | null>(null);
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+    const [isWelcomeAlertOpen, setIsWelcomeAlertOpen] = useState(false); // State to control alert visibility
+
     const [clickPositions, setClickPositions] = useState<{ x: number; y: number; id: number }[]>([]);
     const [direction, setDirection] = useState<"left" | "right">("left"); // Controls animation direction
     const [appliedUnlocks, setAppliedUnlocks] = useState(() =>
@@ -48,6 +53,17 @@ const Game = () => {
     useEffect(() => {
         localStorage.setItem("purchaseAmount", purchaseAmount);
     }, [purchaseAmount]);
+
+    useEffect(() => {
+        // Show alert on every page load
+        if (game.getTotalPlaytime() > 0)
+            setIsWelcomeAlertOpen(true);
+    }, []);
+
+    const handleCloseAlert = () => {
+        setIsWelcomeAlertOpen(false);
+    };
+
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -451,6 +467,18 @@ const Game = () => {
                 onStartProductionForBusiness={handleStartProductionForBusiness}
                 readyBusinessesCount={readyBusinessesCount}
             />
+            <Alert
+                isOpen={isWelcomeAlertOpen}
+                text={<p>Welcome Back! While you were away you earned. ¥{formatBigIntWithSuffix(adjustValue(game.businessManager.offlineEarnings, fans))}</p>}
+                buttons={[
+                    {
+                        label: "Close",
+                        onClick: handleCloseAlert,
+                    },
+                ]}
+                closeAlert={handleCloseAlert}
+            />
+
         </div>
     );
 

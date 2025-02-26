@@ -129,7 +129,6 @@ export const sushiUnlocks: Unlock[] = [
 ];
 
 export const convenienceUnlocks: Unlock[] = [
-    { milestone: 7, effect: "Revenue ×2", applied: false },
     { milestone: 11, effect: "Revenue ×2", applied: false },
     { milestone: 22, effect: "Speed +100%", applied: false },
     { milestone: 33, effect: "Revenue ×2", applied: false },
@@ -153,7 +152,6 @@ export const convenienceUnlocks: Unlock[] = [
 ];
 
 export const pachinkoUnlocks: Unlock[] = [
-    { milestone: 10, effect: "Revenue ×3", applied: false },
     { milestone: 25, effect: "Speed +100%", applied: false },
     { milestone: 50, effect: "Revenue ×3", applied: false },
     { milestone: 100, effect: "Revenue ×4", applied: false },
@@ -179,7 +177,6 @@ export const pachinkoUnlocks: Unlock[] = [
 ];
 
 export const videoGamesUnlocks: Unlock[] = [
-    { milestone: 10, effect: "Revenue ×2", applied: false },
     { milestone: 25, effect: "Speed +100%", applied: false },
     { milestone: 50, effect: "Revenue ×4", applied: false },
     { milestone: 100, effect: "Revenue ×6", applied: false },
@@ -288,8 +285,6 @@ export const tvUnlocks: Unlock[] = [
 ];
 
 export const carsUnlocks: Unlock[] = [
-    { milestone: 5, effect: "Speed +200%", applied: false },
-    { milestone: 10, effect: "Revenue ×2", applied: false },
     { milestone: 25, effect: "Speed +200%", applied: false },
     { milestone: 50, effect: "Revenue ×3", applied: false },
     { milestone: 100, effect: "Revenue ×4", applied: false },
@@ -315,8 +310,6 @@ export const carsUnlocks: Unlock[] = [
 ];
 
 export const idolsUnlocks: Unlock[] = [
-    { milestone: 3, effect: "Speed +200%", applied: false },
-    { milestone: 7, effect: "Speed +100%", applied: false },
     { milestone: 10, effect: "Revenue ×2; ALL", applied: false },
     { milestone: 25, effect: "Revenue ×2; ALL", applied: false },
     { milestone: 50, effect: "Revenue ×2; ALL", applied: false },

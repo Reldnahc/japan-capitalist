@@ -2,9 +2,6 @@ import { Upgrade } from "../types/manager.types.ts";
 
 export const takoyakiUpgrades: Upgrade[] = [
     { name: "Efficiency", cost: 10000n,           effect: "Speed +100%", unlocked: false },
-    { name: "Efficiency", cost: 10000n,           effect: "Speed +100%", unlocked: false },
-    { name: "Efficiency", cost: 10000n,           effect: "Speed +100%", unlocked: false },
-    { name: "Efficiency", cost: 10000n,           effect: "Speed +100%", unlocked: false },
     { name: "Efficiency", cost: 5000000n,         effect: "Speed +100%", unlocked: false },
     { name: "Revenue",    cost: 150000000n,        effect: "Revenue ×2",  unlocked: false },
     { name: "Efficiency", cost: 12500000000n,      effect: "Speed +100%", unlocked: false },
