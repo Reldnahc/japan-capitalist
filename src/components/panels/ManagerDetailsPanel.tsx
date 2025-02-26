@@ -1,13 +1,14 @@
 import React from "react";
 import { Business } from "../../gameLogic/types/business.types";
-import { formatBigIntWithSuffix } from "../../utils/formatNumber.ts";
+import { formatDecimalWithSuffix } from "../../utils/formatNumber.ts";
+import Decimal from "break_infinity.js";
 
 type ManagerDetailsPanelProps = {
     selectedBusiness: Business;
     businesses: Business[];
     onHireManager: (index: number) => void;
     onManagerUpgrade: (businessIndex: number, upgradeIndex: number) => void;
-    currency: bigint;
+    currency: Decimal;
 };
 
 const ManagerDetailsPanel: React.FC<ManagerDetailsPanelProps> = ({
@@ -53,7 +54,7 @@ const ManagerDetailsPanel: React.FC<ManagerDetailsPanelProps> = ({
                                 >
                                     <span className=" text-sm md:text-base text-gray-800 font-bold w-32">{upgrade.effect}</span>
                                     <span className="text-gray-800 text-sm md:text-lg w-full ml-6  text-left">
-                                        ¥{formatBigIntWithSuffix(upgrade.cost)}
+                                        ¥{formatDecimalWithSuffix(upgrade.cost)}
                                     </span>
                                     <button
                                         onClick={() => {
@@ -123,7 +124,7 @@ const ManagerDetailsPanel: React.FC<ManagerDetailsPanelProps> = ({
                             }
                         }}
                     >
-                        Hire for ¥{formatBigIntWithSuffix(selectedBusiness.manager?.cost || BigInt(0))}
+                        Hire for ¥{formatDecimalWithSuffix(selectedBusiness.manager?.cost || new Decimal(0))}
                     </button>
                 )}
             </div>

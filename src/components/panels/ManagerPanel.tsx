@@ -3,13 +3,14 @@ import { useAudioManager } from "../../contexts/AudioManagerProvider.tsx";
 import ManagerDetailsPanel from "./ManagerDetailsPanel.tsx";
 import ManagerSelectionPanel from "./ManagerSelectionPanel.tsx";
 import {AnimatePresence, motion} from "framer-motion";
+import Decimal from "break_infinity.js";
 
 type ManagerPanelProps = {
     businesses: Business[]; // List of businesses
     selectedBusiness: Business | null; // Initially selected business, if any
     setSelectedBusiness: React.Dispatch<React.SetStateAction<Business | null>>;
     onHireManager: (index: number) => void; // Function to handle hiring a manager
-    currency: bigint;
+    currency: Decimal;
     onManagerUpgrade: (businessIndex: number, upgradeIndex: number) => void;
     direction: "left" | "right";
     setDirection: React.Dispatch<React.SetStateAction<"left" | "right">>;

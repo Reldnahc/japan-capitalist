@@ -22,6 +22,7 @@
     "@tsparticles/plugin-canvas-mask": "^3.8.1",
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.8.1",
+    "break_infinity.js": "^2.2.0",
     "framer-motion": "^12.4.5",
     "json-bigint": "^1.0.0",
     "react": "^19.0.0",

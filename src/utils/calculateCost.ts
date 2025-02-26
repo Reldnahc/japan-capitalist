@@ -1,16 +1,12 @@
-export function calculateCost(baseCost: bigint, rate: number, quantity: number): bigint {
+import Decimal from "break_infinity.js";
 
-    if (quantity === 0) return baseCost; // If quantity is zero, the cost remains the same.
+export function calculateCost(baseCost: Decimal | string | number, rate: number, quantity: number): Decimal {
 
-    // Scale rate as a BigInt with a larger precision factor to avoid truncation
-    const rateBigInt = BigInt(Math.round(rate * 1e12)); // Use 1e12 for finer precision
+    if (quantity === 0) return new Decimal(baseCost); // If quantity is zero, the cost remains the same.
 
-    let compoundedRate = BigInt(1e12); // Start with a precision-scaled 1 (BigInt).
+    const rateDecimal = new Decimal(rate);
 
-    for (let i = 0; i < quantity; i++) {
-        compoundedRate = (compoundedRate * rateBigInt) / BigInt(1e12); // Compound using the scaled rate
-    }
+    const compoundedRate = rateDecimal.pow(quantity);
 
-    // Scale down compoundedRate and multiply by baseCost
-    return (baseCost * compoundedRate) / BigInt(1e12);
+    return new Decimal(baseCost).times(compoundedRate);
 }

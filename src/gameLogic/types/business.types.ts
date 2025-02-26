@@ -1,3 +1,4 @@
+import Decimal from 'break_infinity.js';
 import {Manager} from "./manager.types.ts";
 
 export interface Unlock {
@@ -10,10 +11,10 @@ export interface Unlock {
 // Core business structure
 export class Business {
     name: string;               // Name of the business
-    cost: bigint;               // Current cost to buy one unit
-    baseCost: bigint;           // Starting cost that increases with quantity
-    revenue: bigint;            // Current revenue per production cycle
-    baseRevenue: bigint;        // Base revenue before effects
+    cost: Decimal;               // Current cost to buy one unit
+    baseCost: Decimal;           // Starting cost that increases with quantity
+    revenue: Decimal;            // Current revenue per production cycle
+    baseRevenue: Decimal;        // Base revenue before effects
     quantity: number;           // Number of businesses owned
     rate: number;               // Increase in price each purchase
     productionTime: number;     // Time it takes to produce in ms
@@ -23,14 +24,14 @@ export class Business {
     endTime = 0;            // When production ends
     unlocks: Unlock[];          // List of unlocks for the business
     manager: Manager | null;    // Manager data
-    revenuePerSecond?: bigint;  // for polling
+    revenuePerSecond?: Decimal;  // for polling
     lastProduced: number; // Timestamp of last production
     accumulatedTime: number; // Milliseconds accumulated since last production
 
     constructor(
         name: string,
-        cost: bigint,
-        revenue: bigint,
+        cost: Decimal | number,
+        revenue: Decimal | number,
         rate: number,
         productionTime: number,
         unlocks: Unlock[],
@@ -38,10 +39,10 @@ export class Business {
         manager: Manager
     ) {
         this.name = name;
-        this.cost = cost;
-        this.baseCost = cost;
-        this.revenue = revenue;
-        this.baseRevenue = revenue;
+        this.cost = new Decimal(cost);
+        this.baseCost = new Decimal(cost);
+        this.revenue = new Decimal(revenue);
+        this.baseRevenue = new Decimal(revenue);
         this.quantity = quantity;
         this.rate = rate;
         this.productionTime = productionTime;
@@ -53,7 +54,7 @@ export class Business {
         this.manager = new Manager(
             manager.name,
             manager.kanji,
-            manager.cost,
+            new Decimal(manager.cost),
             manager.upgrades,
             manager.bio,
             manager.color

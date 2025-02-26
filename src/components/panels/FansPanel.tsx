@@ -2,10 +2,12 @@ import React, {useState} from "react";
 import Alert from "../Alert.tsx";
 import {BsPeopleFill} from "react-icons/bs";
 import {useAudioManager} from "../../contexts/AudioManagerProvider.tsx";
+import Decimal from "break_infinity.js";
+import {formatDecimalWithSuffix} from "../../utils/formatNumber.ts";
 
 interface FansPanelProps {
-    currentFans: bigint;
-    totalFans: bigint;
+    currentFans: Decimal;
+    totalFans: Decimal;
     onClaimFans: () => void;
 }
 
@@ -41,12 +43,12 @@ const FansPanel: React.FC<FansPanelProps> = ({ currentFans, totalFans, onClaimFa
 
                 <div className="flex flex-col items-center justify-center w-full max-w-52 py-4 bg-blue-50 rounded-lg shadow">
                     <p className="text-lg font-medium text-gray-600">Available Fans to Claim:</p>
-                    <div className="text-4xl font-extrabold text-blue-600 mt-2">{currentFans}</div>
+                    <div className="text-4xl font-extrabold text-blue-600 mt-2">{formatDecimalWithSuffix(currentFans)}</div>
                 </div>
 
                 <div className="flex flex-col items-center justify-center w-full max-w-52 py-4 bg-green-50 rounded-lg shadow">
                     <p className="text-lg font-medium text-gray-600">Current Fans:</p>
-                    <div className="text-4xl font-extrabold text-green-600 mt-2">{totalFans}</div>
+                    <div className="text-4xl font-extrabold text-green-600 mt-2">{formatDecimalWithSuffix(totalFans)}</div>
                 </div>
                 <button
                     onClick={handleClaimFansClick}

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {formatBigIntWithSuffix} from "../utils/formatNumber.ts";
+import {formatDecimalWithSuffix} from "../utils/formatNumber.ts";
 import { FaVolumeUp, FaVolumeMute } from "react-icons/fa";
-import {useAudioManager} from "../contexts/AudioManagerProvider.tsx"; // Import icons
+import {useAudioManager} from "../contexts/AudioManagerProvider.tsx";
+import Decimal from "break_infinity.js"; // Import icons
 
 // Define Footer props
 interface FooterProps {
-    currency: bigint;
+    currency: Decimal;
     purchaseAmount: string;
     onOpenPanel: (panelName: string) => void;
     onPurchaseAmountChange: (amount: string) => void;
@@ -42,7 +43,7 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
         onPurchaseAmountChange(nextAmount); // Notify parent component (Game) of change
     };
 
-    const money = formatBigIntWithSuffix(currency).split(" ");
+    const money = formatDecimalWithSuffix(currency).split(" ");
     return (
         <div className="font-fredoka">
             {isMenuOpen && (

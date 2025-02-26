@@ -1,15 +1,16 @@
 // BusinessCard.tsx
 import React from 'react';
 import {businesses} from "../gameLogic/data/businesses.ts";
-import {formatBigIntWithSuffix} from "../utils/formatNumber.ts";
+import {formatDecimalWithSuffix} from "../utils/formatNumber.ts";
 import {SPEED_THRESHOLD} from "../gameLogic/config.ts";
 import {calculateCost} from "../utils/calculateCost.ts";
 import {adjustValue} from "../utils/calculateAdjustedValues.ts";
+import Decimal from "break_infinity.js";
 
 interface BusinessCardProps {
     business: typeof businesses[number];
     progress: number;
-    currency: bigint;
+    currency: Decimal;
     purchaseAmount: string;
     onStartProduction: () => void;
     onBuyBusiness: () => void;
@@ -17,13 +18,13 @@ interface BusinessCardProps {
     formatTime: (seconds: number) => string;
     nextUnlockMilestone: number;
     onBuyOneBusiness: () => void;
-    fans: bigint;
+    fans: Decimal;
 }
 
 const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency, purchaseAmount, onStartProduction, onBuyBusiness,
                                                        onClickManager, formatTime, nextUnlockMilestone, onBuyOneBusiness, fans}) => {
 
-    const calculateTotalPrice = (): { totalCost: bigint, quantityToBuy: number } => {
+    const calculateTotalPrice = (): { totalCost: Decimal, quantityToBuy: number } => {
         let quantityToBuy = 1; // Default to 1
         switch (purchaseAmount) {
             case "x5":
@@ -42,8 +43,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                 let tempCurrency = currency;
                 let cost = business.cost;
                 let affordable = 0;
-                while (tempCurrency >= cost) {
-                    tempCurrency -= cost;
+                while (tempCurrency.gte(cost)) {
+                    tempCurrency = tempCurrency.sub(cost);
                     affordable++;
                     cost = calculateCost(business.baseCost, business.rate, business.quantity + affordable);
                 }
@@ -59,11 +60,11 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
         }
 
         // Calculate the total cost for quantityToBuy
-        let totalCost = BigInt(0);
+        let totalCost = new Decimal(0);
         let currentCost = business.cost;
 
         for (let i = 0; i < quantityToBuy; i++) {
-            totalCost += currentCost;
+            totalCost = totalCost.plus(currentCost);
             currentCost = calculateCost(business.baseCost, business.rate, business.quantity + i + 1);
         }
 
@@ -75,7 +76,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
             showLightning: false
         };
 
-        if (adjustedRevenuePerSecond >= 1_000_000_000_000_000n) {
+        if (adjustedRevenuePerSecond.gte(new Decimal(1_000_000_000_000_000))) {
             effects.showLightning = true;
         }
 
@@ -87,26 +88,26 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
             return "hsl(120, 70%, 55%)"; // Calm green
         }
 
-        const ONE_MILLION = 1_000_000n;
-        const ONE_BILLION = 1_000_000_000n;
-        const ONE_TRILLION = 1_000_000_000_000n;
+        const ONE_MILLION = new Decimal(1_000_000);
+        const ONE_BILLION = new Decimal(1_000_000_000);
+        const ONE_TRILLION = new Decimal(1_000_000_000_000);
 
-        if (adjustedRevenuePerSecond < ONE_MILLION) {
+        if (adjustedRevenuePerSecond.lt(ONE_MILLION)) {
             return "hsl(55, 85%, 60%)"; // Warm yellow
         }
 
-        if (adjustedRevenuePerSecond < ONE_BILLION) {
+        if (adjustedRevenuePerSecond.lt(ONE_BILLION)) {
             // Yellow to orange transition (1M to 1B)
-            const ratio = Number(adjustedRevenuePerSecond - ONE_MILLION) / Number(ONE_BILLION - ONE_MILLION);
+            const ratio = Number(adjustedRevenuePerSecond.minus(ONE_MILLION).div(ONE_BILLION.minus(ONE_MILLION)));
             const eased = Math.pow(ratio, 0.6); // Fast initial transition
 
             const hue = 55 - (eased * 25); // 55° (yellow) → 30° (orange)
             return `hsl(${hue}, 85%, 60%)`;
         }
 
-        if (adjustedRevenuePerSecond < ONE_TRILLION) {
+        if (adjustedRevenuePerSecond.lt(ONE_TRILLION)) {
             // Orange to red transition (1B to 1T)
-            const ratio = Number(adjustedRevenuePerSecond - ONE_BILLION) / Number(ONE_TRILLION - ONE_BILLION);
+            const ratio = Number(adjustedRevenuePerSecond.minus(ONE_BILLION).div(ONE_TRILLION.minus(ONE_BILLION)));
             const eased = Math.pow(ratio, 0.4); // Slow final transition
 
             const hue = 30 - (eased * 30); // 30° (orange) → 0° (red)
@@ -117,18 +118,18 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
     };
 
     const { totalCost, quantityToBuy } = calculateTotalPrice();
-    const isButtonDisabled = totalCost > currency;
+    const isButtonDisabled = totalCost.gt(currency);
 
-    let adjustedRevenuePerSecond = BigInt(0);
+    let adjustedRevenuePerSecond = new Decimal(0);
     if (business.revenuePerSecond){
         adjustedRevenuePerSecond = adjustValue(business.revenuePerSecond, fans);
     }
-    const adjustedRevenue = adjustValue(business.revenue * BigInt(business.quantity), fans) ;
+    const adjustedRevenue = adjustValue(new Decimal(business.revenue).mul(new Decimal(business.quantity)), fans);
 
 
     const canAffordManagerUpgrade = () => {
         for (const upgrade of business.manager?.upgrades || []) { // Iterate over upgrades
-            if (upgrade.cost <= currency && upgrade.unlocked === false) {
+            if (upgrade.cost.lte(currency) && upgrade.unlocked === false) {
                 return true; // Stop execution and return true if condition is met
             }
         }
@@ -195,8 +196,8 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                             {business.productionTime <= SPEED_THRESHOLD &&
                             business.manager?.hired &&
                             business.revenuePerSecond
-                                ? `¥${formatBigIntWithSuffix(adjustedRevenuePerSecond)}/sec`
-                                : `¥${formatBigIntWithSuffix(adjustedRevenue)}`
+                                ? `¥${formatDecimalWithSuffix(adjustedRevenuePerSecond)}/sec`
+                                : `¥${formatDecimalWithSuffix(adjustedRevenue)}`
                             }
                         </span>
 
@@ -268,7 +269,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                                             : ""
                                     }`}
                                 >
-                                ¥{formatBigIntWithSuffix(totalCost, 1)}
+                                ¥{formatDecimalWithSuffix(totalCost, 1)}
                             </span>
                             </button>
                         </div>
@@ -321,14 +322,14 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                 <div className="flex-1 flex flex-col justify-center items-center text-center rounded-lg h-24">
                     <button
                         onClick={onBuyOneBusiness}
-                        disabled={currency < business.cost}
+                        disabled={currency.lt(business.cost)}
                         className={`px-4 py-2 rounded-md w-full h-full ${
-                            currency < business.cost
+                            currency.lt(business.cost)
                                 ? "bg-gray-400 cursor-not-allowed"
                                 : "bg-green-500 hover:bg-green-600 text-white"
                         }`}
                     >
-                        Buy for ¥{formatBigIntWithSuffix(business.cost)}
+                        Buy for ¥{formatDecimalWithSuffix(business.cost)}
                     </button>
                 </div>
             )}

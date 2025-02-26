@@ -5,6 +5,7 @@ import {BusinessManager} from "./businessManager.ts";
 import {Manager} from "./types/manager.types.ts";
 import {calculateCost} from "../utils/calculateCost.ts";
 import {GameLoop} from "./gameLoop.ts";
+import Decimal from "break_infinity.js";
 
 export class IdleGame {
 
@@ -20,15 +21,15 @@ export class IdleGame {
         if (savedState) {
             const now = Date.now();
             this.totalPlaytime = savedState.totalPlaytime || 0;
-            this.businessManager = new BusinessManager(savedState.businesses, savedState.currency,
-                savedState.totalEarned, savedState.fans, savedState.unlocks);
+            this.businessManager = new BusinessManager(savedState.businesses, new Decimal(savedState.currency || 0),
+                new Decimal(savedState.totalEarned || 0), new Decimal(savedState.fans || 0), savedState.unlocks);
 
             // Calculate offline time and update production
             this.timeOffline = now - savedState.lastSaved;
             this.businessManager.checkAllUnlocksAndUpgrades();
             this.businessManager.updateProduction(this.timeOffline);
         } else {
-            this.businessManager = new BusinessManager(defaultBusinesses, BigInt(0), BigInt(0), BigInt(0), []);
+            this.businessManager = new BusinessManager(defaultBusinesses, new Decimal(0), new Decimal(0), new Decimal(0), []);
         }
         this.businessManager.checkAndAwardFans();
         this.sessionStartTime = Date.now(); // Set session start time
@@ -69,9 +70,9 @@ export class IdleGame {
         }));
 
         const state = {
-            currency: this.businessManager.currency,
-            totalEarned: this.businessManager.totalEarned,
-            fans: this.businessManager.fans,
+            currency: this.businessManager.currency.toString(),
+            totalEarned: this.businessManager.totalEarned.toString(),
+            fans: this.businessManager.fans.toString(),
             businesses: simplifiedBusinesses, // Save only the simplified form of businesses
             totalPlaytime: this.totalPlaytime, // Add session playtime to total
             lastSaved: Date.now(), // Save the exact time when the game state is saved
@@ -86,10 +87,10 @@ export class IdleGame {
         const savedState = localStorage.getItem('idleGameState');
         if (savedState) {
             const state = JSONbig.parse(savedState);
-            const savedCurrency = BigInt(state.currency?.toFixed() || 0);
-            const savedTotalEarned = BigInt(state.totalEarned?.toFixed() || 0);
+            const savedCurrency = this.convertToDecimal(state.currency || 0);
+            const savedTotalEarned = this.convertToDecimal(state.totalEarned || 0);
+            const savedFans = this.convertToDecimal(state.fans || 0);
             const savedTotalPlayTime = state.totalPlaytime || 0;
-            const savedFans = BigInt(state.fans?.toFixed() || 0);
             const savedLastSaved = state.lastSaved || 0;
 
             const savedBusinesses = state.businesses || [];
@@ -117,7 +118,7 @@ export class IdleGame {
                         ? new Manager(
                             matchingSavedBusiness.manager.name || defaultBusiness.manager?.name || "",
                             matchingSavedBusiness.manager.kanji || defaultBusiness.manager?.kanji || "",
-                            BigInt(matchingSavedBusiness.manager.cost || defaultBusiness.manager?.cost || 0),
+                            this.convertToDecimal(matchingSavedBusiness.manager.cost || defaultBusiness.manager?.cost || 0),
                             defaultBusiness.manager?.upgrades.map((defaultUpgrade, index) => ({
                                 // Start with the default upgrade
                                 ...defaultUpgrade,
@@ -156,6 +157,15 @@ export class IdleGame {
         return null;
     }
 
+    private convertToDecimal(value: bigint | string | number): Decimal {
+        // Converts BigInt, Decimal strings, or numbers to Decimal
+        if (typeof value === "string" || typeof value === "number") {
+            return new Decimal(value);
+        }
+        return new Decimal(value.toString());
+    }
+
+
     // Clear the save (optional reset feature)
     clearGameState() {
         localStorage.removeItem('idleGameState');
@@ -187,11 +197,11 @@ export class IdleGame {
 
         this.businessManager.unlocks = [];
         this.businessManager.checkAllUnlocksAndUpgrades();
-        this.businessManager.currency = 0n;
-        this.businessManager.totalEarned = 0n;
-        this.businessManager.fans = 0n; // Reset playtime
-        this.businessManager.nextFanThreshold = BigInt(1_000_000_000_000n);
-        this.businessManager.currentFans = 0n;
+        this.businessManager.currency = new Decimal(0);
+        this.businessManager.totalEarned = new Decimal(0);
+        this.businessManager.fans = new Decimal(0); // Reset playtime
+        this.businessManager.nextFanThreshold = new Decimal(1_000_000_000_000);
+        this.businessManager.currentFans = new Decimal(0);
         this.totalPlaytime = 0; // Reset playtime
     }
 
@@ -200,8 +210,8 @@ export class IdleGame {
         const fansToClaim = this.businessManager.currentFans;
 
 
-        this.businessManager.currency = BigInt(0);
-        this.businessManager.totalEarned = BigInt(0);
+        this.businessManager.currency = new Decimal(0);
+        this.businessManager.totalEarned = new Decimal(0);
         this.businessManager.businesses = defaultBusinesses.map((business) => ({
             ...business,
             cost: business.baseCost,
@@ -216,9 +226,9 @@ export class IdleGame {
         }));
 
         this.businessManager.unlocks = [];
-        this.businessManager.fans += fansToClaim;
-        this.businessManager.nextFanThreshold = BigInt(1_000_000_000_000n);
-        this.businessManager.currentFans = 0n;
+        this.businessManager.fans = this.businessManager.fans.plus(fansToClaim);
+        this.businessManager.nextFanThreshold = new Decimal(1_000_000_000_000);
+        this.businessManager.currentFans = new Decimal(0);
         this.businessManager.checkAllUnlocksAndUpgrades();
 
     }

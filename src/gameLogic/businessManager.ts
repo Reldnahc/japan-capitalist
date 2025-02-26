@@ -2,24 +2,32 @@ import { Business } from './types/business.types';
 import {GlobalUnlock} from "./types/unlocks.types.ts";
 import {calculateCost} from "../utils/calculateCost.ts";
 import {SPEED_THRESHOLD} from "./config.ts";
+import Decimal from "break_infinity.js";
 
 export class BusinessManager {
     businesses: Business[];
-    currency: bigint;
-    totalEarned: bigint;
-    fans: bigint;
-    currentFans: bigint = 0n; //current amount claimable
-    nextFanThreshold: bigint = 1_000_000_000_000n;//_000_000n;
-    fanRate: bigint = 102n;
+    currency: Decimal;
+    totalEarned: Decimal;
+    fans: Decimal;
+    currentFans: Decimal = new Decimal(0); //current amount claimable
+    nextFanThreshold: Decimal = new Decimal("1000000000000");
+    fanRate: Decimal = new Decimal(1.02);
     unlocks: GlobalUnlock[] = [];
-    offlineEarnings: bigint = 0n;
+    offlineEarnings: Decimal = new Decimal(0);
     private lastUpdate: number = Date.now();
 
-    constructor(businesses: Business[], currency: bigint, totalEarned: bigint, fans: bigint, unlocks: GlobalUnlock[]) {
+    constructor(
+        businesses: Business[],
+        currency: Decimal | string | number,
+        totalEarned: Decimal | string | number,
+        fans: Decimal | string | number,
+        unlocks: GlobalUnlock[]
+    )
+    {
         this.businesses = businesses;
-        this.currency = currency;
-        this.totalEarned = totalEarned;
-        this.fans = fans;
+        this.currency = new Decimal(currency);
+        this.totalEarned = new Decimal(totalEarned);
+        this.fans = new Decimal(fans);
         this.unlocks = unlocks;
     }
 
@@ -29,7 +37,6 @@ export class BusinessManager {
         business.lastProduced = Date.now();
     }
 
-    // Modify startProduction
     startProduction(index: number) {
         const business = this.businesses[index];
         if (business.quantity > 0 && !business.isProducing) {
@@ -39,8 +46,8 @@ export class BusinessManager {
         }
     }
 
-    addFans(amount: bigint){
-        this.fans += amount;
+    addFans(amount: Decimal | string | number){
+        this.fans = this.fans.plus(new Decimal(amount));
     }
 
     buyBusiness(index: number, amount: string = "x1") {
@@ -71,8 +78,8 @@ export class BusinessManager {
 
         // Loop to buy businesses up to the determined quantity
         for (let i = 0; i < quantityToBuy; i++) {
-            if (this.currency >= business.cost) {
-                this.currency -= business.cost;
+            if (this.currency.gte(business.cost)) {
+                this.currency = this.currency.minus(business.cost);
                 business.quantity += 1;
                 business.cost = calculateCost(business.baseCost, business.rate, business.quantity);
                 this.checkUnlocks(index);
@@ -103,8 +110,8 @@ export class BusinessManager {
         let currentCost = business.cost;
         let tempCurrency = this.currency;
 
-        while (tempCurrency >= currentCost) {
-            tempCurrency -= currentCost;
+        while (tempCurrency.gte(currentCost)) {
+            tempCurrency = tempCurrency.minus(currentCost);
             quantity += 1;
             currentCost = calculateCost(business.baseCost, business.rate, business.quantity + quantity);
         }
@@ -112,47 +119,33 @@ export class BusinessManager {
         return quantity;
     }
 
-    earnMoney(amount: bigint, boost = true) {
-        if (boost) {
-            const FAN_MULTIPLIER_SCALE = 100n;
-
-            // Calculate the fan multiplier
-            const fanMultiplier = FAN_MULTIPLIER_SCALE + (this.fans * 1n);
-
-            // Adjust the amount using the fan multiplier
-            const boostedAmount = (amount * fanMultiplier) / FAN_MULTIPLIER_SCALE;
-
-            // Add the boosted amount to both currency and totalEarned
-            this.currency += boostedAmount;
-            this.totalEarned += boostedAmount;
-        } else {
-            this.currency += amount;
-            this.totalEarned += amount;
-        }
-        // Check for fan rewards
+    earnMoney(amount: Decimal | string | number, boost = true) {
+        // Calculate the fan multiplier
+        const multiplier = boost ? this.fans.plus(100).div(100) : new Decimal(1);
+        const boostedAmount = new Decimal(amount).times(multiplier);
+        // Add the boosted amount to both currency and totalEarned
+        this.currency = this.currency.plus(boostedAmount);
+        this.totalEarned = this.totalEarned.plus(boostedAmount);
         this.checkAndAwardFans();
     }
 
     checkAndAwardFans(): void {
-        while (this.totalEarned >= this.nextFanThreshold) {
-            // Award a fan and calculate the next threshold
-            this.currentFans += 1n;
-
-            // Apply exponential scaling: growth factor is 1.5x (or 150%)
-            this.nextFanThreshold = this.nextFanThreshold * this.fanRate / 100n;
+        while (this.totalEarned.gte(this.nextFanThreshold)) {
+            this.currentFans = this.currentFans.plus(1);
+            this.nextFanThreshold = this.nextFanThreshold.times(this.fanRate);
         }
     }
+
 
     // Buy a manager
     buyManager(index: number) {
         const business = this.businesses[index];
         const manager = business.manager;
 
-        if (manager && !manager.hired && this.currency >= manager.cost) {
-            this.currency -= manager.cost;
+        if (manager && !manager.hired && this.currency.gte(manager.cost)) {
+            this.currency = this.currency.minus(manager.cost);
             manager.hired = true; // Mark the manager as hired
             this.startProduction(index); // Managers automatically start production
-            //this.saveGameState();
         }
     }
 
@@ -173,8 +166,8 @@ export class BusinessManager {
         }
 
         // Check if player has enough currency and upgrade isn't already applied
-        if (this.currency >= upgrade.cost && !upgrade.unlocked) {
-            this.currency -= upgrade.cost; // Deduct the cost
+        if (this.currency.gte(upgrade.cost) && !upgrade.unlocked) {
+            this.currency = this.currency.minus(upgrade.cost);
             upgrade.unlocked = true; // Mark the upgrade as purchased
 
             // Apply the upgrade effect
@@ -193,18 +186,18 @@ export class BusinessManager {
             if (target && target.trim() === "ALL") {
                 // Apply to all businesses
                 this.businesses.forEach((b) => {
-                    b.revenue *= BigInt(Math.floor(multiplier));
+                    b.revenue = b.revenue.times(multiplier);
                 });
             } else if (target){
                 // Apply to specific businesses (comma-separated identifiers)
                 const targets = target.split(",").map(t => t.trim());
                 this.businesses.forEach((b) => {
                     if (targets.includes(b.name.toLowerCase())) {
-                        b.revenue *= BigInt(Math.floor(multiplier));
+                        b.revenue = b.revenue.times(multiplier);
                     }
                 });
             } else {
-                business.revenue *= BigInt(Math.floor(multiplier));
+                business.revenue = business.revenue.times(multiplier);
             }
         }
 
@@ -235,12 +228,12 @@ export class BusinessManager {
     updateProduction(deltaTime?: number) {
         const now = Date.now();
         const calculatedDelta = deltaTime !== undefined ? deltaTime : now - this.lastUpdate;
-        let totalEarnedThisUpdate = 0n;
+        let totalEarnedThisUpdate = new Decimal(0);
 
         this.businesses.forEach((business) => {
             if (!business.isProducing) return;
             if (business.productionTime <= SPEED_THRESHOLD) {
-                business.revenuePerSecond = (business.revenue * BigInt(business.quantity) * 1000n) / BigInt(business.productionTime);
+                business.revenuePerSecond = business.revenue.times(business.quantity).times(1000).div(business.productionTime);
             }
             const elapsed = deltaTime !== undefined ? calculatedDelta : now - business.startTime;
             let cycles = Math.floor(elapsed / business.productionTime);
@@ -249,7 +242,7 @@ export class BusinessManager {
                     business.isProducing = false;
                     cycles = 1;
                 }
-                totalEarnedThisUpdate += business.revenue * BigInt(business.quantity * cycles);
+                totalEarnedThisUpdate = totalEarnedThisUpdate.plus(business.revenue.times(business.quantity).times(cycles));
                 const remaining = elapsed % business.productionTime;
                 business.startTime = now - remaining;
                 business.endTime = business.startTime + business.productionTime;

@@ -14,8 +14,9 @@ import FansPanel from "./panels/FansPanel.tsx";
 import {useAudioManager} from "../contexts/AudioManagerProvider.tsx";
 import GalleryPanel from "./panels/GalleryPanel.tsx";
 import Alert from "./Alert.tsx";
-import {formatBigIntWithSuffix} from "../utils/formatNumber.ts";
+import {formatDecimalWithSuffix} from "../utils/formatNumber.ts";
 import {adjustValue} from "../utils/calculateAdjustedValues.ts";
+import Decimal from "break_infinity.js";
 // Extend the TypeScript definition for the Window object
 declare global {
     interface Window {
@@ -57,7 +58,7 @@ const Game = () => {
 
     useEffect(() => {
         // Show alert on every page load
-        if (game.getTotalPlaytime() > 0 && game.timeOffline > 2000 && game.businessManager.offlineEarnings > 0)
+        if (game.getTotalPlaytime() > 0 && game.timeOffline > 2000 && game.businessManager.offlineEarnings.gt(0))
             setIsWelcomeAlertOpen(true);
     }, []);
 
@@ -111,11 +112,11 @@ const Game = () => {
     }, []);
 
     useEffect(() => {
-        window.money = (amount: string) => {
-            game.businessManager.earnMoney(BigInt(amount), false);
+        window.money = (amount: string | number) => {
+            game.businessManager.earnMoney(new Decimal(amount), false);
         };
-        window.fans = (amount: string) => {
-            game.businessManager.addFans(BigInt(amount));
+        window.fans = (amount: string | number) => {
+            game.businessManager.addFans(new Decimal(amount));
         };
         const handleClick = (event: MouseEvent) => {
             // Extract the cursor's position and subtract 10
@@ -488,7 +489,7 @@ const Game = () => {
                             While you were away you earned.
                         </div>
                         <div className={`font-semibold text-2xl`}>
-                            ¥{formatBigIntWithSuffix(adjustValue(game.businessManager.offlineEarnings, fans))}
+                            ¥{formatDecimalWithSuffix(adjustValue(game.businessManager.offlineEarnings, fans))}
                         </div>
                     </div>
                 }
