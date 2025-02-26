@@ -195,9 +195,7 @@ const Game = () => {
                 });
             });
 
-            setAppliedUnlocks(
-                game.businessManager.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied))
-            );
+            setAppliedUnlocks(game.businessManager.businesses.map((biz) => biz.unlocks.map((unlock) => unlock.applied)));
 
             requestAnimationFrame(update);
         };
@@ -337,7 +335,13 @@ const Game = () => {
     };
 
     const handlePrestige = () => {
+        setAppliedUnlocks([]);
         game.prestige();
+    }
+
+    const resetGame = () => {
+        setAppliedUnlocks([]);
+        game.resetGame();
     }
 
     const handleManagerBack = () => {
@@ -431,7 +435,7 @@ const Game = () => {
                                     <SettingsPanel
                                         formatPlaytime={formatPlaytime}
                                         totalPlaytime={game.getTotalPlaytime()}
-                                        onResetGame={() => game.resetGame()}
+                                        onResetGame={resetGame}
                                     />
                                 )}
                             </ModalPanel>
@@ -469,7 +473,14 @@ const Game = () => {
             />
             <Alert
                 isOpen={isWelcomeAlertOpen}
-                text={<p>Welcome Back! While you were away you earned. ¥{formatBigIntWithSuffix(adjustValue(game.businessManager.offlineEarnings, fans))}</p>}
+                text={
+                    <div>
+                        <div>Welcome Back!</div>
+                        <div>
+                            While you were away you earned. ¥{formatBigIntWithSuffix(adjustValue(game.businessManager.offlineEarnings, fans))}
+                        </div>
+                    </div>
+                }
                 buttons={[
                     {
                         label: "Close",
