@@ -134,13 +134,12 @@ export class BusinessManager {
     }
 
     checkAndAwardFans(): void {
-        if (this.totalEarned < this.nextFanThreshold) return;
+        while (this.totalEarned >= this.nextFanThreshold) {
+            // Award a fan and calculate the next threshold
+            this.currentFans += 1n;
 
-        // Calculate how many fans to award at once
-        const fansEarned = this.totalEarned / this.nextFanThreshold;
-        if (fansEarned > 0n) {
-            this.currentFans += fansEarned;
-            this.nextFanThreshold *= (this.fanRate / 100n) ** fansEarned;
+            // Apply exponential scaling: growth factor is 1.5x (or 150%)
+            this.nextFanThreshold = this.nextFanThreshold * this.fanRate / 100n;
         }
     }
 

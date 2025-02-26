@@ -33,6 +33,7 @@ const Game = () => {
     const [progress, setProgress] = useState<number[]>(new Array(game.businessManager.businesses.length).fill(0));
     const [activePanel, setActivePanel] = useState<string | null>(null);
     const [notification, setNotification] = useState<string | null>(null);
+    const [notificationImage, setNotificationImage] = useState<string>("");
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
     const [isWelcomeAlertOpen, setIsWelcomeAlertOpen] = useState(false); // State to control alert visibility
 
@@ -56,7 +57,7 @@ const Game = () => {
 
     useEffect(() => {
         // Show alert on every page load
-        if (game.getTotalPlaytime() > 0)
+        if (game.getTotalPlaytime() > 0 && game.timeOffline > 2000 && game.businessManager.offlineEarnings > 0)
             setIsWelcomeAlertOpen(true);
     }, []);
 
@@ -171,6 +172,7 @@ const Game = () => {
                         const effectParts = unlock.effect.split(";");
                         const effectDescription = effectParts[0].trim(); // E.g., "Revenue ×2" or "Speed +300%"
                         const target = effectParts[1]?.trim(); // E.g., "takoyaki", "ALL", or undefined
+                        const image = `/japan-capitalist/images/businesses/${biz.name.toLowerCase().replace(" ","")}/icon.webp`;
 
                         let message;
 
@@ -187,7 +189,7 @@ const Game = () => {
                         }
 
                         // Trigger a single notification
-                        showNotification(message);
+                        showNotification(message, image);
 
                         // Set the notification flag for this unlock
                         unlock.notified = true;
@@ -243,12 +245,15 @@ const Game = () => {
     };
 
 
-    const showNotification = (message: string) => {
+    const showNotification = (message: string, image: string = "") => {
         setNotification(message);
+        setNotificationImage(image);
     };
 
     const closeNotification = useCallback(() => {
         setNotification(null);
+        setNotificationImage("image");
+
     }, []);
 
     const handleManagerUpgrade = (businessIndex: number, upgradeIndex: number) => {
@@ -376,7 +381,7 @@ const Game = () => {
                 ></div>
             ))}
             {notification && (
-                <Notification message={notification} onClose={closeNotification}/>
+                <Notification message={notification} image={notificationImage} onClose={closeNotification}/>
             )}
             {/* Conditional Panel UI */}
             <AnimatePresence>
@@ -475,9 +480,15 @@ const Game = () => {
                 isOpen={isWelcomeAlertOpen}
                 text={
                     <div>
-                        <div>Welcome Back!</div>
+                        <div className={`font-bold text-4xl`}>Welcome Back!</div>
                         <div>
-                            While you were away you earned. ¥{formatBigIntWithSuffix(adjustValue(game.businessManager.offlineEarnings, fans))}
+                            You were away for <span className={`font-semibold text-xl`}>{formatTime(Math.floor(game.timeOffline / 1000))}.</span>
+                        </div>
+                        <div>
+                            While you were away you earned.
+                        </div>
+                        <div className={`font-semibold text-2xl`}>
+                            ¥{formatBigIntWithSuffix(adjustValue(game.businessManager.offlineEarnings, fans))}
                         </div>
                     </div>
                 }
@@ -485,6 +496,7 @@ const Game = () => {
                     {
                         label: "Close",
                         onClick: handleCloseAlert,
+                        styleClass: "bg-green-500 text-white hover:bg-green-600",
                     },
                 ]}
                 closeAlert={handleCloseAlert}

@@ -30,7 +30,7 @@ const Alert: React.FC<AlertProps> = ({
                     exit={{ opacity: 0 }}
                 >
                     <motion.div
-                        className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full"
+                        className="bg-gray-100 rounded-xl shadow-2xl p-8 max-w-md w-full"
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}

@@ -42,7 +42,7 @@ const UnlocksPanel: React.FC<UnlocksPanelProps> = ({ businesses }) => {
                                         alt={business.name}
                                         className=" object-contain rounded-full h-8 w-8 md:h-12 md:w-12 flex items-center justify-center mt-1 flex-shrink-0 leading-none"
                                     />
-                                    { unlock.effect.includes("Unlocked") && (
+                                    { unlock.effect.toLowerCase().includes("image") && (
                                         <span className="absolute -top-2 -right-2 bg-blue-500 text-white font-bold text-md w-7 h-7 flex items-center justify-center rounded-full">
                                             <FaImage/>
                                         </span>

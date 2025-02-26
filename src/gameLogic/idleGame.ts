@@ -11,6 +11,7 @@ export class IdleGame {
     businessManager: BusinessManager;
     totalPlaytime: number = 0;
     sessionStartTime: number = 0;
+    timeOffline: number = 0;
     private gameLoop: GameLoop;
     private lastSave: number = 0;
 
@@ -23,9 +24,9 @@ export class IdleGame {
                 savedState.totalEarned, savedState.fans, savedState.unlocks);
 
             // Calculate offline time and update production
-            const offlineTime = now - savedState.lastSaved;
+            this.timeOffline = now - savedState.lastSaved;
             this.businessManager.checkAllUnlocksAndUpgrades();
-            this.businessManager.updateProduction(offlineTime);
+            this.businessManager.updateProduction(this.timeOffline);
         } else {
             this.businessManager = new BusinessManager(defaultBusinesses, BigInt(0), BigInt(0), BigInt(0), []);
         }
