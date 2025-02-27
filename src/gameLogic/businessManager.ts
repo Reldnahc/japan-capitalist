@@ -3,6 +3,7 @@ import {GlobalUnlock} from "./types/unlocks.types.ts";
 import {calculateCost} from "../utils/calculateCost.ts";
 import {SPEED_THRESHOLD} from "./config.ts";
 import Decimal from "break_infinity.js";
+import {businesses as defaultBusinesses} from "./data/businesses.ts";
 
 export class BusinessManager {
 
@@ -15,7 +16,7 @@ export class BusinessManager {
     private _fanStep: Decimal = new Decimal("100000000000");
     private _unlocks: GlobalUnlock[] = [];
     private _offlineEarnings: Decimal = new Decimal(0);
-    private lastUpdate: number = Date.now();
+    private _lastUpdate: number = Date.now();
 
     constructor(
         businesses: Business[],
@@ -45,6 +46,20 @@ export class BusinessManager {
         this._currentFans = new Decimal(0);
         this._unlocks = [];
         this._nextFanThreshold = new Decimal(1e12);
+
+        this._businesses = defaultBusinesses.map((business) => ({
+            ...business,
+            cost: business.baseCost,
+            isProducing: false,
+            startTime: 0,
+            endTime: 0,
+            unlocks: business.unlocks.map((unlock) => ({
+                ...unlock,
+                applied: false, // Reset applied status
+                notified: false, // Reset notification status
+            })),
+        }));
+
     }
 
     get currency(): Decimal {
@@ -297,7 +312,7 @@ export class BusinessManager {
 
     updateProduction(deltaTime?: number) {
         const now = Date.now();
-        const calculatedDelta = deltaTime !== undefined ? deltaTime : now - this.lastUpdate;
+        const calculatedDelta = deltaTime !== undefined ? deltaTime : now - this._lastUpdate;
         let totalEarnedThisUpdate = new Decimal(0);
 
         this._businesses.forEach((business) => {
@@ -323,7 +338,7 @@ export class BusinessManager {
         this.earnMoney(totalEarnedThisUpdate);
 
         if (deltaTime === undefined) {
-            this.lastUpdate = now;
+            this._lastUpdate = now;
         } else {
             this._offlineEarnings = totalEarnedThisUpdate;
             console.log("earned this much while gone: " + totalEarnedThisUpdate);
