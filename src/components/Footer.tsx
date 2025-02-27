@@ -141,7 +141,7 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                         </div>
                         <button
                             onClick={toggleMute}
-                            className="absolute -left-12 md:-left-16 top-1/2 transform -translate-y-1/2 text-white text-2xl md:text-4xl hover:text-yellow-400 transition"
+                            className="absolute -left-12 md:-left-16 top-2 md:top-3 transform -translate-y-1/2 text-white text-2xl md:text-4xl hover:text-yellow-400 transition"
                             aria-label={isMuted ? "Unmute" : "Mute"}
                         >
                             {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}

@@ -1,60 +1,97 @@
 import Decimal from "break_infinity.js";
 
-export function formatDecimalWithSuffix(value: Decimal, decimals: number = 3): string {
-    // List of suffixes for large number ranges
-    const suffixes = [
-        { value: new Decimal("1e63"), suffix: "Vigintillion" },
-        { value: new Decimal("1e60"), suffix: "Novemdecillion" },
-        { value: new Decimal("1e57"), suffix: "Octodecillion" },
-        { value: new Decimal("1e54"), suffix: "Septendecillion" },
-        { value: new Decimal("1e51"), suffix: "Sexdecillion" },
-        { value: new Decimal("1e48"), suffix: "Quindecillion" },
-        { value: new Decimal("1e45"), suffix: "Quattuordecillion" },
-        { value: new Decimal("1e42"), suffix: "Tredecillion" },
-        { value: new Decimal("1e39"), suffix: "Duodecillion" },
-        { value: new Decimal("1e36"), suffix: "Undecillion" },
-        { value: new Decimal("1e33"), suffix: "Decillion" },
-        { value: new Decimal("1e30"), suffix: "Nonillion" },
-        { value: new Decimal("1e27"), suffix: "Octillion" },
-        { value: new Decimal("1e24"), suffix: "Septillion" },
-        { value: new Decimal("1e21"), suffix: "Sextillion" },
-        { value: new Decimal("1e18"), suffix: "Quintillion" },
-        { value: new Decimal("1e15"), suffix: "Quadrillion" },
-        { value: new Decimal("1e12"), suffix: "Trillion" },
-        { value: new Decimal("1e9"),  suffix: "Billion" },
-        { value: new Decimal("1e6"),  suffix: "Million" },
-        { value: new Decimal("1"),    suffix: "" },
-    ];
+const baseSuffixes = [
+    "Million",
+    "Billion",
+    "Trillion",
+    "Quadrillion",
+    "Quintillion",
+    "Sextillion",
+    "Septillion",
+    "Octillion",
+    "Nonillion",
+    "Decillion",
+    "Undecillion",
+    "Duodecillion",
+    "Tredecillion",
+    "Quattuordecillion",
+    "Quindecillion",
+    "Sexdecillion",
+    "Septendecillion",
+    "Octodecillion",
+    "Novemdecillion",
+    "Vigintillion",
+];
 
+const numeralPrefixes = [
+    "",
+    "Un", // 1
+    "Duo", // 2
+    "Tres", // 3
+    "Quattuor", // 4
+    "Quin", // 5
+    "Sex", // 6
+    "Septen", // 7
+    "Octo", // 8
+    "Novem", // 9
+];
 
-    // Loop through the suffixes to find the largest threshold
-    for (const { value: threshold, suffix } of suffixes) {
-        if (value.gte(threshold)) {
-            // Divide the value by the threshold
-            const scaledValue = value.div(threshold);
+// Cached thresholds and suffixes
+const thresholds: { value: number; suffix: string }[] = [];
 
-            // Format the number with the specified decimals
-            const formattedValue = scaledValue.toFixed(decimals).replace(/\.?0+$/, ""); // Remove trailing zeros and dots
+// Generate the thresholds and suffixes once
+const precomputeSuffixes = () => {
+    for (let i = 0; i < 100; i++) {
+        const power = (i + 2) * 3;
+        const value = Math.pow(10, power);
 
-            // Add commas for readability if applicable
-            if (value.gte(new Decimal(1_000)) && value.lt(new Decimal(1_000_000))) {
-                return addCommasToDecimal(value);
-            }
+        if (i < 20) {
+            thresholds.push({ value, suffix: baseSuffixes[i] });
+        } else {
+            const group = Math.floor((i - 20) / 10); // Higher groups (10^90, 10^120, etc.)
+            const position = (i - 20) % 10; // Position within the current group
 
-            return `${formattedValue} ${suffix}`;
+            const groupSuffix = group < baseSuffixes.length
+                ? baseSuffixes[group]
+                : `gintillion`.repeat(group + 1); // Dynamically generate group (skip recursion)
+
+            const prefix = numeralPrefixes[position];
+            thresholds.push({ value, suffix: `${prefix}${groupSuffix}` });
         }
+    }
+};
+// Precompute suffixes once at the load time
+precomputeSuffixes();
 
+export function formatDecimalWithSuffix(value: Decimal, decimals: number = 3): string {
+    // Handle small values below 1,000,000 directly
+    if (value.lt(1_000_000)) {
+        return addCommasToDecimal(value);
     }
 
+    const numericValue = value.toNumber(); // Convert to number for faster comparisons
 
-    return value.toString(); // Fallback for small or negative values
+    // Perform a binary search to find the appropriate suffix
+    let low = 0, high = thresholds.length - 1;
+    while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        if (numericValue >= thresholds[mid].value) {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+
+    const { value: threshold, suffix } = thresholds[high];
+    const scaledValue = numericValue / threshold;
+
+    // Format the scaled value and attach the suffix
+    const formattedValue = scaledValue.toFixed(decimals).replace(/\.?0+$/, ""); // Avoid trailing zeros
+    return `${formattedValue} ${suffix}`;
 }
 
-
 function addCommasToDecimal(value: Decimal): string {
-    // Convert Decimal to string for manipulation
-    const valueStr = value.toFixed(0); // No decimal places for simpler formatting
-
-    // Insert commas as thousands separators
-    return valueStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return value
+        .toFixed(0)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ","); // Add commas for readability
 }

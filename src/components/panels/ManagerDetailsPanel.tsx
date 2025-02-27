@@ -73,12 +73,12 @@ const ManagerDetailsPanel: React.FC<ManagerDetailsPanelProps> = ({
                                         }}
                                         disabled={
                                             upgrade.unlocked ||
-                                            currency < upgrade.cost
+                                            currency.lt(upgrade.cost)
                                         }
                                         className={`relative px-1 py-1 text-xs md:text-lg rounded w-20 md:w-28 flex  justify-center items-center ${
                                             upgrade.unlocked
                                                 ? "bg-gray-400 text-white cursor-not-allowed"
-                                                : currency < upgrade.cost
+                                                : currency.lt(upgrade.cost)
                                                     ? "bg-gray-300 text-gray-500 border-2 border-gray-400 cursor-not-allowed"
                                                     : "bg-gold-gradient text-white hover:brightness-120 animate-gold-glow shadow-gold-outer"
                                         }`}
@@ -88,8 +88,7 @@ const ManagerDetailsPanel: React.FC<ManagerDetailsPanelProps> = ({
                                         }}
                                     >
                                         {!upgrade.unlocked &&
-                                            currency >=
-                                            upgrade.cost && (
+                                            currency.gte(upgrade.cost) && (
                                                 <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/10 via-white/50 to-white/10 opacity-0 hover:opacity-75 animate-shine pointer-events-none" />
                                             )}
 
@@ -97,8 +96,7 @@ const ManagerDetailsPanel: React.FC<ManagerDetailsPanelProps> = ({
                                             className={`text-sm md:text-base font-extrabold ${
                                                 upgrade.unlocked
                                                     ? ""
-                                                    : currency <
-                                                    upgrade.cost
+                                                    : currency.lt(upgrade.cost)
                                                         ? ""
                                                         : "[text-shadow:0px_1px_2px_rgba(255,215,0,0.9),0px_3px_5px_rgba(0,0,0,0.8)]"
                                             }`}

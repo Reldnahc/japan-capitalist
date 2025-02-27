@@ -11,7 +11,7 @@ export class BusinessManager {
     fans: Decimal;
     currentFans: Decimal = new Decimal(0); //current amount claimable
     nextFanThreshold: Decimal = new Decimal("1000000000000");
-    fanRate: Decimal = new Decimal(1.02);
+    fanStep: Decimal = new Decimal("100000000000");
     unlocks: GlobalUnlock[] = [];
     offlineEarnings: Decimal = new Decimal(0);
     private lastUpdate: number = Date.now();
@@ -130,11 +130,39 @@ export class BusinessManager {
     }
 
     checkAndAwardFans(): void {
-        while (this.totalEarned.gte(this.nextFanThreshold)) {
-            this.currentFans = this.currentFans.plus(1);
-            this.nextFanThreshold = this.nextFanThreshold.times(this.fanRate);
-        }
+        // If not enough earned to afford even one fan, exit early.
+        if (this.totalEarned.lt(this.nextFanThreshold)) return;
+
+        // Let T = current threshold, S = fanStep, and E = totalEarned.
+        const T = this.nextFanThreshold;
+        const S = this.fanStep;
+        const E = this.totalEarned;
+
+        // Calculate discriminant: (2T - S)^2 + 8SE
+        const twoTMinusS = T.times(2).minus(S);
+        const discriminant = twoTMinusS.pow(2).plus(S.times(8).times(E));
+
+        // Compute the square root of the discriminant.
+        // (Assuming your big number library has a sqrt() method)
+        const sqrtDisc = discriminant.sqrt();
+
+        // Solve for k: k = floor(( - (2T - S) + sqrtDisc ) / (2S))
+        const k = sqrtDisc.minus(twoTMinusS).div(S.times(2)).floor();
+
+        // If k is zero (edge-case), nothing to do.
+        if (k.lte(0)) return;
+
+        // Calculate the total cost for k fans: cost = k*T + S * k*(k-1)/2
+        const costForKFans = T.times(k)
+            .plus(S.times(k.times(k.minus(1))).div(2));
+
+        // Deduct the cost and update state.
+        this.totalEarned = E.minus(costForKFans);
+        this.currentFans = this.currentFans.plus(k);
+        this.nextFanThreshold = T.plus(S.times(k));
     }
+
+
 
 
     // Buy a manager

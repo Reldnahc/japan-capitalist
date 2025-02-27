@@ -32,7 +32,7 @@ const FansPanel: React.FC<FansPanelProps> = ({ currentFans, totalFans, onClaimFa
     };
 
     return (
-            <div className={`h-[70vh] overflow-y-auto p-6 flex flex-col gap-6 items-center rounded-lg scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800`}>
+            <div className={`h-[70vh] overflow-y-auto px-6 flex flex-col gap-6 items-center rounded-lg scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800`}>
                 <div className="text-center border-gray-500 border-2 rounded-lg p-4 mt-4 bg-gray-800 bg-opacity-80">
                     <BsPeopleFill className="mx-auto text-blue-600" size={40} />
 
@@ -41,12 +41,12 @@ const FansPanel: React.FC<FansPanelProps> = ({ currentFans, totalFans, onClaimFa
                     </p>
                 </div>
 
-                <div className="flex flex-col items-center justify-center w-full max-w-52 py-4 bg-blue-50 rounded-lg shadow">
+                <div className="flex flex-col text-center items-center h-32 justify-center w-full max-w-64 py-4 bg-blue-50 rounded-lg shadow">
                     <p className="text-lg font-medium text-gray-600">Available Fans to Claim:</p>
                     <div className="text-4xl font-extrabold text-blue-600 mt-2">{formatDecimalWithSuffix(currentFans)}</div>
                 </div>
 
-                <div className="flex flex-col items-center justify-center w-full max-w-52 py-4 bg-green-50 rounded-lg shadow">
+                <div className="flex flex-col text-center items-center h-32 justify-center w-full max-w-64 py-4 bg-green-50 rounded-lg shadow">
                     <p className="text-lg font-medium text-gray-600">Current Fans:</p>
                     <div className="text-4xl font-extrabold text-green-600 mt-2">{formatDecimalWithSuffix(totalFans)}</div>
                 </div>

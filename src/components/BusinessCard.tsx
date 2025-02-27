@@ -294,7 +294,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                                         <circle cx="32" cy="20" r="12" />
                                         <path d="M16,48 a16,16 0 0,1 32,0" />
                                     </svg>
-                                    { ((!business.manager.hired && currency >= business.manager.cost) || canAffordManagerUpgrade()) && (
+                                    { ((!business.manager.hired && currency.gte(business.manager.cost)) || canAffordManagerUpgrade()) && (
                                         <span className="absolute -top-1.5 -right-1.5 bg-yellow-500 text-black font-bold text-md w-4 h-4 flex items-center justify-center rounded-full">
                                             !
                                         </span>
