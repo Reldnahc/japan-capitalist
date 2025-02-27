@@ -319,7 +319,7 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
                 </div>
             ) : (
                 // Unowned Business Section (alternate content for unowned business)
-                <div className="flex-1 flex flex-col justify-center items-center text-center rounded-lg h-24">
+                <div className="flex-1 flex flex-col justify-center py-2 md:py-0 text-lg md:text-2xl items-center text-center rounded-lg h-24">
                     <button
                         onClick={onBuyOneBusiness}
                         disabled={currency.lt(business.cost)}

@@ -158,7 +158,7 @@ export class IdleGame {
                 fans: savedFans,
                 lastSaved: savedLastSaved,
                 businesses: recalculatedBusinesses,
-                unlocks: [], // Assuming unlocks should always start fresh or be recalculated
+                unlocks: [],
                 totalPlaytime: savedTotalPlayTime,
             };
         }
@@ -173,8 +173,6 @@ export class IdleGame {
         return new Decimal(value.toString());
     }
 
-
-    // Clear the save (optional reset feature)
     private clearGameState() {
         localStorage.removeItem('idleGameState');
     }

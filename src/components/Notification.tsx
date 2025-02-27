@@ -1,46 +1,79 @@
 import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type NotificationProps = {
     message: string;
     onClose: () => void;
     duration?: number; // Duration in milliseconds before auto-dismissal
     image?: string;
+    milestone?: number;
 };
 
-const Notification: React.FC<NotificationProps> = ({ message, onClose, duration = 3000, image }) => {
-    const [visible, setVisible] = useState(false);
+const Notification: React.FC<NotificationProps> = ({ message, onClose, duration = 3000, image, milestone }) => {
+    const [isActive, setIsActive] = useState(true);
 
     useEffect(() => {
-        setVisible(true); // Trigger the slide-in effect when the component is mounted
-
+        setIsActive(true);
         const timer = setTimeout(() => {
-            setVisible(false); // Start the slide-out animation
+            setIsActive(false);
+            setTimeout(onClose, 300); // Wait for animation to finish
         }, duration);
 
-        // Ensure `onClose` is called after the animation completes
-        const closeTimer = setTimeout(() => {
-            onClose(); // Trigger parent `onClose`
-        }, duration + 300); // Add 300ms for transition duration
+        return () => clearTimeout(timer);
+    }, [message, onClose, duration, milestone]);
 
-        // Cleanup timers on unmount
-        return () => {
-            clearTimeout(timer);
-            clearTimeout(closeTimer);
-        };
-    }, [onClose, duration]);
+    // Motion variants for animation
+    const variants = {
+        hidden: {
+            opacity: 0, // Start fully transparent
+            y: -20, // Slight upward translation
+        },
+        visible: {
+            opacity: 1, // Fade in to full opacity
+            y: 0, // Reset translation
+            transition: { duration: 0.3 }, // Animation duration
+        },
+        exit: {
+            opacity: 0, // Fade out
+            y: -20, // Slight upward translation for exit
+            transition: { duration: 0.3 },
+        },
+    };
 
-    // Dynamically apply slide-in/slide-out class based on `visible` state
     return (
-        <div
-            className={`fixed top-0 left-0 max-w-xl md:text-2xl mx-auto right-0 z-50 px-4 py-2 h-24 bg-gray-700 text-white transform transition-transform duration-300 opacity-95 ${
-                visible ? "translate-y-0" : "-translate-y-full"
-            }`}
-        >
-            <div className="h-full flex items-center justify-center flex-row gap-4">
-                {image && <img src={image} alt="Notification" className="w-16 h-16 rounded-full ring-2 ring-black" />}
-                <span>{message}</span>
-            </div>
-        </div>
+        <AnimatePresence>
+            {isActive && (
+                <motion.div
+                    className="fixed top-2 left-0 max-w-80 md:max-w-lg rounded-lg border-2 border-gray-100 md:text-2xl mx-auto right-0 z-50 px-4 py-3 h-28 bg-gray-700 text-white opacity-95"
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    variants={variants}
+                >
+                    <div className="flex items-center gap-4">
+                        {image && (
+                            <div className="flex-shrink-0 w-24 h-24 relative">
+                                <div
+                                    className="w-full h-full bg-gray-200 rounded-full ring-4 ring-gray-800"
+                                    style={{
+                                        backgroundImage: `url(${image})`,
+                                        backgroundSize: "cover",
+                                        backgroundPosition: "center",
+                                    }}
+                                />
+                                {milestone && milestone > 0 && (
+                                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 px-1.5 py-0.5 bg-black bg-opacity-60 rounded text-white text-lg md:text-xl font-semibold">
+                                        {milestone}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <span className="flex-1 text-center">{message}</span>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 };
 

@@ -33,8 +33,7 @@ const Game = () => {
     const [businesses, setBusinesses] = useState(game.businessManager.businesses);
     const [progress, setProgress] = useState<number[]>(new Array(game.businessManager.businesses.length).fill(0));
     const [activePanel, setActivePanel] = useState<string | null>(null);
-    const [notification, setNotification] = useState<string | null>(null);
-    const [notificationImage, setNotificationImage] = useState<string>("");
+    const [notificationQueue, setNotificationQueue] = useState<{ message: string; image: string, milestone: number }[]>([]);
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
     const [isWelcomeAlertOpen, setIsWelcomeAlertOpen] = useState(false); // State to control alert visibility
 
@@ -65,7 +64,6 @@ const Game = () => {
     const handleCloseAlert = () => {
         setIsWelcomeAlertOpen(false);
     };
-
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -178,8 +176,12 @@ const Game = () => {
                         let message;
 
                         if (!target) {
-                            // If no target is specified, default to the current business
-                            message = `Unlocked: ${effectDescription} for ${biz.name}!`;
+                            // If no target is specified, default to the current businesss
+                            if (effectDescription.toLowerCase().includes("image")){
+                                message = `Unlocked: ${effectDescription}!`;
+                            } else {
+                                message = `Unlocked: ${effectDescription} for ${biz.name}!`;
+                            }
                         } else if (target === "ALL") {
                             // If the target is ALL businesses
                             message = `Unlocked: ${effectDescription} for ALL businesses!`;
@@ -190,7 +192,7 @@ const Game = () => {
                         }
 
                         // Trigger a single notification
-                        showNotification(message, image);
+                        showNotification(message, image, unlock.milestone);
 
                         // Set the notification flag for this unlock
                         unlock.notified = true;
@@ -246,16 +248,9 @@ const Game = () => {
     };
 
 
-    const showNotification = (message: string, image: string = "") => {
-        setNotification(message);
-        setNotificationImage(image);
+    const showNotification = (message: string, image: string = "", milestone: number = 0) => {
+        setNotificationQueue((prevQueue) => [...prevQueue, { message, image, milestone }]);
     };
-
-    const closeNotification = useCallback(() => {
-        setNotification(null);
-        setNotificationImage("image");
-
-    }, []);
 
     const handleManagerUpgrade = (businessIndex: number, upgradeIndex: number) => {
         game.businessManager.buyManagerUpgrade(businessIndex, upgradeIndex);
@@ -335,8 +330,6 @@ const Game = () => {
             const index = businesses.indexOf(nonProducingBusinesses[0]);
             game.businessManager.startProduction(index);
             setBusinesses([...game.businessManager.businesses]);
-        } else {
-            showNotification("All businesses are producing!");
         }
     };
 
@@ -367,7 +360,9 @@ const Game = () => {
         }
         return activePanel || "";
     };
-
+    const handleNotificationClose = useCallback(() => {
+        setNotificationQueue((prevQueue) => prevQueue.slice(1));
+    }, []);
 
     return (
         <div
@@ -381,9 +376,15 @@ const Game = () => {
                     className="absolute w-5 h-5 bg-blue-500 rounded-full pointer-events-none animate-click z-[100]"
                 ></div>
             ))}
-            {notification && (
-                <Notification message={notification} image={notificationImage} onClose={closeNotification}/>
+            {notificationQueue.length > 0 && (
+                <Notification
+                    message={notificationQueue[0].message}
+                    image={notificationQueue[0].image}
+                    milestone={notificationQueue[0].milestone}
+                    onClose={handleNotificationClose}
+                />
             )}
+
             {/* Conditional Panel UI */}
             <AnimatePresence>
                 {activePanel && (
