@@ -5,15 +5,16 @@ import {SPEED_THRESHOLD} from "./config.ts";
 import Decimal from "break_infinity.js";
 
 export class BusinessManager {
-    businesses: Business[];
-    currency: Decimal;
-    totalEarned: Decimal;
-    fans: Decimal;
-    currentFans: Decimal = new Decimal(0); //current amount claimable
-    nextFanThreshold: Decimal = new Decimal("1000000000000");
-    fanStep: Decimal = new Decimal("100000000000");
-    unlocks: GlobalUnlock[] = [];
-    offlineEarnings: Decimal = new Decimal(0);
+
+    private _businesses: Business[];
+    private _currency: Decimal;
+    private _totalEarned: Decimal;
+    private _fans: Decimal;
+    private _currentFans: Decimal = new Decimal(0); //current amount claimable
+    private _nextFanThreshold: Decimal = new Decimal("1000000000000");
+    private _fanStep: Decimal = new Decimal("100000000000");
+    private _unlocks: GlobalUnlock[] = [];
+    private _offlineEarnings: Decimal = new Decimal(0);
     private lastUpdate: number = Date.now();
 
     constructor(
@@ -24,11 +25,11 @@ export class BusinessManager {
         unlocks: GlobalUnlock[]
     )
     {
-        this.businesses = businesses;
-        this.currency = new Decimal(currency);
-        this.totalEarned = new Decimal(totalEarned);
-        this.fans = new Decimal(fans);
-        this.unlocks = unlocks;
+        this._businesses = businesses;
+        this._currency = new Decimal(currency);
+        this._totalEarned = new Decimal(totalEarned);
+        this._fans = new Decimal(fans);
+        this._unlocks = unlocks;
     }
 
     private resetProductionTimer(business: Business) {
@@ -37,8 +38,49 @@ export class BusinessManager {
         business.lastProduced = Date.now();
     }
 
+    reset() {
+        this._currency = new Decimal(0);
+        this._fans = new Decimal(0);
+        this._totalEarned = new Decimal(0);
+        this._currentFans = new Decimal(0);
+        this._unlocks = [];
+        this._nextFanThreshold = new Decimal(1e12);
+    }
+
+    get currency(): Decimal {
+        return this._currency;
+    }
+
+    get businesses(): Business[] {
+        return this._businesses;
+    }
+
+    get totalEarned(): Decimal {
+        return this._totalEarned;
+    }
+
+    get fans(): Decimal {
+        return this._fans;
+    }
+
+    get currentFans(): Decimal {
+        return this._currentFans;
+    }
+
+    get offlineEarnings(): Decimal {
+        return this._offlineEarnings;
+    }
+
+    get unlocks(): GlobalUnlock[] {
+        return this._unlocks;
+    }
+
+    set businesses(value: Business[]) {
+        this._businesses = value;
+    }
+
     startProduction(index: number) {
-        const business = this.businesses[index];
+        const business = this._businesses[index];
         if (business.quantity > 0 && !business.isProducing) {
             business.isProducing = true;
             business.accumulatedTime = 0;
@@ -47,11 +89,11 @@ export class BusinessManager {
     }
 
     addFans(amount: Decimal | string | number){
-        this.fans = this.fans.plus(new Decimal(amount));
+        this._fans = this._fans.plus(new Decimal(amount));
     }
 
     buyBusiness(index: number, amount: string = "x1") {
-        const business = this.businesses[index];
+        const business = this._businesses[index];
         let quantityToBuy = 1; // Default to x1
 
         // Determine the quantity based on the amount
@@ -78,8 +120,8 @@ export class BusinessManager {
 
         // Loop to buy businesses up to the determined quantity
         for (let i = 0; i < quantityToBuy; i++) {
-            if (this.currency.gte(business.cost)) {
-                this.currency = this.currency.minus(business.cost);
+            if (this._currency.gte(business.cost)) {
+                this._currency = this._currency.minus(business.cost);
                 business.quantity += 1;
                 business.cost = calculateCost(business.baseCost, business.rate, business.quantity);
                 this.checkUnlocks(index);
@@ -94,8 +136,8 @@ export class BusinessManager {
     }
 
     // Calculate next unlock milestone quantity
-    getNextMilestoneQuantity(index: number): number {
-        const business = this.businesses[index];
+    private getNextMilestoneQuantity(index: number): number {
+        const business = this._businesses[index];
         for (const unlock of business.unlocks) {
             if (!unlock.applied && unlock.milestone > business.quantity) {
                 return unlock.milestone; // Return the next unlock milestone
@@ -105,10 +147,10 @@ export class BusinessManager {
     }
 
     // Calculate max affordable quantity
-    getMaxAffordableQuantity(business: Business): number {
+    private getMaxAffordableQuantity(business: Business): number {
         let quantity = 0;
         let currentCost = business.cost;
-        let tempCurrency = this.currency;
+        let tempCurrency = this._currency;
 
         while (tempCurrency.gte(currentCost)) {
             tempCurrency = tempCurrency.minus(currentCost);
@@ -121,22 +163,22 @@ export class BusinessManager {
 
     earnMoney(amount: Decimal | string | number, boost = true) {
         // Calculate the fan multiplier
-        const multiplier = boost ? this.fans.plus(100).div(100) : new Decimal(1);
+        const multiplier = boost ? this._fans.plus(100).div(100) : new Decimal(1);
         const boostedAmount = new Decimal(amount).times(multiplier);
         // Add the boosted amount to both currency and totalEarned
-        this.currency = this.currency.plus(boostedAmount);
-        this.totalEarned = this.totalEarned.plus(boostedAmount);
+        this._currency = this._currency.plus(boostedAmount);
+        this._totalEarned = this._totalEarned.plus(boostedAmount);
         this.checkAndAwardFans();
     }
 
     checkAndAwardFans(): void {
         // If not enough earned to afford even one fan, exit early.
-        if (this.totalEarned.lt(this.nextFanThreshold)) return;
+        if (this._totalEarned.lt(this._nextFanThreshold)) return;
 
         // Let T = current threshold, S = fanStep, and E = totalEarned.
-        const T = this.nextFanThreshold;
-        const S = this.fanStep;
-        const E = this.totalEarned;
+        const T = this._nextFanThreshold;
+        const S = this._fanStep;
+        const E = this._totalEarned;
 
         // Calculate discriminant: (2T - S)^2 + 8SE
         const twoTMinusS = T.times(2).minus(S);
@@ -157,9 +199,9 @@ export class BusinessManager {
             .plus(S.times(k.times(k.minus(1))).div(2));
 
         // Deduct the cost and update state.
-        this.totalEarned = E.minus(costForKFans);
-        this.currentFans = this.currentFans.plus(k);
-        this.nextFanThreshold = T.plus(S.times(k));
+        this._totalEarned = E.minus(costForKFans);
+        this._currentFans = this._currentFans.plus(k);
+        this._nextFanThreshold = T.plus(S.times(k));
     }
 
 
@@ -167,18 +209,18 @@ export class BusinessManager {
 
     // Buy a manager
     buyManager(index: number) {
-        const business = this.businesses[index];
+        const business = this._businesses[index];
         const manager = business.manager;
 
-        if (manager && !manager.hired && this.currency.gte(manager.cost)) {
-            this.currency = this.currency.minus(manager.cost);
+        if (manager && !manager.hired && this._currency.gte(manager.cost)) {
+            this._currency = this._currency.minus(manager.cost);
             manager.hired = true; // Mark the manager as hired
             this.startProduction(index); // Managers automatically start production
         }
     }
 
     buyManagerUpgrade(businessIndex: number, upgradeIndex: number) {
-        const business = this.businesses[businessIndex];
+        const business = this._businesses[businessIndex];
         const manager = business.manager;
 
         if (!manager || !manager.hired) {
@@ -194,8 +236,8 @@ export class BusinessManager {
         }
 
         // Check if player has enough currency and upgrade isn't already applied
-        if (this.currency.gte(upgrade.cost) && !upgrade.unlocked) {
-            this.currency = this.currency.minus(upgrade.cost);
+        if (this._currency.gte(upgrade.cost) && !upgrade.unlocked) {
+            this._currency = this._currency.minus(upgrade.cost);
             upgrade.unlocked = true; // Mark the upgrade as purchased
 
             // Apply the upgrade effect
@@ -206,20 +248,20 @@ export class BusinessManager {
         }
     }
 
-    applyEffect(business: Business, effect: string) {
+    private applyEffect(business: Business, effect: string) {
         console.log(">[BusinessManager] Applying effect: " + effect);
         if (effect.includes("Revenue ×")) {
             const [revenueEffect, target] = effect.split(";");
             const multiplier = parseFloat(revenueEffect.replace("Revenue ×", "").trim());
             if (target && target.trim() === "ALL") {
                 // Apply to all businesses
-                this.businesses.forEach((b) => {
+                this._businesses.forEach((b) => {
                     b.revenue = b.revenue.times(multiplier);
                 });
             } else if (target){
                 // Apply to specific businesses (comma-separated identifiers)
                 const targets = target.split(",").map(t => t.trim());
-                this.businesses.forEach((b) => {
+                this._businesses.forEach((b) => {
                     if (targets.includes(b.name.toLowerCase())) {
                         b.revenue = b.revenue.times(multiplier);
                     }
@@ -258,7 +300,7 @@ export class BusinessManager {
         const calculatedDelta = deltaTime !== undefined ? deltaTime : now - this.lastUpdate;
         let totalEarnedThisUpdate = new Decimal(0);
 
-        this.businesses.forEach((business) => {
+        this._businesses.forEach((business) => {
             if (!business.isProducing) return;
             if (business.productionTime <= SPEED_THRESHOLD) {
                 business.revenuePerSecond = business.revenue.times(business.quantity).times(1000).div(business.productionTime);
@@ -283,7 +325,7 @@ export class BusinessManager {
         if (deltaTime === undefined) {
             this.lastUpdate = now;
         } else {
-            this.offlineEarnings = totalEarnedThisUpdate;
+            this._offlineEarnings = totalEarnedThisUpdate;
             console.log("earned this much while gone: " + totalEarnedThisUpdate);
         }
     }
@@ -293,40 +335,40 @@ export class BusinessManager {
         this.checkAllUpgrades();
     }
 
-    checkAllUnlocks() {
-        this.businesses.forEach((_, index) => {
+    private checkAllUnlocks() {
+        this._businesses.forEach((_, index) => {
             this.checkUnlocks(index, );
         });
     }
 
     // Check and apply unlocks when milestones are reached
-    checkUnlocks(index: number) {
-        const business = this.businesses[index];
+    private checkUnlocks(index: number) {
+        const business = this._businesses[index];
 
         business.unlocks.forEach((unlock) => {
             if (!unlock.applied && business.quantity >= unlock.milestone) {
                 this.applyEffect(business, unlock.effect);
                 unlock.applied = true;
                 unlock.notified = false;
-                this.unlocks.push({ description: `${business.name}: ${unlock.effect}`, applied: true });
+                this._unlocks.push({ description: `${business.name}: ${unlock.effect}`, applied: true });
             }
         });
     }
 
-    checkAllUpgrades() {
-        this.businesses.forEach((_, index) => {
+    private checkAllUpgrades() {
+        this._businesses.forEach((_, index) => {
             this.checkUpgrades(index);
         });
     }
 
-    checkUpgrades(index: number) {
-        const business = this.businesses[index];
+    private checkUpgrades(index: number) {
+        const business = this._businesses[index];
 
         business.manager?.upgrades.forEach((upgrade) => {
             if (upgrade.unlocked) {
                 this.applyEffect(business, upgrade.effect);
                 upgrade.unlocked = true;
-                this.unlocks.push({ description: `${business.name}: ${upgrade.effect}`, applied: true });
+                this._unlocks.push({ description: `${business.name}: ${upgrade.effect}`, applied: true });
             }
         });
     }

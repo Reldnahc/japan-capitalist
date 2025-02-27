@@ -10,47 +10,52 @@ import Decimal from "break_infinity.js";
 export class IdleGame {
 
     businessManager: BusinessManager;
-    totalPlaytime: number = 0;
-    sessionStartTime: number = 0;
-    timeOffline: number = 0;
-    private gameLoop: GameLoop;
-    private lastSave: number = 0;
+    private _totalPlaytime: number = 0;
+    private _sessionStartTime: number = 0;
+    private _timeOffline: number = 0;
+    private _gameLoop: GameLoop;
+    private _lastSave: number = 0;
 
     constructor() {
         const savedState = this.loadGameState();
         if (savedState) {
             const now = Date.now();
-            this.totalPlaytime = savedState.totalPlaytime || 0;
+            this._totalPlaytime = savedState.totalPlaytime || 0;
             this.businessManager = new BusinessManager(savedState.businesses, new Decimal(savedState.currency || 0),
                 new Decimal(savedState.totalEarned || 0), new Decimal(savedState.fans || 0), savedState.unlocks);
 
             // Calculate offline time and update production
-            this.timeOffline = now - savedState.lastSaved;
+            this._timeOffline = now - savedState.lastSaved;
             this.businessManager.checkAllUnlocksAndUpgrades();
-            this.businessManager.updateProduction(this.timeOffline);
+            this.businessManager.updateProduction(this._timeOffline);
         } else {
             this.businessManager = new BusinessManager(defaultBusinesses, new Decimal(0), new Decimal(0), new Decimal(0), []);
         }
         this.businessManager.checkAndAwardFans();
-        this.sessionStartTime = Date.now(); // Set session start time
-        this.gameLoop = new GameLoop(() => {
+        this._sessionStartTime = Date.now(); // Set session start time
+        this._gameLoop = new GameLoop(() => {
             this.businessManager.updateProduction();
             this.checkAutoSave();
         });
-        this.gameLoop.start();
+        this._gameLoop.start();
     }
 
     private checkAutoSave() {
         const now = Date.now();
-        if (now - this.lastSave > 3000) { // 3 seconds
+        if (now - this._lastSave > 3000) { // 3 seconds
             this.saveGameState();
-            this.lastSave = now;
+            this._lastSave = now;
         }
     }
 
-    saveGameState() {
-        const currentSessionPlaytime = Date.now() - this.sessionStartTime;
-        this.totalPlaytime += currentSessionPlaytime;
+    get timeOffline(): number {
+        return this._timeOffline;
+    }
+
+
+    private saveGameState() {
+        const currentSessionPlaytime = Date.now() - this._sessionStartTime;
+        this._totalPlaytime += currentSessionPlaytime;
 
         // Reduce businesses to only the needed data for saving
         const simplifiedBusinesses = this.businessManager.businesses.map((business) => ({
@@ -74,16 +79,16 @@ export class IdleGame {
             totalEarned: this.businessManager.totalEarned.toString(),
             fans: this.businessManager.fans.toString(),
             businesses: simplifiedBusinesses, // Save only the simplified form of businesses
-            totalPlaytime: this.totalPlaytime, // Add session playtime to total
+            totalPlaytime: this._totalPlaytime, // Add session playtime to total
             lastSaved: Date.now(), // Save the exact time when the game state is saved
         };
 
         localStorage.setItem('idleGameState', JSONbig.stringify(state));
-        this.sessionStartTime = Date.now();
+        this._sessionStartTime = Date.now();
     }
 
     // Load game state from localStorage
-    loadGameState() {
+    private loadGameState() {
         const savedState = localStorage.getItem('idleGameState');
         if (savedState) {
             const state = JSONbig.parse(savedState);
@@ -167,21 +172,19 @@ export class IdleGame {
 
 
     // Clear the save (optional reset feature)
-    clearGameState() {
+    private clearGameState() {
         localStorage.removeItem('idleGameState');
     }
 
     getTotalPlaytime(): number {
-        const currentSessionPlaytime = Date.now() - this.sessionStartTime;
-        return this.totalPlaytime + currentSessionPlaytime;
+        const currentSessionPlaytime = Date.now() - this._sessionStartTime;
+        return this._totalPlaytime + currentSessionPlaytime;
     }
 
     resetGame() {
         // Clear local storage
         this.clearGameState();
 
-
-
         this.businessManager.businesses = defaultBusinesses.map((business) => ({
             ...business,
             cost: business.baseCost,
@@ -195,23 +198,16 @@ export class IdleGame {
             })),
         }));
 
-        this.businessManager.unlocks = [];
         this.businessManager.checkAllUnlocksAndUpgrades();
-        this.businessManager.currency = new Decimal(0);
-        this.businessManager.totalEarned = new Decimal(0);
-        this.businessManager.fans = new Decimal(0); // Reset playtime
-        this.businessManager.nextFanThreshold = new Decimal(1_000_000_000_000);
-        this.businessManager.currentFans = new Decimal(0);
-        this.totalPlaytime = 0; // Reset playtime
+        this.businessManager.reset();
+        this._totalPlaytime = 0; // Reset playtime
     }
 
     prestige() {
         console.log("fan claim triggered");
         const fansToClaim = this.businessManager.currentFans;
 
-
-        this.businessManager.currency = new Decimal(0);
-        this.businessManager.totalEarned = new Decimal(0);
+        this.businessManager.reset();
         this.businessManager.businesses = defaultBusinesses.map((business) => ({
             ...business,
             cost: business.baseCost,
@@ -225,10 +221,7 @@ export class IdleGame {
             })),
         }));
 
-        this.businessManager.unlocks = [];
-        this.businessManager.fans = this.businessManager.fans.plus(fansToClaim);
-        this.businessManager.nextFanThreshold = new Decimal(1_000_000_000_000);
-        this.businessManager.currentFans = new Decimal(0);
+        this.businessManager.addFans(fansToClaim);
         this.businessManager.checkAllUnlocksAndUpgrades();
 
     }
