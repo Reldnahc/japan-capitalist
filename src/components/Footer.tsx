@@ -76,7 +76,7 @@ const Footer: React.FC<FooterProps> = ({ currency, silver, purchaseAmount, onOpe
                     </div>
 
                     {/* Dividing line */}
-                    <div className="w-full h-px bg-gray-400 opacity-50"></div>
+                    <div className="w-full -ml-1.5 h-px bg-gray-400 opacity-50"></div>
                 </div>
 
 
