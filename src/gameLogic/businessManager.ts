@@ -16,7 +16,10 @@ export class BusinessManager {
     private _fanStep: Decimal = new Decimal("100000000000");
     private _unlocks: GlobalUnlock[] = [];
     private _offlineEarnings: Decimal = new Decimal(0);
+    private _boostEarnings: Decimal = new Decimal(0);
     private _lastUpdate: number = Date.now();
+    private _activeMultipliers: { multiplier: number; endTime: number }[] = [];
+    private _justBoosted: boolean = false;
 
     constructor(
         businesses: Business[],
@@ -31,35 +34,6 @@ export class BusinessManager {
         this._totalEarned = new Decimal(totalEarned);
         this._fans = new Decimal(fans);
         this._unlocks = unlocks;
-    }
-
-    private resetProductionTimer(business: Business) {
-        business.startTime = Date.now();
-        business.endTime = business.startTime + business.productionTime;
-        business.lastProduced = Date.now();
-    }
-
-    reset() {
-        this._currency = new Decimal(0);
-        this._fans = new Decimal(0);
-        this._totalEarned = new Decimal(0);
-        this._currentFans = new Decimal(0);
-        this._unlocks = [];
-        this._nextFanThreshold = new Decimal(1e12);
-
-        this._businesses = defaultBusinesses.map((business) => ({
-            ...business,
-            cost: business.baseCost,
-            isProducing: false,
-            startTime: 0,
-            endTime: 0,
-            unlocks: business.unlocks.map((unlock) => ({
-                ...unlock,
-                applied: false, // Reset applied status
-                notified: false, // Reset notification status
-            })),
-        }));
-
     }
 
     get currency(): Decimal {
@@ -86,12 +60,45 @@ export class BusinessManager {
         return this._offlineEarnings;
     }
 
+    get boostEarnings (): Decimal {
+        return this._boostEarnings;
+    }
+
     get unlocks(): GlobalUnlock[] {
         return this._unlocks;
     }
 
+    get activeMultipliers():{ multiplier: number; endTime: number }[]  {
+        return this._activeMultipliers;
+    }
+
+    set activeMultipliers(value:{ multiplier: number; endTime: number }[]) {
+        this._activeMultipliers = value;
+    }
+
     set businesses(value: Business[]) {
         this._businesses = value;
+    }
+
+    private cleanupMultipliers(): void {
+        const now = Date.now();
+        this._activeMultipliers = this._activeMultipliers.filter(
+            (m) => m.endTime > now // Keep only active multipliers
+        );
+    }
+
+    getCombinedMultiplier(): number {
+        this.cleanupMultipliers(); // Ensure expired multipliers are removed
+        // Combine multipliers by multiplying them together
+        return this._activeMultipliers.reduce((total, m) => total * m.multiplier, 1);
+    }
+
+    startMultiplier(multiplier: number, duration: number): void {
+        const now = Date.now();
+        this._activeMultipliers.push({
+            multiplier,
+            endTime: now + duration, // Set the expiration time
+        });
     }
 
     startProduction(index: number) {
@@ -109,7 +116,7 @@ export class BusinessManager {
 
     buyBusiness(index: number, amount: string = "x1") {
         const business = this._businesses[index];
-        let quantityToBuy = 1; // Default to x1
+        let quantityToBuy: number;
 
         // Determine the quantity based on the amount
         switch (amount) {
@@ -177,10 +184,12 @@ export class BusinessManager {
     }
 
     earnMoney(amount: Decimal | string | number, boost = true) {
-        // Calculate the fan multiplier
-        const multiplier = boost ? this._fans.plus(100).div(100) : new Decimal(1);
-        const boostedAmount = new Decimal(amount).times(multiplier);
+        const multiplier = boost ? this.getCombinedMultiplier() : new Decimal(1);
+        const fanMultiplier = boost ? this._fans.plus(100).div(100) : new Decimal(1);
+        const boostedAmount = new Decimal(amount).times(fanMultiplier).times(multiplier);
         // Add the boosted amount to both currency and totalEarned
+        //if (boost) console.log(boostedAmount);
+
         this._currency = this._currency.plus(boostedAmount);
         this._totalEarned = this._totalEarned.plus(boostedAmount);
         this.checkAndAwardFans();
@@ -218,9 +227,6 @@ export class BusinessManager {
         this._currentFans = this._currentFans.plus(k);
         this._nextFanThreshold = T.plus(S.times(k));
     }
-
-
-
 
     // Buy a manager
     buyManager(index: number) {
@@ -310,38 +316,84 @@ export class BusinessManager {
         }
     }
 
-    updateProduction(deltaTime?: number) {
+    updateProduction(deltaTime?: number, boosted = false) {
+
         const now = Date.now();
         const calculatedDelta = deltaTime !== undefined ? deltaTime : now - this._lastUpdate;
         let totalEarnedThisUpdate = new Decimal(0);
 
         this._businesses.forEach((business) => {
             if (!business.isProducing) return;
+
             if (business.productionTime <= SPEED_THRESHOLD) {
                 business.revenuePerSecond = business.revenue.times(business.quantity).times(1000).div(business.productionTime);
             }
+
+            // Calculate elapsed time for this business
             const elapsed = deltaTime !== undefined ? calculatedDelta : now - business.startTime;
             let cycles = Math.floor(elapsed / business.productionTime);
+            const remainingTime = business.endTime - now;
+            if (deltaTime){
+                console.log(elapsed);
+                console.log(cycles);
+                console.log(remainingTime);
+            }
+
+            if (boosted && remainingTime < elapsed && cycles === 0) {
+                cycles = 1;
+            }
+
             if (cycles > 0) {
                 if (!business.manager?.hired) {
+                    // If manager is not hired, stop after the first cycle
                     business.isProducing = false;
                     cycles = 1;
                 }
-                totalEarnedThisUpdate = totalEarnedThisUpdate.plus(business.revenue.times(business.quantity).times(cycles));
-                const remaining = elapsed % business.productionTime;
-                business.startTime = now - remaining;
-                business.endTime = business.startTime + business.productionTime;
-
+                // Earn money for completed cycles
+                totalEarnedThisUpdate = totalEarnedThisUpdate.plus(
+                    business.revenue.times(business.quantity).times(cycles)
+                );
+                const remaining =
+                    boosted
+                        ? remainingTime - elapsed  // Remaining time after the remainder
+                        : elapsed % business.productionTime;
+                if (deltaTime) console.log(remaining);
+                // Update start and end times based on remaining time
+                if (boosted) {
+                    // For a manually triggered cycle, align startTime to the amount of elapsed time already processed
+                    business.startTime = now - (business.productionTime - remaining);
+                    business.endTime = now + remaining;
+                } else {
+                    // For regular cases, keep using the calculated remaining
+                    business.startTime = now - remaining;
+                    business.endTime = business.startTime + business.productionTime;
+                }
+            } else {
+                // If no cycles are completed, adjust remaining time proportionally
+                const remaining = business.productionTime - elapsed;
+                if(boosted){
+                    business.startTime = business.startTime - elapsed;
+                }
+                // Update only the end time in this case
+                business.endTime = now + remaining;
             }
         });
 
-        this.earnMoney(totalEarnedThisUpdate);
+        if (this._justBoosted){
+            this._justBoosted = false;
+        } else {
+            this.earnMoney(totalEarnedThisUpdate);
+        }
+
+        if (boosted) {
+            this._boostEarnings = totalEarnedThisUpdate; // Track boosted earnings
+            this._justBoosted = true;
+        } else if (deltaTime) {
+            this._offlineEarnings = totalEarnedThisUpdate;
+        }
 
         if (deltaTime === undefined) {
             this._lastUpdate = now;
-        } else {
-            this._offlineEarnings = totalEarnedThisUpdate;
-            console.log("earned this much while gone: " + totalEarnedThisUpdate);
         }
     }
 
@@ -388,4 +440,37 @@ export class BusinessManager {
         });
     }
 
+    private resetProductionTimer(business: Business) {
+        business.startTime = Date.now();
+        business.endTime = business.startTime + business.productionTime;
+        business.lastProduced = Date.now();
+    }
+
+    reset(resetFans = true, resetMultipliers = true) {
+        if (resetFans) {
+            this._fans = new Decimal(0);
+        }
+        if (resetMultipliers) {
+            this._activeMultipliers = [];
+        }
+        this._currency = new Decimal(0);
+
+        this._nextFanThreshold = new Decimal(1e12);
+        this._totalEarned = new Decimal(0);
+        this._currentFans = new Decimal(0);
+        this._unlocks = [];
+
+        this._businesses = defaultBusinesses.map((business) => ({
+            ...business,
+            cost: business.baseCost,
+            isProducing: false,
+            startTime: 0,
+            endTime: 0,
+            unlocks: business.unlocks.map((unlock) => ({
+                ...unlock,
+                applied: false, // Reset applied status
+                notified: false, // Reset notification status
+            })),
+        }));
+    }
 }

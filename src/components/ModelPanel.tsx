@@ -61,7 +61,7 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, onBack, childre
 
                 // Dynamic manager-specific configuration
                 return {
-                    fpsLimit: 60,
+                    fpsLimit: 120,
                     detectRetina: true,
                     fullScreen: false,
                     background: { color: "#374151" },
@@ -248,9 +248,9 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, onBack, childre
                 return {
                     fullScreen: false,
                     background: { color: "#374151" },
-                    fpsLimit: 60,
+                    fpsLimit: 120,
                     particles: {
-                        number: { value: 100 },
+                        number: { value: 50 },
                         color: { value: "#FFD700" },
                         shape: { type: "star" },
                         opacity: { value: 0.8 },

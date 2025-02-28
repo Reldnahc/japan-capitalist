@@ -20,8 +20,12 @@ import Decimal from "break_infinity.js";
 // Extend the TypeScript definition for the Window object
 declare global {
     interface Window {
-        money: (amount: string) => void;
-        fans: (amount: string) => void;
+        money: (amount: string | number) => void;
+        fans: (amount: string | number) => void;
+        time: (amount: number) => void;
+        multiplier: (amount:  number, time: number) => void;
+        item: (item: string, amount: number) => void;
+        useItem: (item: string) => void;
     }
 }
 
@@ -36,6 +40,7 @@ const Game = () => {
     const [notificationQueue, setNotificationQueue] = useState<{ message: string; image: string, milestone: number }[]>([]);
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
     const [isWelcomeAlertOpen, setIsWelcomeAlertOpen] = useState(false); // State to control alert visibility
+    const [isTimeBoostAlertOpen, setIsTimeBoostAlertOpen] = useState(false); // State to control alert visibility
 
     const [clickPositions, setClickPositions] = useState<{ x: number; y: number; id: number }[]>([]);
     const [direction, setDirection] = useState<"left" | "right">("left"); // Controls animation direction
@@ -63,6 +68,10 @@ const Game = () => {
 
     const handleCloseAlert = () => {
         setIsWelcomeAlertOpen(false);
+    };
+
+    const handleCloseTimeBoostAlert = () => {
+        setIsTimeBoostAlertOpen(false);
     };
 
     useEffect(() => {
@@ -116,6 +125,24 @@ const Game = () => {
         window.fans = (amount: string | number) => {
             game.businessManager.addFans(new Decimal(amount));
         };
+        window.time = (amount: number) => {
+            game.businessManager.updateProduction(amount, true);
+            setIsTimeBoostAlertOpen(true);
+        };
+        window.multiplier = (amount: number, time: number) => {
+            game.businessManager.startMultiplier(amount, time * 60000);
+        };
+        window.item = (item: string, amount: number = 1) => {
+            game.itemManager.addItem(item, amount);
+        };
+        window.useItem = (item: string) => {
+            game.itemManager.useItem(
+                item,
+                game.businessManager,
+                () => setIsTimeBoostAlertOpen(true) // Callback to trigger the time boost alert
+            );
+        };
+
         const handleClick = (event: MouseEvent) => {
             // Extract the cursor's position and subtract 10
             const x = event.pageX - 10;
@@ -404,6 +431,49 @@ const Game = () => {
                                 onBack={selectedBusiness ? handleManagerBack : undefined}
 
                             >
+                                {activePanel === "Effects" && (
+                                    <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800 ">
+                                        <div className="border-gray-500 border-2 rounded-lg p-4 mt-4 bg-gray-800 bg-opacity-80 flex flex-col items-center">
+
+                                            {/* Page Description */}
+                                            <p className="text-gray-300 text-center mb-6 md:text-xl">
+                                                Trigger a time warp to travel 30 minutes into the future! Use the WARP! button when available to gain massive rewards.
+                                            </p>
+
+                                            {/* Big WARP! Button with Cooldown Inside */}
+                                            <button
+                                                className={`relative w-48 h-48 md:w-80 md:h-80 flex items-center justify-center rounded-full 
+                                                    ${game.isBoostAvailable() ? "bg-red-500 hover:bg-red-600" : "bg-gray-500 cursor-not-allowed"} 
+                                                    text-white text-2xl font-bold active:scale-95 transition-transform`}
+                                                onClick={() => {
+                                                    if (game.isBoostAvailable()) {
+                                                        game.triggerBoost();
+                                                        setIsTimeBoostAlertOpen(true);
+                                                    }
+                                                }}
+                                                disabled={!game.isBoostAvailable()}
+                                            >
+                                                WARP!
+                                                {!game.isBoostAvailable() && (
+                                                    <span className="absolute bottom-5 text-sm font-medium md:text-xl">
+                                                        {formatTime(Math.ceil(game.boostCooldownRemaining() / 1000))}
+                                                    </span>
+                                                )}
+                                            </button>
+
+                                            {/* Items Header */}
+                                            <h2 className="mt-8 text-xl font-bold text-gray-300">
+                                                Items
+                                            </h2>
+
+                                            {/* Add future content below */}
+                                            <div className="mt-4 text-gray-400">
+                                                {/* Placeholder for future items */}
+                                                <p>Content for the "Items" section goes here...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                                 {activePanel === "Unlocks" && (
                                     <UnlocksPanel businesses={businesses} />
                                 )}
@@ -467,6 +537,7 @@ const Game = () => {
                         formatTime={formatTime}
                         nextUnlockMilestone={getNextUnlockMilestone(biz)}
                         fans={fans}
+                        getCombinedMultiplier={() => game.businessManager.getCombinedMultiplier()}
                     />
                 ))}
             </div>
@@ -490,7 +561,7 @@ const Game = () => {
                             While you were away you earned.
                         </div>
                         <div className={`font-semibold text-2xl`}>
-                            ¥{formatDecimalWithSuffix(adjustValue(game.businessManager.offlineEarnings, fans))}
+                            ¥{formatDecimalWithSuffix(adjustValue(game.businessManager.offlineEarnings, fans, new Decimal(0.01), new Decimal(game.businessManager.getCombinedMultiplier())))}
                         </div>
                     </div>
                 }
@@ -502,6 +573,28 @@ const Game = () => {
                     },
                 ]}
                 closeAlert={handleCloseAlert}
+            />
+            <Alert
+                isOpen={isTimeBoostAlertOpen}
+                text={
+                    <div>
+                        <div className={`font-bold text-4xl`}>You used a time boost!</div>
+                        <div>
+                            You earned.
+                        </div>
+                        <div className={`font-semibold text-2xl`}>
+                            ¥{formatDecimalWithSuffix(adjustValue(game.businessManager.boostEarnings, fans, new Decimal(0.01), new Decimal(game.businessManager.getCombinedMultiplier())))}
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Close",
+                        onClick: handleCloseTimeBoostAlert,
+                        styleClass: "bg-green-500 text-white hover:bg-green-600",
+                    },
+                ]}
+                closeAlert={handleCloseTimeBoostAlert}
             />
 
         </div>

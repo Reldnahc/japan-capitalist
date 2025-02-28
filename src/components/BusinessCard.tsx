@@ -19,10 +19,11 @@ interface BusinessCardProps {
     nextUnlockMilestone: number;
     onBuyOneBusiness: () => void;
     fans: Decimal;
+    getCombinedMultiplier: () => number; // <-- Add this line
 }
 
 const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency, purchaseAmount, onStartProduction, onBuyBusiness,
-                                                       onClickManager, formatTime, nextUnlockMilestone, onBuyOneBusiness, fans}) => {
+                                                       onClickManager, formatTime, nextUnlockMilestone, onBuyOneBusiness, fans, getCombinedMultiplier}) => {
 
     const calculateTotalPrice = (): { totalCost: Decimal, quantityToBuy: number } => {
         let quantityToBuy = 1; // Default to 1
@@ -122,9 +123,9 @@ const BusinessCard: React.FC<BusinessCardProps> = ({business, progress, currency
 
     let adjustedRevenuePerSecond = new Decimal(0);
     if (business.revenuePerSecond){
-        adjustedRevenuePerSecond = adjustValue(business.revenuePerSecond, fans);
+        adjustedRevenuePerSecond = adjustValue(business.revenuePerSecond, fans, new Decimal(0.01), new Decimal(getCombinedMultiplier()));
     }
-    const adjustedRevenue = adjustValue(new Decimal(business.revenue).mul(new Decimal(business.quantity)), fans);
+    const adjustedRevenue = adjustValue(new Decimal(business.revenue).mul(new Decimal(business.quantity)), fans, new Decimal(0.01), new Decimal(getCombinedMultiplier()));
 
 
     const canAffordManagerUpgrade = () => {

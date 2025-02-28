@@ -84,6 +84,17 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                                             <button
                                                 className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
                                                 onClick={() => {
+                                                    onOpenPanel("Effects");
+                                                    setIsMenuOpen(false);
+                                                }}
+                                            >
+                                                Effects
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button
+                                                className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
+                                                onClick={() => {
                                                     onOpenPanel("Unlocks");
                                                     setIsMenuOpen(false);
                                                 }}
