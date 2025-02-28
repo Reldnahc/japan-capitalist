@@ -7,6 +7,7 @@ import Decimal from "break_infinity.js"; // Import icons
 // Define Footer props
 interface FooterProps {
     currency: Decimal;
+    silver: Decimal
     purchaseAmount: string;
     onOpenPanel: (panelName: string) => void;
     onPurchaseAmountChange: (amount: string) => void;
@@ -14,7 +15,7 @@ interface FooterProps {
     readyBusinessesCount: number;
 }
 
-const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, onPurchaseAmountChange,
+const Footer: React.FC<FooterProps> = ({ currency, silver, purchaseAmount, onOpenPanel, onPurchaseAmountChange,
                                            onStartProductionForBusiness, readyBusinessesCount }) => {
     // State to handle menu visibility
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -54,8 +55,14 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
             )}
 
             <footer className="fixed bottom-0 inset-x-0 max-w-xl mx-auto bg-gray-700 text-white py-2 opacity-95 z-50">
-                {/* Updated Layout */}
-                <div className="container mx-auto max-w-xl flex items-center px-4 justify-between">
+                <div className="ml-3 flex items-center space-x-2 text-xs md:text-base">
+                    <img
+                        src="/japan-capitalist/images/silver.webp" // Replace with the actual path to your image
+                        alt="Silver Icon"
+                        className="h-4 w-4 md:h-6 md:w-6" // Tailwind classes for sizing
+                    />
+                    <span>{silver.toString()}</span>
+                </div>                <div className="container mx-auto max-w-xl flex items-center px-4 justify-between">
                     {/* Currency on the left */}
                     <div className="text-4xl md:text-7xl mr-3">¥</div>
 
@@ -75,7 +82,7 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                     )}
 
                     {/* Hamburger menu in the center */}
-                    <div className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2 items-center space-x-4">
+                    <div className="flex-shrink-0 absolute top-5 md:top-6 left-1/2 transform -translate-x-1/2 items-center space-x-4">
                         <div className="relative">
                             {isMenuOpen && (
                                 <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white w-56 md:w-96 text-2xl md:text-5xl rounded-lg shadow-lg z-50">

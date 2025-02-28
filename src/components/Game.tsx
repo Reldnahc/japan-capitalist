@@ -14,11 +14,12 @@ import FansPanel from "./panels/FansPanel.tsx";
 import {useAudioManager} from "../contexts/AudioManagerProvider.tsx";
 import GalleryPanel from "./panels/GalleryPanel.tsx";
 import Alert from "./Alert.tsx";
-import {formatDecimalWithSuffix} from "../utils/formatNumber.ts";
+import {formatDecimalWithSuffix, numberToWords} from "../utils/formatNumber.ts";
 import {adjustValue} from "../utils/calculateAdjustedValues.ts";
 import Decimal from "break_infinity.js";
 import EffectsPanel from "./panels/EffectsPanel.tsx";
 import RewardBox from "./rewardBox.tsx";
+import {Reward} from "../gameLogic/dailyRewardManager.ts";
 // Extend the TypeScript definition for the Window object
 declare global {
     interface Window {
@@ -35,6 +36,8 @@ const game = new IdleGame();
 
 const Game = () => {
     const [currency, setCurrency] = useState(game.businessManager.currency);
+    const [claimedReward, setClaimedReward] = useState<Reward | null>(null);
+    const [silver, setSilver] = useState(game.silver);
     const [items, setItems] = useState(game.itemManager.getOwnedItems());
     const [fans, setFans] = useState(game.businessManager.fans);
     const [businesses, setBusinesses] = useState(game.businessManager.businesses);
@@ -77,7 +80,8 @@ const Game = () => {
         setIsTimeBoostAlertOpen(false);
     };
 
-    const showDailyRewardAlert = () => {
+    const showDailyRewardAlert = (reward: Reward) => {
+        setClaimedReward(reward); // Save the claimed reward details in state
         setIsDailyRewardAlertOpen(true);
     };
 
@@ -199,6 +203,7 @@ const Game = () => {
     useEffect(() => {
         const update = () => {
             setCurrency(game.businessManager.currency);
+            setSilver(game.silver);
             setItems(game.itemManager.getOwnedItems());
             setFans(game.businessManager.fans);
             setBusinesses([...game.businessManager.businesses]);
@@ -580,6 +585,7 @@ const Game = () => {
             </div>
             <Footer
                 currency={currency}
+                silver={silver}
                 purchaseAmount={purchaseAmount}
                 onOpenPanel={handleOpenPanel}
                 onPurchaseAmountChange={(amount) => setPurchaseAmount(amount)}
@@ -589,14 +595,27 @@ const Game = () => {
             <Alert
                 isOpen={isDailyRewardAlertOpen}
                 text={
-                    <div>
-                        <div className="font-bold text-4xl">Daily Reward Claimed!</div>
-                        <div>You have received 1 hour warp!</div>
+                    <div className="flex items-center justify-between text-center">
+                        {claimedReward?.imagePath && (
+                            <img
+                                src={claimedReward.imagePath}
+                                alt={claimedReward.description}
+                                className="w-16 h-16 md:w-24 md:h-24 rounded-full border-2 border-gray-300"
+                            />
+                        )}
+                        <div>
+                            <div className="font-bold text-2xl md:text-4xl">Daily Reward!</div>
+                            {claimedReward && (
+                                <div>
+                                    <div>You have received <span className={`font-semibold`}>{claimedReward.amount && numberToWords(claimedReward.amount)} {claimedReward.description}</span></div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 }
                 buttons={[
                     {
-                        label: "Close",
+                        label: "Thanks!",
                         onClick: handleCloseDailyRewardAlert,
                         styleClass: "bg-green-500 text-white hover:bg-green-600",
                     },

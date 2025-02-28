@@ -4,17 +4,21 @@ export interface Reward {
     type: string; // The type of reward, e.g., 'currency', 'timeWarp', 'item'
     amount: number; // The value or quantity of the reward
     description: string; // A description for display
+    imagePath?: string;
 }
 
 export class DailyRewardManager {
     private _lastRewardTime: number = 0; // Timestamp of the last claimed reward
     private _currentRewardIndex: number = 0; // Index of the next reward (cycles up to 7 days)
     private _itemManager: ItemManager; // Reference to the ItemManager
+    private _addSilver: (amount: number) => void; // Reference to a function for adding silver
 
-    constructor(savedLastRewardTime: number, savedRewardIndex: number, itemManager: ItemManager) {
+    constructor(savedLastRewardTime: number, savedRewardIndex: number, itemManager: ItemManager, addSilver: (amount: number) => void) {
         this._lastRewardTime = savedLastRewardTime || 0;
         this._currentRewardIndex = savedRewardIndex || 0;
         this._itemManager = itemManager; // Inject ItemManager to manage rewards
+        this._addSilver = addSilver; // Assign the function to modify silver
+
     }
 
     /**
@@ -22,13 +26,13 @@ export class DailyRewardManager {
      */
     public getWeeklyRewardCycle(): Reward[] {
         return [
-            { type: 'item', amount: 1, description: '1-hour warp' },
-            { type: 'item', amount: 1, description: '1-hour warp' },
-            { type: 'item', amount: 1, description: '1-hour warp' },
-            { type: 'item', amount: 1, description: '1-hour warp' },
-            { type: 'item', amount: 1, description: '6-hour warp' },
-            { type: 'item', amount: 1, description: '1-hour warp' },
-            { type: 'item', amount: 1, description: '1-day warp' },
+            { type: 'item', amount: 1, description: '1-hour warp.', imagePath: '/japan-capitalist/images/items/one_hour_warp.webp'},
+            { type: 'silver', amount: 10, description: 'Silver.', imagePath: '/japan-capitalist/images/silver.webp' },
+            { type: 'item', amount: 2, description: '1-hour warps.', imagePath: '/japan-capitalist/images/items/one_hour_warp.webp' },
+            { type: 'silver', amount: 15, description: 'Silver.', imagePath: '/japan-capitalist/images/silver.webp' },
+            { type: 'item', amount: 1, description: '6-hour warp.', imagePath: '/japan-capitalist/images/items/one_hour_warp.webp' },
+            { type: 'item', amount: 2, description: '1-hour warps.', imagePath: '/japan-capitalist/images/items/one_hour_warp.webp' },
+            { type: 'item', amount: 1, description: '1-day warp.', imagePath: '/japan-capitalist/images/items/one_hour_warp.webp' },
         ];
     }
     /**
@@ -80,8 +84,8 @@ export class DailyRewardManager {
                     }
                     break;
 
-                case 'gold': // Placeholder for handling currency rewards
-                    // Add currency-related logic here
+                case 'silver': // Placeholder for handling currency rewards
+                    this._addSilver(reward.amount)
                     break;
 
                 default: // Handle unknown reward types

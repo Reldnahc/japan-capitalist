@@ -63,7 +63,7 @@ const precomputeSuffixes = () => {
 // Precompute suffixes once at the load time
 precomputeSuffixes();
 
-export function formatDecimalWithSuffix(value: Decimal, decimals: number = 3): string {
+export const formatDecimalWithSuffix = (value: Decimal, decimals: number = 3): string => {
     // Handle small values below 1,000,000 directly
     if (value.lt(1_000_000)) {
         return addCommasToDecimal(value);
@@ -88,10 +88,31 @@ export function formatDecimalWithSuffix(value: Decimal, decimals: number = 3): s
     // Format the scaled value and attach the suffix
     const formattedValue = scaledValue.toFixed(decimals).replace(/\.?0+$/, ""); // Avoid trailing zeros
     return `${formattedValue} ${suffix}`;
-}
+};
 
-function addCommasToDecimal(value: Decimal): string {
+const addCommasToDecimal = (value: Decimal): string => {
     return value
         .toFixed(0)
         .replace(/\B(?=(\d{3})+(?!\d))/g, ","); // Add commas for readability
-}
+};
+
+/**
+ * Converts a number to its equivalent word representation (up to 20).
+ * Falls back to string representation for numbers outside the range.
+ */
+export const numberToWords = (num: number): string => {
+    const words = [
+        "zero", "one", "two", "three", "four",
+        "five", "six", "seven", "eight", "nine",
+        "ten", "eleven", "twelve", "thirteen",
+        "fourteen", "fifteen", "sixteen", "seventeen",
+        "eighteen", "nineteen", "twenty"
+    ];
+
+    // Handle numbers within the range 0-20
+    if (num >= 0 && num <= 20) {
+        return words[num];
+    }
+
+    return num.toString(); // Fallback for numbers outside the range
+};
