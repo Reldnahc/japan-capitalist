@@ -324,7 +324,7 @@ const ModalPanel: React.FC<ModalPanelProps> = ({ title, onClose, onBack, childre
                 onClick={onClose} // Close the panel on overlay click
             ></div>
             {/* Panel Content */}
-            <div className=" fixed inset-0 flex h-[79vh] items-center justify-center z-50 pointer-events-none my-auto ">
+            <div className=" fixed inset-0 flex h-[79vh] items-center justify-center z-50 pointer-events-none my-auto -translate-y-7">
                     {particlesElement}
 
                 <div className="rounded-lg w-full max-w-lg pt-3 pointer-events-auto relative ">

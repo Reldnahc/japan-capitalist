@@ -564,7 +564,7 @@ const Game = () => {
             </AnimatePresence>
 
 
-            <div className="w-full max-w-lg space-y-4 px-2 pt-6 pb-32 mx-auto">
+            <div className="w-full max-w-lg space-y-4 px-2 pt-6 pb-40 mx-auto">
                 {businesses.map((biz, index) => (
                     <BusinessCard
                         key={index}

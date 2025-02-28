@@ -55,14 +55,32 @@ const Footer: React.FC<FooterProps> = ({ currency, silver, purchaseAmount, onOpe
             )}
 
             <footer className="fixed bottom-0 inset-x-0 max-w-xl mx-auto bg-gray-700 text-white py-2 opacity-95 z-50">
-                <div className="ml-3 flex items-center space-x-2 text-xs md:text-base">
-                    <img
-                        src="/japan-capitalist/images/silver.webp" // Replace with the actual path to your image
-                        alt="Silver Icon"
-                        className="h-4 w-4 md:h-6 md:w-6" // Tailwind classes for sizing
-                    />
-                    <span>{silver.toString()}</span>
-                </div>                <div className="container mx-auto max-w-xl flex items-center px-4 justify-between">
+                <div className="ml-3 flex flex-col space-y-2 mb-2 text-xs md:text-base">
+                    {/* Silver section with mute button moved to the right */}
+                    <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center space-x-2">
+                            <img
+                                src="/japan-capitalist/images/silver.webp" // Replace with the actual path to your image
+                                alt="Silver Icon"
+                                className="h-4 w-4 md:h-6 md:w-6" // Tailwind classes for sizing
+                            />
+                            <span>{silver.toString()}</span>
+                        </div>
+                        <button
+                            onClick={toggleMute}
+                            className="text-white text-xl md:text-2xl mr-3 hover:text-yellow-400 transition"
+                            aria-label={isMuted ? "Unmute" : "Mute"}
+                        >
+                            {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
+                        </button>
+                    </div>
+
+                    {/* Dividing line */}
+                    <div className="w-full h-px bg-gray-400 opacity-50"></div>
+                </div>
+
+
+                <div className="container mx-auto max-w-xl flex items-center px-4 justify-between">
                     {/* Currency on the left */}
                     <div className="text-4xl md:text-7xl mr-3">¥</div>
 
@@ -82,10 +100,10 @@ const Footer: React.FC<FooterProps> = ({ currency, silver, purchaseAmount, onOpe
                     )}
 
                     {/* Hamburger menu in the center */}
-                    <div className="flex-shrink-0 absolute top-5 md:top-6 left-1/2 transform -translate-x-1/2 items-center space-x-4">
+                    <div className="flex-shrink-0 absolute left-1/2 transform -translate-x-1/2 items-center space-x-4">
                         <div className="relative">
                             {isMenuOpen && (
-                                <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white w-56 md:w-96 text-2xl md:text-5xl rounded-lg shadow-lg z-50">
+                                <div className="absolute bottom-10 md:bottom-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white w-56 md:w-96 text-2xl md:text-5xl rounded-lg shadow-lg z-50">
                                     <ul className="flex flex-col py-2">
                                         <li>
                                             <button
@@ -168,14 +186,6 @@ const Footer: React.FC<FooterProps> = ({ currency, silver, purchaseAmount, onOpe
                                 </div>
                             )}
                         </div>
-                        <button
-                            onClick={toggleMute}
-                            className="absolute -left-12 md:-left-16 top-2 md:top-3 transform -translate-y-1/2 text-white text-2xl md:text-4xl hover:text-yellow-400 transition"
-                            aria-label={isMuted ? "Unmute" : "Mute"}
-                        >
-                            {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
-                        </button>
-
                         <button
                             className="flex flex-col items-center justify-center w-10 h-10 md:w-16 md:h-16 bg-gray-600 rounded-md hover:bg-gray-500 transition"
                             aria-label="Menu"
