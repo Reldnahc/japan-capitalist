@@ -8,11 +8,13 @@ import {GameLoop} from "./gameLoop.ts";
 import Decimal from "break_infinity.js";
 import {ItemManager} from "./itemManager.ts";
 import {defaultItems} from "./data/items.ts";
+import {DailyRewardManager} from "./dailyRewardManager.ts";
 
 export class IdleGame {
 
     private _businessManager: BusinessManager;
     private _itemManager: ItemManager;
+    private _dailyRewardManager: DailyRewardManager;
     private _gameLoop: GameLoop;
     private _totalPlaytime: number = 0;
     private _sessionStartTime: number = 0;
@@ -43,9 +45,12 @@ export class IdleGame {
 
             this._businessManager.checkAllUnlocksAndUpgrades();
             this._businessManager.updateProduction(this._timeOffline);
+            this._dailyRewardManager = new DailyRewardManager(savedState.lastRewardTime || 0, savedState.rewardIndex || 0, this._itemManager);
+
         } else {
             this._itemManager = new ItemManager(defaultItems);
             this._businessManager = new BusinessManager(defaultBusinesses, new Decimal(0), new Decimal(0), new Decimal(0), []);
+            this._dailyRewardManager = new DailyRewardManager(0, 0, this._itemManager); // No rewards claimed on first play
         }
         this._businessManager.checkAndAwardFans();
         this._sessionStartTime = Date.now(); // Set session start time
@@ -104,6 +109,10 @@ export class IdleGame {
         return this._itemManager;
     }
 
+    get dailyRewardManager(): DailyRewardManager {
+        return this._dailyRewardManager;
+    }
+
     private saveGameState() {
         const currentSessionPlaytime = Date.now() - this._sessionStartTime;
         this._totalPlaytime += currentSessionPlaytime;
@@ -141,6 +150,8 @@ export class IdleGame {
             totalPlaytime: this._totalPlaytime, // Add session playtime to total
             lastSaved: Date.now(), // Save the exact time when the game state is saved
             lastBoostTime: this._lastBoostTime, // Add last boost time to the save state
+            lastRewardTime: this._dailyRewardManager.getLastRewardTime(), // Save the last reward time
+            rewardIndex: this._dailyRewardManager.getCurrentRewardIndex(),
         };
 
         localStorage.setItem('idleGameState', JSONbig.stringify(state));
@@ -160,6 +171,9 @@ export class IdleGame {
             const savedMultipliers = state.savedMultipliers || [];
             const savedBusinesses = state.businesses || [];
             const savedLastBoostTime = state.lastBoostTime || 0; // Load saved boost time
+            const savedLastRewardTime = state.lastRewardTime || 0 ;
+            const savedRewardIndex = state.rewardIndex || 0 ;
+
 
             const mergedItems = defaultItems.map((defaultItem) => {
                 // Attempt to find a corresponding saved item
@@ -222,6 +236,8 @@ export class IdleGame {
             });
 
             return {
+                rewardIndex: savedRewardIndex,
+                lastRewardTime: savedLastRewardTime,
                 lastBoostTime: savedLastBoostTime,
                 currency: savedCurrency,
                 totalEarned: savedTotalEarned,

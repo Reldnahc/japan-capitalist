@@ -84,11 +84,11 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                                             <button
                                                 className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
                                                 onClick={() => {
-                                                    onOpenPanel("Effects");
+                                                    onOpenPanel("Items & Effects");
                                                     setIsMenuOpen(false);
                                                 }}
                                             >
-                                                Effects
+                                                Items & Effects
                                             </button>
                                         </li>
                                         <li>
@@ -134,6 +134,17 @@ const Footer: React.FC<FooterProps> = ({ currency, purchaseAmount, onOpenPanel, 
                                         >
                                             Gallery
                                         </button>
+                                        </li>
+                                        <li>
+                                            <button
+                                                className="w-full text-left px-4 py-2 hover:bg-gray-700 transition"
+                                                onClick={() => {
+                                                    onOpenPanel("Login Rewards");
+                                                    setIsMenuOpen(false);
+                                                }}
+                                            >
+                                                Login Rewards
+                                            </button>
                                         </li>
                                         <li>
                                             <button

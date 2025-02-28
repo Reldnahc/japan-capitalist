@@ -17,6 +17,8 @@ import Alert from "./Alert.tsx";
 import {formatDecimalWithSuffix} from "../utils/formatNumber.ts";
 import {adjustValue} from "../utils/calculateAdjustedValues.ts";
 import Decimal from "break_infinity.js";
+import EffectsPanel from "./panels/EffectsPanel.tsx";
+import RewardBox from "./rewardBox.tsx";
 // Extend the TypeScript definition for the Window object
 declare global {
     interface Window {
@@ -33,6 +35,7 @@ const game = new IdleGame();
 
 const Game = () => {
     const [currency, setCurrency] = useState(game.businessManager.currency);
+    const [items, setItems] = useState(game.itemManager.getOwnedItems());
     const [fans, setFans] = useState(game.businessManager.fans);
     const [businesses, setBusinesses] = useState(game.businessManager.businesses);
     const [progress, setProgress] = useState<number[]>(new Array(game.businessManager.businesses.length).fill(0));
@@ -41,7 +44,7 @@ const Game = () => {
     const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
     const [isWelcomeAlertOpen, setIsWelcomeAlertOpen] = useState(false); // State to control alert visibility
     const [isTimeBoostAlertOpen, setIsTimeBoostAlertOpen] = useState(false); // State to control alert visibility
-
+    const [isDailyRewardAlertOpen, setIsDailyRewardAlertOpen] = useState(false);
     const [clickPositions, setClickPositions] = useState<{ x: number; y: number; id: number }[]>([]);
     const [direction, setDirection] = useState<"left" | "right">("left"); // Controls animation direction
     const [appliedUnlocks, setAppliedUnlocks] = useState(() =>
@@ -73,6 +76,22 @@ const Game = () => {
     const handleCloseTimeBoostAlert = () => {
         setIsTimeBoostAlertOpen(false);
     };
+
+    const showDailyRewardAlert = () => {
+        setIsDailyRewardAlertOpen(true);
+    };
+
+    const handleCloseDailyRewardAlert = () => {
+        setIsDailyRewardAlertOpen(false);
+    };
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            game.dailyRewardManager.claimDailyReward(showDailyRewardAlert);
+        }, 1000); // Check every second for simplicity
+        return () => clearInterval(interval); // Cleanup on unmount
+    }, []);
+
 
     useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
@@ -180,6 +199,7 @@ const Game = () => {
     useEffect(() => {
         const update = () => {
             setCurrency(game.businessManager.currency);
+            setItems(game.itemManager.getOwnedItems());
             setFans(game.businessManager.fans);
             setBusinesses([...game.businessManager.businesses]);
             const updatedProgress = game.businessManager.businesses.map((_, index) => {
@@ -379,6 +399,14 @@ const Game = () => {
 
     };
 
+    const handleItem = (item: string) => {
+        game.itemManager.useItem(
+            item,
+            game.businessManager,
+            () => setIsTimeBoostAlertOpen(true) // Callback to trigger the time boost alert
+        );
+    }
+
     const getPanelTitle = (): string => {
         if (activePanel === "Managers" && selectedBusiness) {
             return `Managers - ${selectedBusiness.name}`;
@@ -431,49 +459,58 @@ const Game = () => {
                                 onBack={selectedBusiness ? handleManagerBack : undefined}
 
                             >
-                                {activePanel === "Effects" && (
-                                    <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800 ">
-                                        <div className="border-gray-500 border-2 rounded-lg p-4 mt-4 bg-gray-800 bg-opacity-80 flex flex-col items-center">
+                                {activePanel === "Login Rewards" && (
+                                    <div className="h-[70vh] overflow-y-auto overflow-x-hidden px-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800">
+                                        <h2 className={`text-center text-white font-bold text-2xl md:text-4xl mt-3`}>Repeating Rewards!</h2>
+                                        <div className="flex flex-col items-center justify-center mt-4 space-y-8">
+                                            {/* Top Row - First 3 Days */}
+                                            <div className="flex justify-center items-center gap-4">
+                                                {game.dailyRewardManager.getWeeklyRewardCycle().slice(0, 3).map((reward, index) => {
+                                                    const isClaimed = index < game.dailyRewardManager.getCurrentRewardIndex();
+                                                    return (
+                                                        <RewardBox
+                                                            key={index}
+                                                            index={index}
+                                                            reward={reward}
+                                                            isClaimed={isClaimed}
+                                                            className="transform hover:scale-105 transition-transform" // Added hover effect
+                                                        />
+                                                    );
+                                                })}
+                                            </div>
 
-                                            {/* Page Description */}
-                                            <p className="text-gray-300 text-center mb-6 md:text-xl">
-                                                Trigger a time warp to travel 30 minutes into the future! Use the WARP! button when available to gain massive rewards.
-                                            </p>
-
-                                            {/* Big WARP! Button with Cooldown Inside */}
-                                            <button
-                                                className={`relative w-48 h-48 md:w-80 md:h-80 flex items-center justify-center rounded-full 
-                                                    ${game.isBoostAvailable() ? "bg-red-500 hover:bg-red-600" : "bg-gray-500 cursor-not-allowed"} 
-                                                    text-white text-2xl font-bold active:scale-95 transition-transform`}
-                                                onClick={() => {
-                                                    if (game.isBoostAvailable()) {
-                                                        game.triggerBoost();
-                                                        setIsTimeBoostAlertOpen(true);
-                                                    }
-                                                }}
-                                                disabled={!game.isBoostAvailable()}
-                                            >
-                                                WARP!
-                                                {!game.isBoostAvailable() && (
-                                                    <span className="absolute bottom-5 text-sm font-medium md:text-xl">
-                                                        {formatTime(Math.ceil(game.boostCooldownRemaining() / 1000))}
-                                                    </span>
-                                                )}
-                                            </button>
-
-                                            {/* Items Header */}
-                                            <h2 className="mt-8 text-xl font-bold text-gray-300">
-                                                Items
-                                            </h2>
-
-                                            {/* Add future content below */}
-                                            <div className="mt-4 text-gray-400">
-                                                {/* Placeholder for future items */}
-                                                <p>Content for the "Items" section goes here...</p>
+                                            {/* Bottom Row - Last 4 Days */}
+                                            <div className="flex justify-center items-center gap-2">
+                                                {game.dailyRewardManager.getWeeklyRewardCycle().slice(3, 7).map((reward, index) => {
+                                                    const originalIndex = index + 3; // Offset index for correct claiming check
+                                                    const isClaimed = originalIndex < game.dailyRewardManager.getCurrentRewardIndex();
+                                                    return (
+                                                        <RewardBox
+                                                            key={originalIndex}
+                                                            index={originalIndex}
+                                                            reward={reward}
+                                                            isClaimed={isClaimed}
+                                                            className="transform hover:scale-105 transition-transform" // Added hover effect
+                                                        />
+                                                    );
+                                                })}
                                             </div>
                                         </div>
+                                        <h2 className={`text-center text-white font-bold mt-3 text-2xl md:text-4xl`}>Bonus Rewards!</h2>
+
                                     </div>
                                 )}
+
+                                {activePanel === "Items & Effects" && (
+                                    <EffectsPanel
+                                        game={game}
+                                        items={items}
+                                        formatTime={formatTime}
+                                        setIsTimeBoostAlertOpen={setIsTimeBoostAlertOpen}
+                                        handleItem={handleItem}
+                                    />
+                                )}
+
                                 {activePanel === "Unlocks" && (
                                     <UnlocksPanel businesses={businesses} />
                                 )}
@@ -548,6 +585,23 @@ const Game = () => {
                 onPurchaseAmountChange={(amount) => setPurchaseAmount(amount)}
                 onStartProductionForBusiness={handleStartProductionForBusiness}
                 readyBusinessesCount={readyBusinessesCount}
+            />
+            <Alert
+                isOpen={isDailyRewardAlertOpen}
+                text={
+                    <div>
+                        <div className="font-bold text-4xl">Daily Reward Claimed!</div>
+                        <div>You have received 1 hour warp!</div>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Close",
+                        onClick: handleCloseDailyRewardAlert,
+                        styleClass: "bg-green-500 text-white hover:bg-green-600",
+                    },
+                ]}
+                closeAlert={handleCloseDailyRewardAlert}
             />
             <Alert
                 isOpen={isWelcomeAlertOpen}
